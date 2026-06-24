@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Loader2 } from "lucide-react";
+import { Mail, Loader2, ArrowLeft } from "lucide-react";
 import sellierLogo from "@/assets/sellier-logo.svg";
+
 
 const searchSchema = z.object({
   next: z.string().optional(),
@@ -71,8 +72,17 @@ function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col pt-[env(safe-area-inset-top)]">
+      <div className="px-4 pt-4">
+        <Link
+          to="/"
+          className="inline-flex items-center text-[10px] uppercase tracking-[0.25em] text-muted-foreground active:opacity-60"
+        >
+          <ArrowLeft className="h-3 w-3 mr-1.5" /> Back to shop
+        </Link>
+      </div>
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
+
         <div className="w-full max-w-sm">
           <img src={sellierLogo} alt="Sellier" className="h-5 w-auto mx-auto mb-2" />
           <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground text-center mb-10">
