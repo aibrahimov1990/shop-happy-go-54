@@ -14,16 +14,150 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      edit_items: {
+        Row: {
+          created_at: string
+          edit_id: string
+          id: string
+          image_url: string | null
+          position: number
+          price_amount: number | null
+          price_currency: string | null
+          shopify_handle: string
+          shopify_product_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          edit_id: string
+          id?: string
+          image_url?: string | null
+          position?: number
+          price_amount?: number | null
+          price_currency?: string | null
+          shopify_handle: string
+          shopify_product_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          edit_id?: string
+          id?: string
+          image_url?: string | null
+          position?: number
+          price_amount?: number | null
+          price_currency?: string | null
+          shopify_handle?: string
+          shopify_product_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "edit_items_edit_id_fkey"
+            columns: ["edit_id"]
+            isOneToOne: false
+            referencedRelation: "edits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      edits: {
+        Row: {
+          client_email: string
+          client_user_id: string | null
+          created_at: string
+          id: string
+          note: string | null
+          sent_at: string | null
+          shopper_id: string
+          status: Database["public"]["Enums"]["edit_status"]
+          title: string
+          viewed_at: string | null
+        }
+        Insert: {
+          client_email: string
+          client_user_id?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          sent_at?: string | null
+          shopper_id: string
+          status?: Database["public"]["Enums"]["edit_status"]
+          title: string
+          viewed_at?: string | null
+        }
+        Update: {
+          client_email?: string
+          client_user_id?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          sent_at?: string | null
+          shopper_id?: string
+          status?: Database["public"]["Enums"]["edit_status"]
+          title?: string
+          viewed_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "shopper" | "client"
+      edit_status: "draft" | "sent" | "viewed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +284,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "shopper", "client"],
+      edit_status: ["draft", "sent", "viewed"],
+    },
   },
 } as const
