@@ -26,7 +26,12 @@ export const Route = createFileRoute("/")({
 });
 
 async function fetchFeatured(): Promise<ShopifyProduct[]> {
-  const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, { first: 12, query: null });
+  const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
+    first: 12,
+    query: null,
+    sortKey: "CREATED_AT",
+    reverse: true,
+  });
   return res?.data?.products?.edges ?? [];
 }
 
@@ -47,7 +52,7 @@ function Home() {
       <section className="relative">
         <div className="aspect-[3/4] w-full bg-muted overflow-hidden">
           <img
-            src="https://www.sellierknightsbridge.com/cdn/shop/files/284A3741_1x1.jpg?v=1767006884"
+            src="https://www.sellierknightsbridge.com/cdn/shop/files/284A3741_1000x.jpg"
             alt="Sellier Knightsbridge — Authentic Superbrands"
             className="h-full w-full object-cover"
           />
@@ -71,7 +76,7 @@ function Home() {
       <section className="relative">
         <div className="aspect-[4/5] w-full bg-muted overflow-hidden">
           <img
-            src="https://www.sellierknightsbridge.com/cdn/shop/files/284A7326_4f723011-a1b3-4f69-8c22-11f0dc09d13a_1x1.jpg?v=1767006707"
+            src="https://www.sellierknightsbridge.com/cdn/shop/files/284A7326_4f723011-a1b3-4f69-8c22-11f0dc09d13a_1000x.jpg"
             alt="The Sellier Edit"
             className="h-full w-full object-cover"
           />
