@@ -10,9 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WishlistRouteImport } from './routes/wishlist'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ShopperRouteImport } from './routes/shopper'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as SellWithUsRouteImport } from './routes/sell-with-us'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
 import { Route as EditsRouteImport } from './routes/edits'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AccountRouteImport } from './routes/account'
@@ -28,6 +31,11 @@ const WishlistRoute = WishlistRouteImport.update({
   path: '/wishlist',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopperRoute = ShopperRouteImport.update({
   id: '/shopper',
   path: '/shopper',
@@ -38,9 +46,19 @@ const ShopRoute = ShopRouteImport.update({
   path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SellWithUsRoute = SellWithUsRouteImport.update({
+  id: '/sell-with-us',
+  path: '/sell-with-us',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundPolicyRoute = RefundPolicyRouteImport.update({
+  id: '/refund-policy',
+  path: '/refund-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EditsRoute = EditsRouteImport.update({
@@ -94,9 +112,12 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/edits': typeof EditsRouteWithChildren
+  '/refund-policy': typeof RefundPolicyRoute
   '/search': typeof SearchRoute
+  '/sell-with-us': typeof SellWithUsRoute
   '/shop': typeof ShopRoute
   '/shopper': typeof ShopperRouteWithChildren
+  '/terms': typeof TermsRoute
   '/wishlist': typeof WishlistRoute
   '/edits/$id': typeof EditsIdRoute
   '/product/$handle': typeof ProductHandleRoute
@@ -108,8 +129,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/search': typeof SearchRoute
+  '/sell-with-us': typeof SellWithUsRoute
   '/shop': typeof ShopRoute
+  '/terms': typeof TermsRoute
   '/wishlist': typeof WishlistRoute
   '/edits/$id': typeof EditsIdRoute
   '/product/$handle': typeof ProductHandleRoute
@@ -123,9 +147,12 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/edits': typeof EditsRouteWithChildren
+  '/refund-policy': typeof RefundPolicyRoute
   '/search': typeof SearchRoute
+  '/sell-with-us': typeof SellWithUsRoute
   '/shop': typeof ShopRoute
   '/shopper': typeof ShopperRouteWithChildren
+  '/terms': typeof TermsRoute
   '/wishlist': typeof WishlistRoute
   '/edits/$id': typeof EditsIdRoute
   '/product/$handle': typeof ProductHandleRoute
@@ -140,9 +167,12 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/edits'
+    | '/refund-policy'
     | '/search'
+    | '/sell-with-us'
     | '/shop'
     | '/shopper'
+    | '/terms'
     | '/wishlist'
     | '/edits/$id'
     | '/product/$handle'
@@ -154,8 +184,11 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/auth'
+    | '/refund-policy'
     | '/search'
+    | '/sell-with-us'
     | '/shop'
+    | '/terms'
     | '/wishlist'
     | '/edits/$id'
     | '/product/$handle'
@@ -168,9 +201,12 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/edits'
+    | '/refund-policy'
     | '/search'
+    | '/sell-with-us'
     | '/shop'
     | '/shopper'
+    | '/terms'
     | '/wishlist'
     | '/edits/$id'
     | '/product/$handle'
@@ -184,9 +220,12 @@ export interface RootRouteChildren {
   AccountRoute: typeof AccountRoute
   AuthRoute: typeof AuthRoute
   EditsRoute: typeof EditsRouteWithChildren
+  RefundPolicyRoute: typeof RefundPolicyRoute
   SearchRoute: typeof SearchRoute
+  SellWithUsRoute: typeof SellWithUsRoute
   ShopRoute: typeof ShopRoute
   ShopperRoute: typeof ShopperRouteWithChildren
+  TermsRoute: typeof TermsRoute
   WishlistRoute: typeof WishlistRoute
   ProductHandleRoute: typeof ProductHandleRoute
 }
@@ -198,6 +237,13 @@ declare module '@tanstack/react-router' {
       path: '/wishlist'
       fullPath: '/wishlist'
       preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shopper': {
@@ -214,11 +260,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sell-with-us': {
+      id: '/sell-with-us'
+      path: '/sell-with-us'
+      fullPath: '/sell-with-us'
+      preLoaderRoute: typeof SellWithUsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund-policy': {
+      id: '/refund-policy'
+      path: '/refund-policy'
+      fullPath: '/refund-policy'
+      preLoaderRoute: typeof RefundPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/edits': {
@@ -317,9 +377,12 @@ const rootRouteChildren: RootRouteChildren = {
   AccountRoute: AccountRoute,
   AuthRoute: AuthRoute,
   EditsRoute: EditsRouteWithChildren,
+  RefundPolicyRoute: RefundPolicyRoute,
   SearchRoute: SearchRoute,
+  SellWithUsRoute: SellWithUsRoute,
   ShopRoute: ShopRoute,
   ShopperRoute: ShopperRouteWithChildren,
+  TermsRoute: TermsRoute,
   WishlistRoute: WishlistRoute,
   ProductHandleRoute: ProductHandleRoute,
 }
