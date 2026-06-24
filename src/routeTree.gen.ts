@@ -9,8 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ShopperRouteImport } from './routes/shopper'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as EditsRouteImport } from './routes/edits'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
@@ -20,6 +22,11 @@ import { Route as ShopperNewRouteImport } from './routes/shopper.new'
 import { Route as ProductHandleRouteImport } from './routes/product.$handle'
 import { Route as EditsIdRouteImport } from './routes/edits.$id'
 
+const ShopperRoute = ShopperRouteImport.update({
+  id: '/shopper',
+  path: '/shopper',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
@@ -28,6 +35,11 @@ const ShopRoute = ShopRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EditsRoute = EditsRouteImport.update({
+  id: '/edits',
+  path: '/edits',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -46,19 +58,19 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShopperIndexRoute = ShopperIndexRouteImport.update({
-  id: '/shopper/',
-  path: '/shopper/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => ShopperRoute,
 } as any)
 const EditsIndexRoute = EditsIndexRouteImport.update({
-  id: '/edits/',
-  path: '/edits/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => EditsRoute,
 } as any)
 const ShopperNewRoute = ShopperNewRouteImport.update({
-  id: '/shopper/new',
-  path: '/shopper/new',
-  getParentRoute: () => rootRouteImport,
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => ShopperRoute,
 } as any)
 const ProductHandleRoute = ProductHandleRouteImport.update({
   id: '/product/$handle',
@@ -66,17 +78,19 @@ const ProductHandleRoute = ProductHandleRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const EditsIdRoute = EditsIdRouteImport.update({
-  id: '/edits/$id',
-  path: '/edits/$id',
-  getParentRoute: () => rootRouteImport,
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => EditsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
+  '/edits': typeof EditsRouteWithChildren
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
+  '/shopper': typeof ShopperRouteWithChildren
   '/edits/$id': typeof EditsIdRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
@@ -100,8 +114,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
+  '/edits': typeof EditsRouteWithChildren
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
+  '/shopper': typeof ShopperRouteWithChildren
   '/edits/$id': typeof EditsIdRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
@@ -114,8 +130,10 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/auth'
+    | '/edits'
     | '/search'
     | '/shop'
+    | '/shopper'
     | '/edits/$id'
     | '/product/$handle'
     | '/shopper/new'
@@ -138,8 +156,10 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/auth'
+    | '/edits'
     | '/search'
     | '/shop'
+    | '/shopper'
     | '/edits/$id'
     | '/product/$handle'
     | '/shopper/new'
@@ -151,17 +171,22 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
   AuthRoute: typeof AuthRoute
+  EditsRoute: typeof EditsRouteWithChildren
   SearchRoute: typeof SearchRoute
   ShopRoute: typeof ShopRoute
-  EditsIdRoute: typeof EditsIdRoute
+  ShopperRoute: typeof ShopperRouteWithChildren
   ProductHandleRoute: typeof ProductHandleRoute
-  ShopperNewRoute: typeof ShopperNewRoute
-  EditsIndexRoute: typeof EditsIndexRoute
-  ShopperIndexRoute: typeof ShopperIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/shopper': {
+      id: '/shopper'
+      path: '/shopper'
+      fullPath: '/shopper'
+      preLoaderRoute: typeof ShopperRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop': {
       id: '/shop'
       path: '/shop'
@@ -174,6 +199,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/edits': {
+      id: '/edits'
+      path: '/edits'
+      fullPath: '/edits'
+      preLoaderRoute: typeof EditsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -199,24 +231,24 @@ declare module '@tanstack/react-router' {
     }
     '/shopper/': {
       id: '/shopper/'
-      path: '/shopper'
+      path: '/'
       fullPath: '/shopper/'
       preLoaderRoute: typeof ShopperIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ShopperRoute
     }
     '/edits/': {
       id: '/edits/'
-      path: '/edits'
+      path: '/'
       fullPath: '/edits/'
       preLoaderRoute: typeof EditsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof EditsRoute
     }
     '/shopper/new': {
       id: '/shopper/new'
-      path: '/shopper/new'
+      path: '/new'
       fullPath: '/shopper/new'
       preLoaderRoute: typeof ShopperNewRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ShopperRoute
     }
     '/product/$handle': {
       id: '/product/$handle'
@@ -227,25 +259,48 @@ declare module '@tanstack/react-router' {
     }
     '/edits/$id': {
       id: '/edits/$id'
-      path: '/edits/$id'
+      path: '/$id'
       fullPath: '/edits/$id'
       preLoaderRoute: typeof EditsIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof EditsRoute
     }
   }
 }
+
+interface EditsRouteChildren {
+  EditsIdRoute: typeof EditsIdRoute
+  EditsIndexRoute: typeof EditsIndexRoute
+}
+
+const EditsRouteChildren: EditsRouteChildren = {
+  EditsIdRoute: EditsIdRoute,
+  EditsIndexRoute: EditsIndexRoute,
+}
+
+const EditsRouteWithChildren = EditsRoute._addFileChildren(EditsRouteChildren)
+
+interface ShopperRouteChildren {
+  ShopperNewRoute: typeof ShopperNewRoute
+  ShopperIndexRoute: typeof ShopperIndexRoute
+}
+
+const ShopperRouteChildren: ShopperRouteChildren = {
+  ShopperNewRoute: ShopperNewRoute,
+  ShopperIndexRoute: ShopperIndexRoute,
+}
+
+const ShopperRouteWithChildren =
+  ShopperRoute._addFileChildren(ShopperRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
   AuthRoute: AuthRoute,
+  EditsRoute: EditsRouteWithChildren,
   SearchRoute: SearchRoute,
   ShopRoute: ShopRoute,
-  EditsIdRoute: EditsIdRoute,
+  ShopperRoute: ShopperRouteWithChildren,
   ProductHandleRoute: ProductHandleRoute,
-  ShopperNewRoute: ShopperNewRoute,
-  EditsIndexRoute: EditsIndexRoute,
-  ShopperIndexRoute: ShopperIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
