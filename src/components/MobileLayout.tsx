@@ -6,8 +6,8 @@ import { useCartSync } from "@/hooks/useCartSync";
 
 const navItems = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/shop", label: "Shop", icon: Sparkles },
-  { to: "/search", label: "Search", icon: Search },
+  { to: "/shop", label: "Shop", icon: Search },
+  { to: "/edits", label: "Edits", icon: Sparkles },
   { to: "/account", label: "Account", icon: User },
 ] as const;
 
