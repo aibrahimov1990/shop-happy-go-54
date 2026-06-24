@@ -1,0 +1,174 @@
+import { useState } from "react";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+
+import { isAdmin, listBroadcasts, sendBroadcast } from "@/lib/push.functions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+
+export const Route = createFileRoute("/admin/broadcast")({
+  component: BroadcastPage,
+  errorComponent: ({ error, reset }) => {
+    const router = useRouter();
+    return (
+      <div className="mx-auto max-w-md p-8 text-center">
+        <h1 className="font-serif text-xl">Something went wrong</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+        <Button
+          className="mt-4"
+          onClick={() => {
+            router.invalidate();
+            reset();
+          }}
+        >
+          Try again
+        </Button>
+      </div>
+    );
+  },
+  notFoundComponent: () => <div className="p-8">Not found</div>,
+});
+
+function BroadcastPage() {
+  const checkAdmin = useServerFn(isAdmin);
+  const fetchBroadcasts = useServerFn(listBroadcasts);
+  const send = useServerFn(sendBroadcast);
+  const qc = useQueryClient();
+
+  const adminQuery = useQuery({
+    queryKey: ["isAdmin"],
+    queryFn: () => checkAdmin(),
+  });
+
+  const broadcastsQuery = useQuery({
+    queryKey: ["broadcasts"],
+    queryFn: () => fetchBroadcasts(),
+    enabled: adminQuery.data?.isAdmin === true,
+  });
+
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [url, setUrl] = useState("");
+
+  const mutation = useMutation({
+    mutationFn: (input: { title: string; body: string; url: string }) =>
+      send({ data: { title: input.title, body: input.body, url: input.url || undefined } }),
+    onSuccess: (res) => {
+      toast.success(
+        `Sent to ${res.successCount} of ${res.totalTokens} device${res.totalTokens === 1 ? "" : "s"}`,
+      );
+      setTitle("");
+      setBody("");
+      setUrl("");
+      qc.invalidateQueries({ queryKey: ["broadcasts"] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  if (adminQuery.isLoading) {
+    return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
+  }
+
+  if (adminQuery.isError || !adminQuery.data?.isAdmin) {
+    return (
+      <div className="mx-auto max-w-md p-8 text-center">
+        <h1 className="font-serif text-2xl">Restricted</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          You need an admin account to send broadcasts.
+        </p>
+        <Link
+          to="/"
+          className="mt-6 inline-flex items-center justify-center bg-foreground px-6 py-3 text-[11px] uppercase tracking-[0.25em] text-background"
+        >
+          Go home
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-10">
+      <h1 className="font-serif text-3xl">Send a push broadcast</h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Sent to every registered iOS and Android device.
+      </p>
+
+      <form
+        className="mt-8 space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!title.trim() || !body.trim()) {
+            toast.error("Title and message are required");
+            return;
+          }
+          if (!confirm(`Send "${title}" to all devices?`)) return;
+          mutation.mutate({ title: title.trim(), body: body.trim(), url: url.trim() });
+        }}
+      >
+        <div>
+          <Label htmlFor="title">Title</Label>
+          <Input
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={120}
+            placeholder="New arrivals just dropped"
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="body">Message</Label>
+          <Textarea
+            id="body"
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            maxLength={500}
+            rows={3}
+            placeholder="Hermès, Chanel and more — shop now before they're gone."
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="url">Open URL (optional)</Label>
+          <Input
+            id="url"
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://shop-happy-go-54.lovable.app/shop"
+          />
+        </div>
+        <Button type="submit" disabled={mutation.isPending} className="w-full">
+          {mutation.isPending ? "Sending…" : "Send broadcast"}
+        </Button>
+      </form>
+
+      <div className="mt-12">
+        <h2 className="font-serif text-xl">Recent broadcasts</h2>
+        <div className="mt-4 space-y-3">
+          {broadcastsQuery.data?.broadcasts.length === 0 && (
+            <p className="text-sm text-muted-foreground">No broadcasts sent yet.</p>
+          )}
+          {broadcastsQuery.data?.broadcasts.map((b) => (
+            <div key={b.id} className="border border-border p-4">
+              <div className="flex items-baseline justify-between gap-4">
+                <p className="font-serif text-base">{b.title}</p>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {new Date(b.created_at).toLocaleString()}
+                </span>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">{b.body}</p>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                ✓ {b.success_count} delivered · ✕ {b.failure_count} failed
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

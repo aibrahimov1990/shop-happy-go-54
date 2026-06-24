@@ -25,6 +25,7 @@ import { Route as EditsIndexRouteImport } from './routes/edits.index'
 import { Route as ShopperNewRouteImport } from './routes/shopper.new'
 import { Route as ProductHandleRouteImport } from './routes/product.$handle'
 import { Route as EditsIdRouteImport } from './routes/edits.$id'
+import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
 
 const WishlistRoute = WishlistRouteImport.update({
   id: '/wishlist',
@@ -106,6 +107,11 @@ const EditsIdRoute = EditsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => EditsRoute,
 } as any)
+const AdminBroadcastRoute = AdminBroadcastRouteImport.update({
+  id: '/admin/broadcast',
+  path: '/admin/broadcast',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/shopper': typeof ShopperRouteWithChildren
   '/terms': typeof TermsRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/broadcast': typeof AdminBroadcastRoute
   '/edits/$id': typeof EditsIdRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
@@ -135,6 +142,7 @@ export interface FileRoutesByTo {
   '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/broadcast': typeof AdminBroadcastRoute
   '/edits/$id': typeof EditsIdRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
@@ -154,6 +162,7 @@ export interface FileRoutesById {
   '/shopper': typeof ShopperRouteWithChildren
   '/terms': typeof TermsRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/broadcast': typeof AdminBroadcastRoute
   '/edits/$id': typeof EditsIdRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
@@ -174,6 +183,7 @@ export interface FileRouteTypes {
     | '/shopper'
     | '/terms'
     | '/wishlist'
+    | '/admin/broadcast'
     | '/edits/$id'
     | '/product/$handle'
     | '/shopper/new'
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/terms'
     | '/wishlist'
+    | '/admin/broadcast'
     | '/edits/$id'
     | '/product/$handle'
     | '/shopper/new'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/shopper'
     | '/terms'
     | '/wishlist'
+    | '/admin/broadcast'
     | '/edits/$id'
     | '/product/$handle'
     | '/shopper/new'
@@ -227,6 +239,7 @@ export interface RootRouteChildren {
   ShopperRoute: typeof ShopperRouteWithChildren
   TermsRoute: typeof TermsRoute
   WishlistRoute: typeof WishlistRoute
+  AdminBroadcastRoute: typeof AdminBroadcastRoute
   ProductHandleRoute: typeof ProductHandleRoute
 }
 
@@ -344,6 +357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EditsIdRouteImport
       parentRoute: typeof EditsRoute
     }
+    '/admin/broadcast': {
+      id: '/admin/broadcast'
+      path: '/admin/broadcast'
+      fullPath: '/admin/broadcast'
+      preLoaderRoute: typeof AdminBroadcastRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -384,6 +404,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShopperRoute: ShopperRouteWithChildren,
   TermsRoute: TermsRoute,
   WishlistRoute: WishlistRoute,
+  AdminBroadcastRoute: AdminBroadcastRoute,
   ProductHandleRoute: ProductHandleRoute,
 }
 export const routeTree = rootRouteImport

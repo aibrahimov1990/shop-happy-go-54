@@ -121,6 +121,10 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    void import("../lib/push-client").then((m) => m.initPushNotifications());
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
