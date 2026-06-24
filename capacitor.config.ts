@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.sellier.app',
+  appId: 'com.sellierknightsbridge.app',
   appName: 'Sellier',
   webDir: 'dist',
   server: {
