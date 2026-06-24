@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      broadcasts: {
+        Row: {
+          body: string
+          created_at: string
+          failure_count: number
+          id: string
+          sent_by: string | null
+          success_count: number
+          title: string
+          url: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          failure_count?: number
+          id?: string
+          sent_by?: string | null
+          success_count?: number
+          title: string
+          url?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          failure_count?: number
+          id?: string
+          sent_by?: string | null
+          success_count?: number
+          title?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
+      device_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          platform: string
+          token: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          platform: string
+          token: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          platform?: string
+          token?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       edit_items: {
         Row: {
           created_at: string
