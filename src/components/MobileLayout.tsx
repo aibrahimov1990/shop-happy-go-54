@@ -20,7 +20,7 @@ export function MobileLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/60">
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/60 pt-[env(safe-area-inset-top)]">
         <div className="flex items-center justify-between px-4 h-14">
           <div className="w-10" />
           <Link to="/" className="leading-none" aria-label="Sellier">
@@ -31,6 +31,7 @@ export function MobileLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
+
 
       <main className="flex-1 pb-20">{children}</main>
 
