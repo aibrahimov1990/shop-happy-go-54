@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as ShopperRouteImport } from './routes/shopper'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SearchRouteImport } from './routes/search'
@@ -22,6 +23,11 @@ import { Route as ShopperNewRouteImport } from './routes/shopper.new'
 import { Route as ProductHandleRouteImport } from './routes/product.$handle'
 import { Route as EditsIdRouteImport } from './routes/edits.$id'
 
+const WishlistRoute = WishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopperRoute = ShopperRouteImport.update({
   id: '/shopper',
   path: '/shopper',
@@ -91,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/shopper': typeof ShopperRouteWithChildren
+  '/wishlist': typeof WishlistRoute
   '/edits/$id': typeof EditsIdRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
+  '/wishlist': typeof WishlistRoute
   '/edits/$id': typeof EditsIdRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
@@ -118,6 +126,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/shopper': typeof ShopperRouteWithChildren
+  '/wishlist': typeof WishlistRoute
   '/edits/$id': typeof EditsIdRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
@@ -134,6 +143,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/shop'
     | '/shopper'
+    | '/wishlist'
     | '/edits/$id'
     | '/product/$handle'
     | '/shopper/new'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/search'
     | '/shop'
+    | '/wishlist'
     | '/edits/$id'
     | '/product/$handle'
     | '/shopper/new'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/shop'
     | '/shopper'
+    | '/wishlist'
     | '/edits/$id'
     | '/product/$handle'
     | '/shopper/new'
@@ -175,11 +187,19 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   ShopRoute: typeof ShopRoute
   ShopperRoute: typeof ShopperRouteWithChildren
+  WishlistRoute: typeof WishlistRoute
   ProductHandleRoute: typeof ProductHandleRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wishlist': {
+      id: '/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shopper': {
       id: '/shopper'
       path: '/shopper'
@@ -300,6 +320,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   ShopRoute: ShopRoute,
   ShopperRoute: ShopperRouteWithChildren,
+  WishlistRoute: WishlistRoute,
   ProductHandleRoute: ProductHandleRoute,
 }
 export const routeTree = rootRouteImport
