@@ -76,7 +76,7 @@ function Home() {
       <section className="relative">
         <div className="aspect-[4/5] w-full bg-muted overflow-hidden">
           <img
-            src="https://www.sellierknightsbridge.com/cdn/shop/files/284A7326_4f723011-a1b3-4f69-8c22-11f0dc09d13a_1x1.jpg?v=1767006707"
+            src="https://www.sellierknightsbridge.com/cdn/shop/files/284A7326_4f723011-a1b3-4f69-8c22-11f0dc09d13a_1000x.jpg"
             alt="The Sellier Edit"
             className="h-full w-full object-cover"
           />
