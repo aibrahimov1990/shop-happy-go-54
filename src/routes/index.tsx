@@ -26,7 +26,12 @@ export const Route = createFileRoute("/")({
 });
 
 async function fetchFeatured(): Promise<ShopifyProduct[]> {
-  const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, { first: 12, query: null });
+  const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
+    first: 12,
+    query: null,
+    sortKey: "CREATED_AT",
+    reverse: true,
+  });
   return res?.data?.products?.edges ?? [];
 }
 
