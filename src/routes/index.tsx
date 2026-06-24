@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
 import { storefrontApiRequest, PRODUCTS_QUERY, type ShopifyProduct } from "@/lib/shopify";
+import sellierLogo from "@/assets/sellier-logo.svg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
