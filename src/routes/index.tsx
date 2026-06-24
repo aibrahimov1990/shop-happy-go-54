@@ -121,14 +121,11 @@ function Home() {
       </section>
 
       <section className="px-6 py-10 border-t border-border/60 text-center">
-        <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-2">
-          Sellier
-        </p>
-        <h3 className="font-serif text-2xl mb-3">Buy now or cry later</h3>
         <p className="text-sm text-muted-foreground max-w-xs mx-auto">
           Hand-selected, authenticated luxury — sourced and styled in Knightsbridge.
         </p>
       </section>
+
     </MobileLayout>
   );
 }
