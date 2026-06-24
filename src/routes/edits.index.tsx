@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Loader2, Mail } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
-export const Route = createFileRoute("/edits")({
+export const Route = createFileRoute("/edits/")({
   head: () => ({
     meta: [
       { title: "My Edits — Sellier Knightsbridge" },

@@ -9,7 +9,7 @@ import { Plus, Loader2, Crown } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/shopper")({
+export const Route = createFileRoute("/shopper/")({
   head: () => ({
     meta: [
       { title: "Shopper — Sellier Knightsbridge" },

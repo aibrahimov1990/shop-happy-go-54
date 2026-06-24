@@ -9,22 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ShopperRouteImport } from './routes/shopper'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SearchRouteImport } from './routes/search'
-import { Route as EditsRouteImport } from './routes/edits'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShopperIndexRouteImport } from './routes/shopper.index'
+import { Route as EditsIndexRouteImport } from './routes/edits.index'
 import { Route as ShopperNewRouteImport } from './routes/shopper.new'
 import { Route as ProductHandleRouteImport } from './routes/product.$handle'
 import { Route as EditsIdRouteImport } from './routes/edits.$id'
 
-const ShopperRoute = ShopperRouteImport.update({
-  id: '/shopper',
-  path: '/shopper',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
@@ -33,11 +28,6 @@ const ShopRoute = ShopRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EditsRoute = EditsRouteImport.update({
-  id: '/edits',
-  path: '/edits',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -55,10 +45,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShopperIndexRoute = ShopperIndexRouteImport.update({
+  id: '/shopper/',
+  path: '/shopper/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EditsIndexRoute = EditsIndexRouteImport.update({
+  id: '/edits/',
+  path: '/edits/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopperNewRoute = ShopperNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => ShopperRoute,
+  id: '/shopper/new',
+  path: '/shopper/new',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProductHandleRoute = ProductHandleRouteImport.update({
   id: '/product/$handle',
@@ -66,47 +66,47 @@ const ProductHandleRoute = ProductHandleRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const EditsIdRoute = EditsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => EditsRoute,
+  id: '/edits/$id',
+  path: '/edits/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
-  '/edits': typeof EditsRouteWithChildren
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
-  '/shopper': typeof ShopperRouteWithChildren
   '/edits/$id': typeof EditsIdRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
+  '/edits/': typeof EditsIndexRoute
+  '/shopper/': typeof ShopperIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
-  '/edits': typeof EditsRouteWithChildren
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
-  '/shopper': typeof ShopperRouteWithChildren
   '/edits/$id': typeof EditsIdRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
+  '/edits': typeof EditsIndexRoute
+  '/shopper': typeof ShopperIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
-  '/edits': typeof EditsRouteWithChildren
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
-  '/shopper': typeof ShopperRouteWithChildren
   '/edits/$id': typeof EditsIdRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
+  '/edits/': typeof EditsIndexRoute
+  '/shopper/': typeof ShopperIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -114,59 +114,54 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/auth'
-    | '/edits'
     | '/search'
     | '/shop'
-    | '/shopper'
     | '/edits/$id'
     | '/product/$handle'
     | '/shopper/new'
+    | '/edits/'
+    | '/shopper/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/account'
     | '/auth'
-    | '/edits'
     | '/search'
     | '/shop'
-    | '/shopper'
     | '/edits/$id'
     | '/product/$handle'
     | '/shopper/new'
+    | '/edits'
+    | '/shopper'
   id:
     | '__root__'
     | '/'
     | '/account'
     | '/auth'
-    | '/edits'
     | '/search'
     | '/shop'
-    | '/shopper'
     | '/edits/$id'
     | '/product/$handle'
     | '/shopper/new'
+    | '/edits/'
+    | '/shopper/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
   AuthRoute: typeof AuthRoute
-  EditsRoute: typeof EditsRouteWithChildren
   SearchRoute: typeof SearchRoute
   ShopRoute: typeof ShopRoute
-  ShopperRoute: typeof ShopperRouteWithChildren
+  EditsIdRoute: typeof EditsIdRoute
   ProductHandleRoute: typeof ProductHandleRoute
+  ShopperNewRoute: typeof ShopperNewRoute
+  EditsIndexRoute: typeof EditsIndexRoute
+  ShopperIndexRoute: typeof ShopperIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/shopper': {
-      id: '/shopper'
-      path: '/shopper'
-      fullPath: '/shopper'
-      preLoaderRoute: typeof ShopperRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/shop': {
       id: '/shop'
       path: '/shop'
@@ -179,13 +174,6 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/edits': {
-      id: '/edits'
-      path: '/edits'
-      fullPath: '/edits'
-      preLoaderRoute: typeof EditsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -209,12 +197,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shopper/': {
+      id: '/shopper/'
+      path: '/shopper'
+      fullPath: '/shopper/'
+      preLoaderRoute: typeof ShopperIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/edits/': {
+      id: '/edits/'
+      path: '/edits'
+      fullPath: '/edits/'
+      preLoaderRoute: typeof EditsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shopper/new': {
       id: '/shopper/new'
-      path: '/new'
+      path: '/shopper/new'
       fullPath: '/shopper/new'
       preLoaderRoute: typeof ShopperNewRouteImport
-      parentRoute: typeof ShopperRoute
+      parentRoute: typeof rootRouteImport
     }
     '/product/$handle': {
       id: '/product/$handle'
@@ -225,44 +227,25 @@ declare module '@tanstack/react-router' {
     }
     '/edits/$id': {
       id: '/edits/$id'
-      path: '/$id'
+      path: '/edits/$id'
       fullPath: '/edits/$id'
       preLoaderRoute: typeof EditsIdRouteImport
-      parentRoute: typeof EditsRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
-
-interface EditsRouteChildren {
-  EditsIdRoute: typeof EditsIdRoute
-}
-
-const EditsRouteChildren: EditsRouteChildren = {
-  EditsIdRoute: EditsIdRoute,
-}
-
-const EditsRouteWithChildren = EditsRoute._addFileChildren(EditsRouteChildren)
-
-interface ShopperRouteChildren {
-  ShopperNewRoute: typeof ShopperNewRoute
-}
-
-const ShopperRouteChildren: ShopperRouteChildren = {
-  ShopperNewRoute: ShopperNewRoute,
-}
-
-const ShopperRouteWithChildren =
-  ShopperRoute._addFileChildren(ShopperRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
   AuthRoute: AuthRoute,
-  EditsRoute: EditsRouteWithChildren,
   SearchRoute: SearchRoute,
   ShopRoute: ShopRoute,
-  ShopperRoute: ShopperRouteWithChildren,
+  EditsIdRoute: EditsIdRoute,
   ProductHandleRoute: ProductHandleRoute,
+  ShopperNewRoute: ShopperNewRoute,
+  EditsIndexRoute: EditsIndexRoute,
+  ShopperIndexRoute: ShopperIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
