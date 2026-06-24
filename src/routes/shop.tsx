@@ -371,11 +371,24 @@ function Shop() {
         ) : products.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-12">No products found.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-x-3 gap-y-6">
-            {products.map((p) => (
-              <ProductCard key={p.node.id} product={p} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 gap-x-3 gap-y-6">
+              {products.map((p) => (
+                <ProductCard key={p.node.id} product={p} />
+              ))}
+            </div>
+            <div ref={sentinelRef} className="h-10" />
+            {isFetchingNextPage && (
+              <div className="flex justify-center py-6">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {!hasNextPage && products.length > 0 && (
+              <p className="text-center text-[10px] uppercase tracking-[0.25em] text-muted-foreground py-8">
+                End of results
+              </p>
+            )}
+          </>
         )}
       </section>
     </MobileLayout>
