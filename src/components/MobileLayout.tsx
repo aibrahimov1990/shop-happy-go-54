@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Search, User, Sparkles, Heart } from "lucide-react";
 import { CartDrawer, CartButton } from "./CartDrawer";
 import { useCartSync } from "@/hooks/useCartSync";
+import sellierLogo from "@/assets/sellier-logo.svg";
 
 const navItems = [
   { to: "/", label: "Home", icon: Home },
@@ -22,8 +23,8 @@ export function MobileLayout({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/60">
         <div className="flex items-center justify-between px-4 h-14">
           <div className="w-10" />
-          <Link to="/" className="font-serif text-2xl tracking-[0.3em] leading-none">
-            SELLIER
+          <Link to="/" className="leading-none" aria-label="Sellier">
+            <img src={sellierLogo} alt="Sellier" className="h-4 w-auto" />
           </Link>
           <div className="w-10 flex justify-end">
             <CartButton onClick={() => setCartOpen(true)} />

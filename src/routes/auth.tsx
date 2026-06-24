@@ -7,6 +7,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Loader2 } from "lucide-react";
+import sellierLogo from "@/assets/sellier-logo.svg";
 
 const searchSchema = z.object({
   next: z.string().optional(),
@@ -73,7 +74,7 @@ function AuthPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
         <div className="w-full max-w-sm">
-          <h1 className="font-serif text-3xl text-center mb-2">SELLIER</h1>
+          <img src={sellierLogo} alt="Sellier" className="h-5 w-auto mx-auto mb-2" />
           <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground text-center mb-10">
             Preloved Luxury
           </p>
