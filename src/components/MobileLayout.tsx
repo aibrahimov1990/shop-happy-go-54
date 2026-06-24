@@ -33,7 +33,7 @@ export function MobileLayout({ children }: { children: ReactNode }) {
       </header>
 
 
-      <main className="flex-1 pb-20">{children}</main>
+      <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))]">{children}</main>
 
       <nav className="fixed bottom-0 inset-x-0 z-40 bg-background border-t border-border/60 pb-[env(safe-area-inset-bottom)]">
         <div className="grid grid-cols-5">
