@@ -86,21 +86,6 @@ function Shop() {
             </button>
           ))}
         </div>
-        <div className="flex gap-1 overflow-x-auto px-4 pb-3 no-scrollbar">
-          {BRANDS.map((b, i) => (
-            <button
-              key={b}
-              onClick={() => setBrandIdx(i)}
-              className={`shrink-0 px-3 py-1 text-[10px] uppercase tracking-[0.18em] rounded-full border transition-colors ${
-                i === brandIdx
-                  ? "bg-foreground text-background border-foreground"
-                  : "border-border text-muted-foreground"
-              }`}
-            >
-              {b}
-            </button>
-          ))}
-        </div>
         <div className="flex items-center justify-between px-4 pb-3">
           <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
             Sort
