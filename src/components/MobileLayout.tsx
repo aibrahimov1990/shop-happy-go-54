@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Search, User, Sparkles, Heart } from "lucide-react";
 import { CartDrawer, CartButton } from "./CartDrawer";
 import { useCartSync } from "@/hooks/useCartSync";
+import sellierLogo from "@/assets/sellier-logo.svg";
 
 const navItems = [
   { to: "/", label: "Home", icon: Home },
