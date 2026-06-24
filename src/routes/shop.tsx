@@ -223,15 +223,30 @@ function Shop() {
     setColours([]);
   };
 
-  // Quick chips for top categories
-  const quickChips: Array<{ label: string; type: string }> = [
-    { label: "Bags", type: "Bag" },
-    { label: "Shoes", type: "Shoes" },
-    { label: "Dresses", type: "Dress" },
-    { label: "Jackets", type: "Jacket" },
-    { label: "Coats", type: "Coat" },
-    { label: "Accessories", type: "Accessories" },
+  // Top category nav
+  const CLOTHING_TYPES = [
+    "Blazer", "Blouse", "Cardigan", "Coat", "Dress", "Gilet", "Jacket", "Jeans",
+    "Jumper", "Jumpsuit", "Shirt", "Shorts", "Skirt", "Sweater", "Swimwear",
+    "Top", "Trousers", "T-Shirt", "Two Piece",
   ];
+  const isAllClothing =
+    types.length === CLOTHING_TYPES.length &&
+    CLOTHING_TYPES.every((t) => types.includes(t));
+  const clothingActive =
+    isAllClothing ||
+    (types.length === 1 && CLOTHING_TYPES.includes(types[0]));
+  const bagsActive = types.length === 1 && types[0] === "Bag";
+  const shoesActive = types.length === 1 && types[0] === "Shoes";
+  const accessoriesActive = types.length === 1 && types[0] === "Accessories";
+  const [clothingOpen, setClothingOpen] = useState(false);
+
+  const navBtn = (active: boolean) =>
+    `shrink-0 px-4 py-2 text-[10px] uppercase tracking-[0.2em] border transition-colors ${
+      active
+        ? "bg-foreground text-background border-foreground"
+        : "border-border text-muted-foreground"
+    }`;
+
 
   return (
     <MobileLayout>
