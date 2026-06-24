@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
 import { storefrontApiRequest, PRODUCTS_QUERY, type ShopifyProduct } from "@/lib/shopify";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X, Loader2 } from "lucide-react";
 
 const PRODUCT_TYPES = [
   "Accessories", "Bag", "Blazer", "Blouse", "Cardigan", "Coat", "Dress", "Gilet",
@@ -165,18 +165,51 @@ function Shop() {
   const query = buildQuery({ types, designers, conditions, colours });
   const activeCount = types.length + designers.length + conditions.length + colours.length;
 
-  const { data: products = [], isLoading } = useQuery({
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ["products", "shop", query, sort.label],
-    queryFn: async (): Promise<ShopifyProduct[]> => {
+    initialPageParam: null as string | null,
+    queryFn: async ({ pageParam }) => {
       const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
-        first: 60,
+        first: 24,
+        after: pageParam,
         query,
         sortKey: sort.sortKey,
         reverse: sort.reverse,
       });
-      return res?.data?.products?.edges ?? [];
+      const products = res?.data?.products;
+      return {
+        edges: (products?.edges ?? []) as ShopifyProduct[],
+        endCursor: products?.pageInfo?.endCursor ?? null,
+        hasNextPage: products?.pageInfo?.hasNextPage ?? false,
+      };
     },
+    getNextPageParam: (last) => (last.hasNextPage ? last.endCursor : undefined),
   });
+
+  const products: ShopifyProduct[] = data?.pages.flatMap((p) => p.edges) ?? [];
+
+  // Infinite scroll sentinel
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "600px" },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const toggle =
     (setter: React.Dispatch<React.SetStateAction<string[]>>) => (v: string) =>
@@ -338,11 +371,24 @@ function Shop() {
         ) : products.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-12">No products found.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-x-3 gap-y-6">
-            {products.map((p) => (
-              <ProductCard key={p.node.id} product={p} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 gap-x-3 gap-y-6">
+              {products.map((p) => (
+                <ProductCard key={p.node.id} product={p} />
+              ))}
+            </div>
+            <div ref={sentinelRef} className="h-10" />
+            {isFetchingNextPage && (
+              <div className="flex justify-center py-6">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {!hasNextPage && products.length > 0 && (
+              <p className="text-center text-[10px] uppercase tracking-[0.25em] text-muted-foreground py-8">
+                End of results
+              </p>
+            )}
+          </>
         )}
       </section>
     </MobileLayout>
