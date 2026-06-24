@@ -72,17 +72,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Secondary hero */}
-      <section className="relative">
-        <div className="aspect-[4/5] w-full bg-muted overflow-hidden">
-          <img
-            src="https://www.sellierknightsbridge.com/cdn/shop/files/284A7326_4f723011-a1b3-4f69-8c22-11f0dc09d13a_1000x.jpg"
-            alt="The Sellier Edit"
-            className="h-full w-full object-cover"
-          />
-        </div>
-      </section>
-
       {/* Tagline strip */}
       <div className="text-center py-6 px-6 border-b border-border/60">
         <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-1">Sellier</p>
