@@ -256,23 +256,64 @@ function Shop() {
 
       <div className="sticky top-14 z-30 bg-background/95 backdrop-blur-sm border-b border-border/60">
         <div className="flex gap-1 overflow-x-auto px-4 py-3 no-scrollbar">
-          {quickChips.map((c) => {
-            const active = types.length === 1 && types[0] === c.type;
-            return (
-              <button
-                key={c.label}
-                onClick={() => setTypes(active ? [] : [c.type])}
-                className={`shrink-0 px-4 py-1.5 text-[10px] uppercase tracking-[0.2em] border transition-colors ${
-                  active
-                    ? "bg-foreground text-background border-foreground"
-                    : "border-border text-muted-foreground"
-                }`}
-              >
-                {c.label}
+          <button
+            onClick={() => setTypes(bagsActive ? [] : ["Bag"])}
+            className={navBtn(bagsActive)}
+          >
+            Bags
+          </button>
+          <Popover open={clothingOpen} onOpenChange={setClothingOpen}>
+            <PopoverTrigger asChild>
+              <button className={`${navBtn(clothingActive)} inline-flex items-center gap-1`}>
+                Clothing
+                <ChevronDown className="h-3 w-3" />
               </button>
-            );
-          })}
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-56 p-2">
+              <button
+                onClick={() => {
+                  setTypes(isAllClothing ? [] : CLOTHING_TYPES);
+                  setClothingOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 text-[11px] uppercase tracking-[0.18em] hover:bg-muted"
+              >
+                All Clothing
+              </button>
+              <div className="max-h-72 overflow-y-auto mt-1 border-t border-border/60 pt-1">
+                {CLOTHING_TYPES.map((t) => {
+                  const active = types.length === 1 && types[0] === t;
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => {
+                        setTypes(active ? [] : [t]);
+                        setClothingOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-muted ${
+                        active ? "font-medium" : ""
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
+          <button
+            onClick={() => setTypes(shoesActive ? [] : ["Shoes"])}
+            className={navBtn(shoesActive)}
+          >
+            Shoes
+          </button>
+          <button
+            onClick={() => setTypes(accessoriesActive ? [] : ["Accessories"])}
+            className={navBtn(accessoriesActive)}
+          >
+            Accessories
+          </button>
         </div>
+
         <div className="flex items-center justify-between px-4 pb-3 gap-3">
           <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
             <SheetTrigger asChild>
