@@ -75,7 +75,7 @@ function Home() {
 
       {/* Tagline strip */}
       <div className="text-center py-6 px-6 border-b border-border/60">
-        <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-1">Sellier</p>
+        <img src={sellierLogo} alt="Sellier" className="h-3 w-auto mx-auto mb-2 opacity-70" />
         <h2 className="font-serif text-2xl">Buy now or cry later</h2>
       </div>
 
