@@ -115,11 +115,76 @@ function Home() {
         )}
       </section>
 
-      <section className="px-6 py-10 border-t border-border/60 text-center">
-        <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-          Hand-selected, authenticated luxury — sourced and styled in Knightsbridge.
-        </p>
+      {/* As featured in */}
+      <section className="bg-muted/40 px-6 py-12 text-center">
+        <h3 className="text-xs uppercase tracking-[0.4em] mb-8">As Featured In</h3>
+        <div className="grid grid-cols-2 gap-y-8 gap-x-6 items-center justify-items-center">
+          <span className="font-serif italic text-lg">marie claire</span>
+          <span className="font-serif tracking-widest text-lg">BAZAAR</span>
+          <span className="font-serif italic text-xl">Forbes</span>
+          <span className="font-serif tracking-[0.2em] text-xl">ELLE</span>
+          <span className="font-serif tracking-[0.15em] text-lg">VOGUE</span>
+          <span className="font-black tracking-tighter text-xl">WWD</span>
+          <span className="font-serif text-xs leading-tight">THE TIMES<br/>THE SUNDAY TIMES</span>
+          <span className="font-serif italic text-base">Daily Mail</span>
+          <span className="font-serif italic text-lg">Büro 24/7</span>
+          <span className="font-black tracking-tight text-lg">HELLO!</span>
+        </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-[#f5f1ea] px-6 py-12 space-y-10">
+        <div>
+          <h2 className="font-serif text-3xl tracking-wide mb-8">SELLIER</h2>
+          <h4 className="font-semibold text-sm mb-3">Knightsbridge Consignment Store</h4>
+          <p className="text-sm text-foreground/80 leading-relaxed mb-3">
+            Located in the heart of Knightsbridge we promise you the finest luxury ready-to-wear, handbags, shoes and accessories.
+          </p>
+          <p className="text-sm text-foreground/80 leading-relaxed">
+            Sell your items with us today - we pay cash.
+          </p>
+        </div>
+
+        <div>
+          <h4 className="font-semibold text-base mb-5">Shop All</h4>
+          <ul className="space-y-3 text-sm">
+            <li><Link to="/shop" search={{ category: "bags" } as any}>Bags</Link></li>
+            <li><Link to="/shop" search={{ category: "clothing" } as any}>Clothing</Link></li>
+            <li><Link to="/shop" search={{ category: "shoes" } as any}>Shoes</Link></li>
+            <li><Link to="/shop" search={{ category: "accessories" } as any}>Accessories</Link></li>
+            <li><a href="#">Terms &amp; Conditions</a></li>
+            <li><a href="#">Refund policy</a></li>
+            <li><a href="#">Sell With Us</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="font-semibold text-base mb-4">Newsletter</h4>
+          <p className="text-sm text-foreground/80 mb-5">
+            Subscribe to receive updates, access to exclusive deals and more.
+          </p>
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="space-y-3"
+          >
+            <input
+              type="email"
+              placeholder="Enter your email address"
+              className="w-full bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="w-full bg-foreground text-background py-4 text-[11px] uppercase tracking-[0.3em]"
+            >
+              Subscribe
+            </button>
+          </form>
+          <div className="mt-8 text-sm text-foreground/80 space-y-1">
+            <p>020 7581 2380</p>
+            <p>6 Cheval Place, London, England, United Kingdom</p>
+          </div>
+        </div>
+      </footer>
 
     </MobileLayout>
   );
