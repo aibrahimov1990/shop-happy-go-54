@@ -68,7 +68,7 @@ export const PRODUCTS_QUERY = `
           handle
           vendor
           priceRange { minVariantPrice { amount currencyCode } }
-          images(first: 5) { edges { node { url altText } } }
+          images(first: 5) { edges { node { url(transform: { preferredContentType: JPG }) altText } } }
           variants(first: 10) {
             edges {
               node {
@@ -96,7 +96,7 @@ export const PRODUCT_BY_HANDLE_QUERY = `
       handle
       vendor
       priceRange { minVariantPrice { amount currencyCode } }
-      images(first: 10) { edges { node { url altText } } }
+      images(first: 10) { edges { node { url(transform: { preferredContentType: JPG }) altText } } }
       variants(first: 25) {
         edges {
           node {
