@@ -1,12 +1,13 @@
 import { useState, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Search, User, Sparkles } from "lucide-react";
+import { Home, Search, User, Sparkles, Heart } from "lucide-react";
 import { CartDrawer, CartButton } from "./CartDrawer";
 import { useCartSync } from "@/hooks/useCartSync";
 
 const navItems = [
   { to: "/", label: "Home", icon: Home },
   { to: "/shop", label: "Shop", icon: Search },
+  { to: "/wishlist", label: "Wishlist", icon: Heart },
   { to: "/edits", label: "Edits", icon: Sparkles },
   { to: "/account", label: "Account", icon: User },
 ] as const;
@@ -33,7 +34,7 @@ export function MobileLayout({ children }: { children: ReactNode }) {
       <main className="flex-1 pb-20">{children}</main>
 
       <nav className="fixed bottom-0 inset-x-0 z-40 bg-background border-t border-border/60 pb-[env(safe-area-inset-bottom)]">
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-5">
           {navItems.map(({ to, label, icon: Icon }) => {
             const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
             return (
