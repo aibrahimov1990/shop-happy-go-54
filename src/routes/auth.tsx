@@ -7,6 +7,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Loader2 } from "lucide-react";
+import sellierLogo from "@/assets/sellier-logo.svg";
 
 const searchSchema = z.object({
   next: z.string().optional(),
