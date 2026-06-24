@@ -124,9 +124,9 @@ function Home() {
 
         <div>
           <ul className="space-y-3 text-sm">
-            <li><a href="#">Terms &amp; Conditions</a></li>
-            <li><a href="#">Refund policy</a></li>
-            <li><a href="#">Sell With Us</a></li>
+            <li><Link to="/terms">Terms &amp; Conditions</Link></li>
+            <li><Link to="/refund-policy">Refund policy</Link></li>
+            <li><Link to="/sell-with-us">Sell With Us</Link></li>
           </ul>
         </div>
 
