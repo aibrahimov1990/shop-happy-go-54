@@ -38,17 +38,20 @@ function Home() {
 
   return (
     <MobileLayout>
+      {/* Announcement bar */}
+      <div className="bg-foreground text-background text-center py-2 text-[10px] uppercase tracking-[0.25em]">
+        Authentic Superbrands · Worldwide Shipping · Fastest Finger First
+      </div>
+
       {/* Hero */}
       <section className="relative">
         <div className="aspect-[3/4] w-full bg-muted overflow-hidden">
-          {products[0]?.node.images.edges[0]?.node ? (
-            <img
-              src={products[0].node.images.edges[0].node.url}
-              alt="Sellier featured piece"
-              className="h-full w-full object-cover"
-            />
-          ) : null}
-          <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 via-transparent to-transparent" />
+          <img
+            src="https://www.sellierknightsbridge.com/cdn/shop/files/284A3741_1x1.jpg?v=1767006884"
+            alt="Sellier Knightsbridge — Authentic Superbrands"
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 via-foreground/10 to-transparent" />
         </div>
         <div className="absolute bottom-8 left-0 right-0 px-6 text-background">
           <p className="text-[10px] uppercase tracking-[0.3em] mb-2 opacity-90">
@@ -64,10 +67,23 @@ function Home() {
         </div>
       </section>
 
-      {/* Banner */}
-      <div className="bg-foreground text-background text-center py-2 text-[10px] uppercase tracking-[0.25em]">
-        Worldwide shipping · Fastest finger first
+      {/* Secondary hero */}
+      <section className="relative">
+        <div className="aspect-[4/5] w-full bg-muted overflow-hidden">
+          <img
+            src="https://www.sellierknightsbridge.com/cdn/shop/files/284A7326_4f723011-a1b3-4f69-8c22-11f0dc09d13a_1x1.jpg?v=1767006707"
+            alt="The Sellier Edit"
+            className="h-full w-full object-cover"
+          />
+        </div>
+      </section>
+
+      {/* Tagline strip */}
+      <div className="text-center py-6 px-6 border-b border-border/60">
+        <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-1">Sellier</p>
+        <h2 className="font-serif text-2xl">Buy now or cry later</h2>
       </div>
+
 
       {/* Featured grid */}
       <section className="px-4 py-8">
@@ -105,14 +121,11 @@ function Home() {
       </section>
 
       <section className="px-6 py-10 border-t border-border/60 text-center">
-        <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-2">
-          Sellier
-        </p>
-        <h3 className="font-serif text-2xl mb-3">Buy now or cry later</h3>
         <p className="text-sm text-muted-foreground max-w-xs mx-auto">
           Hand-selected, authenticated luxury — sourced and styled in Knightsbridge.
         </p>
       </section>
+
     </MobileLayout>
   );
 }
