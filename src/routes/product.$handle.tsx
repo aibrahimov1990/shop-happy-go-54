@@ -167,14 +167,17 @@ function ProductPage() {
           )}
         </button>
 
-        {data.description && (
+        {(data.descriptionHtml || data.description) && (
           <div className="mt-8 pt-6 border-t border-border/60">
             <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-3">
               Details
             </p>
-            <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/80">
-              {data.description}
-            </p>
+            <div
+              className="product-description text-sm leading-relaxed text-foreground/80"
+              dangerouslySetInnerHTML={{
+                __html: data.descriptionHtml || data.description,
+              }}
+            />
           </div>
         )}
       </div>
