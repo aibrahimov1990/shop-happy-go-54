@@ -7,23 +7,16 @@ import { useState } from "react";
 
 const CATEGORIES = [
   { label: "All", query: null },
-  { label: "Bags", query: "product_type:Bags OR title:bag" },
-  { label: "Shoes", query: "product_type:Shoes OR title:shoes" },
-  { label: "Clothing", query: "product_type:Clothing" },
-  { label: "Accessories", query: "product_type:Accessories" },
-];
-
-const BRANDS = [
-  "All",
-  "Chanel",
-  "Hermès",
-  "Louis Vuitton",
-  "Gucci",
-  "Prada",
-  "Dior",
-  "Celine",
-  "Bottega Veneta",
-  "Saint Laurent",
+  { label: "Bags", query: 'product_type:Bag' },
+  { label: "Shoes", query: 'product_type:Shoes OR product_type:SHOES' },
+  { label: "Coats", query: 'product_type:Coat' },
+  { label: "Jackets", query: 'product_type:Jacket' },
+  { label: "Dresses", query: 'product_type:Dress' },
+  { label: "Tops", query: 'product_type:Top OR product_type:"Shirts & Tops"' },
+  { label: "Knitwear", query: 'product_type:Jumper OR product_type:Cardigan' },
+  { label: "Trousers", query: 'product_type:Trousers OR product_type:Jeans' },
+  { label: "Sets", query: 'product_type:Set' },
+  { label: "Accessories", query: 'product_type:Accessories' },
 ];
 
 const SORTS = [
@@ -53,24 +46,17 @@ export const Route = createFileRoute("/shop")({
 
 function Shop() {
   const [activeIdx, setActiveIdx] = useState(0);
-  const [brandIdx, setBrandIdx] = useState(0);
   const [sortIdx, setSortIdx] = useState(0);
 
   const cat = CATEGORIES[activeIdx];
-  const brand = BRANDS[brandIdx];
   const sort = SORTS[sortIdx];
 
-  const parts: string[] = [];
-  if (cat.query) parts.push(`(${cat.query})`);
-  if (brand !== "All") parts.push(`vendor:"${brand}"`);
-  const query = parts.length ? parts.join(" AND ") : null;
-
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ["products", "shop", cat.label, brand, sort.label],
+    queryKey: ["products", "shop", cat.label, sort.label],
     queryFn: async (): Promise<ShopifyProduct[]> => {
       const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
         first: 40,
-        query,
+        query: cat.query,
         sortKey: sort.sortKey,
         reverse: sort.reverse,
       });
