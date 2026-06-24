@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Loader2 } from "lucide-react";
+import { Mail, Loader2, ArrowLeft } from "lucide-react";
 import sellierLogo from "@/assets/sellier-logo.svg";
+
 
 const searchSchema = z.object({
   next: z.string().optional(),
