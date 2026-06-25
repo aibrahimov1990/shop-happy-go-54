@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { persistNativeSession } from "@/lib/native-session";
 
 const NATIVE_AUTH_REDIRECT_URI = "com.sellierknightsbridge.app://auth-callback";
+const WEBVIEW_AUTH_REDIRECT_PATH = "/auth";
 const OAUTH_STATE_KEY = "sellier_native_oauth_state";
 const POST_AUTH_REDIRECT_KEY = "post_auth_redirect";
 
@@ -45,6 +46,20 @@ function getParamsFromUrl(url: string) {
     new URLSearchParams(hash).forEach((value, key) => params.set(key, value));
   }
   return { parsed, params };
+}
+
+function buildOAuthUrl(provider: OAuthProvider, redirectUri: string, state: string) {
+  const params = new URLSearchParams({
+    provider,
+    redirect_uri: redirectUri,
+    state,
+  });
+  return `${window.location.origin}/~oauth/initiate?${params.toString()}`;
+}
+
+function openOAuthInCurrentWebView(provider: OAuthProvider, state: string) {
+  const redirectUri = `${window.location.origin}${WEBVIEW_AUTH_REDIRECT_PATH}`;
+  window.location.assign(buildOAuthUrl(provider, redirectUri, state));
 }
 
 function isAuthCallbackUrl(url: string) {
@@ -107,23 +122,30 @@ export async function completeAuthFromUrl(url: string): Promise<string | null> {
 export async function startNativeGoogleSignIn(next?: string) {
   if (!isNativeApp()) return false;
 
-  const { Browser } = await import("@capacitor/browser");
   const state = generateState();
   sessionStorage.setItem(OAUTH_STATE_KEY, state);
   sessionStorage.setItem(POST_AUTH_REDIRECT_KEY, safePath(next));
 
-  const params = new URLSearchParams({
-    provider: "google" satisfies OAuthProvider,
-    redirect_uri: NATIVE_AUTH_REDIRECT_URI,
-    state,
-  });
-  const oauthUrl = `${window.location.origin}/~oauth/initiate?${params.toString()}`;
+  const provider = "google" satisfies OAuthProvider;
+  const oauthUrl = buildOAuthUrl(provider, NATIVE_AUTH_REDIRECT_URI, state);
 
-  await Browser.open({
-    url: oauthUrl,
-    presentationStyle: "fullscreen",
-    toolbarColor: "#f7f4ec",
-  });
+  if (!Capacitor.isPluginAvailable("Browser")) {
+    console.warn("Capacitor Browser plugin unavailable; using webview sign-in fallback.");
+    openOAuthInCurrentWebView(provider, state);
+    return true;
+  }
+
+  try {
+    const { Browser } = await import("@capacitor/browser");
+    await Browser.open({
+      url: oauthUrl,
+      presentationStyle: "fullscreen",
+      toolbarColor: "#f7f4ec",
+    });
+  } catch (err) {
+    console.warn("Capacitor Browser plugin failed; using webview sign-in fallback.", err);
+    openOAuthInCurrentWebView(provider, state);
+  }
   return true;
 }
 
@@ -135,7 +157,7 @@ export async function installNativeAuthDeepLinkHandler(onSignedIn?: (path: strin
     try {
       const redirectPath = await completeAuthFromUrl(url);
       if (!redirectPath) return;
-      if (isNativeApp()) {
+      if (isNativeApp() && Capacitor.isPluginAvailable("Browser")) {
         const { Browser } = await import("@capacitor/browser");
         await Browser.close().catch(() => undefined);
       }
@@ -150,10 +172,19 @@ export async function installNativeAuthDeepLinkHandler(onSignedIn?: (path: strin
   if (!isNativeApp() || deepLinkHandlerInstalled) return;
   deepLinkHandlerInstalled = true;
 
-  const { App } = await import("@capacitor/app");
-  const launch = await App.getLaunchUrl();
-  await finish(launch?.url);
-  await App.addListener("appUrlOpen", (event) => {
-    void finish(event.url);
-  });
+  if (!Capacitor.isPluginAvailable("App")) {
+    console.warn("Capacitor App plugin unavailable; native deep-link callbacks are disabled.");
+    return;
+  }
+
+  try {
+    const { App } = await import("@capacitor/app");
+    const launch = await App.getLaunchUrl();
+    await finish(launch?.url);
+    await App.addListener("appUrlOpen", (event) => {
+      void finish(event.url);
+    });
+  } catch (err) {
+    console.warn("Capacitor App plugin failed to install the auth callback listener.", err);
+  }
 }
