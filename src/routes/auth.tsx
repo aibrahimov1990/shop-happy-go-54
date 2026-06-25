@@ -57,6 +57,9 @@ function AuthPage() {
 
   const handleGoogle = async () => {
     try {
+      if (next && typeof window !== "undefined") {
+        sessionStorage.setItem("post_auth_redirect", next);
+      }
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
@@ -65,7 +68,9 @@ function AuthPage() {
         return;
       }
       if (result.redirected) return;
-      navigate({ to: next ?? "/edits" });
+      const stored = typeof window !== "undefined" ? sessionStorage.getItem("post_auth_redirect") : null;
+      if (stored) sessionStorage.removeItem("post_auth_redirect");
+      navigate({ to: stored ?? next ?? "/edits" });
     } catch (err: any) {
       toast.error(err.message ?? "Sign-in failed");
     }
