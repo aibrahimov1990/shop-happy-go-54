@@ -131,9 +131,6 @@ function installLocalStorageMirror(Preferences: typeof import("@capacitor/prefer
   storageMirrorInstalled = true;
 
   const originalSetItem = Storage.prototype.setItem;
-  const originalRemoveItem = Storage.prototype.removeItem;
-  const originalClear = Storage.prototype.clear;
-
   Storage.prototype.setItem = function setItem(key: string, value: string) {
     originalSetItem.call(this, key, value);
 
@@ -141,24 +138,6 @@ function installLocalStorageMirror(Preferences: typeof import("@capacitor/prefer
       void writeNativeSessionCopy(Preferences, { storageKey: key, storageValue: value }).catch((err) => {
         console.warn("Failed to mirror auth storage", err);
       });
-    }
-  };
-
-  Storage.prototype.removeItem = function removeItem(key: string) {
-    originalRemoveItem.call(this, key);
-
-    if (this === window.localStorage && isAuthStorageKey(key)) {
-      void Preferences.remove({ key: PREFS_STORAGE_KEY });
-      void Preferences.remove({ key: LEGACY_PREFS_KEY });
-    }
-  };
-
-  Storage.prototype.clear = function clear() {
-    originalClear.call(this);
-
-    if (this === window.localStorage) {
-      void Preferences.remove({ key: PREFS_STORAGE_KEY });
-      void Preferences.remove({ key: LEGACY_PREFS_KEY });
     }
   };
 }
