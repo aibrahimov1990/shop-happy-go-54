@@ -126,12 +126,14 @@ function RootComponent() {
   const [nativeSessionReady, setNativeSessionReady] = useState(false);
 
   useEffect(() => {
-    void import("../lib/push-client").then((m) => m.initPushNotifications());
     let mounted = true;
     void import("../lib/native-session")
       .then((m) => m.initNativeSessionPersistence())
       .finally(() => {
-        if (mounted) setNativeSessionReady(true);
+        if (mounted) {
+          setNativeSessionReady(true);
+          void import("../lib/push-client").then((m) => m.initPushNotifications());
+        }
       });
 
     return () => {

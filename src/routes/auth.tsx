@@ -29,16 +29,18 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { next } = useSearch({ from: "/auth" });
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { session, user, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
-      navigate({ to: next ?? "/account" });
+      void import("@/lib/native-session")
+        .then((m) => m.persistNativeSession(session))
+        .finally(() => navigate({ to: next ?? "/account" }));
     }
-  }, [loading, navigate, next, user]);
+  }, [loading, navigate, next, session, user]);
 
   const redirectTo = typeof window !== "undefined"
     ? `${window.location.origin}${next ?? "/edits"}`
@@ -76,6 +78,9 @@ function AuthPage() {
         return;
       }
       if (result.redirected) return;
+      const { data } = await supabase.auth.getSession();
+      const { persistNativeSession } = await import("@/lib/native-session");
+      await persistNativeSession(data.session);
       const stored = typeof window !== "undefined" ? sessionStorage.getItem("post_auth_redirect") : null;
       if (stored) sessionStorage.removeItem("post_auth_redirect");
       navigate({ to: stored ?? next ?? "/edits" });

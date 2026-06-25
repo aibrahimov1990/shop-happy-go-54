@@ -70,6 +70,8 @@ export function useAuth(): AuthState & {
     isAdmin: roles.includes("admin"),
     signOut: async () => {
       await supabase.auth.signOut();
+      const { clearNativeSessionPersistence } = await import("@/lib/native-session");
+      await clearNativeSessionPersistence();
     },
   };
 }
