@@ -14,9 +14,9 @@ export const registerDeviceToken = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => registerSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const { userId } = context;
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
+    const { userId, supabase } = context;
+    // Use the user-scoped client so the insert passes RLS as the authenticated user.
+    const { error } = await supabase
       .from("device_tokens")
       .upsert(
         { token: data.token, platform: data.platform, user_id: userId, updated_at: new Date().toISOString() },
