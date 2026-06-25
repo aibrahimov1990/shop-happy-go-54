@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2, X, Plus, Check } from "lucide-react";
 import { toast } from "sonner";
 import { sendTransactionalEmail } from "@/lib/email/send";
+import { notifyEditRecipient } from "@/lib/push.functions";
 
 export const Route = createFileRoute("/shopper/new")({
   head: () => ({ meta: [{ title: "New edit — Sellier" }] }),
@@ -140,6 +141,19 @@ function NewEdit() {
         } catch (emailErr: any) {
           console.error("Failed to send edit email", emailErr);
           toast.warning("Edit saved, but email could not be sent");
+        }
+
+        try {
+          await notifyEditRecipient({
+            data: {
+              editId: edit.id,
+              clientEmail: clientEmail.trim().toLowerCase(),
+              title: "New edit from Sellier",
+              body: title.trim(),
+            },
+          });
+        } catch (pushErr) {
+          console.error("Failed to send edit push notification", pushErr);
         }
       }
 

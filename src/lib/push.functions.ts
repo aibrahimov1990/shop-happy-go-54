@@ -128,3 +128,71 @@ export const isAdmin = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return { isAdmin: Boolean(data) };
   });
+
+const editNotifySchema = z.object({
+  editId: z.string().uuid(),
+  clientEmail: z.string().email(),
+  title: z.string().min(1).max(120),
+  body: z.string().min(1).max(500),
+});
+
+/**
+ * Push-notify the client recipient of an edit. Requires the caller to own
+ * the edit. No-ops if the recipient hasn't signed into the app on a device.
+ */
+export const notifyEditRecipient = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => editNotifySchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    const { data: edit, error: editErr } = await supabase
+      .from("edits")
+      .select("id, shopper_id")
+      .eq("id", data.editId)
+      .maybeSingle();
+    if (editErr) throw new Error(editErr.message);
+    if (!edit || edit.shopper_id !== userId) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .ilike("email", data.clientEmail)
+      .maybeSingle();
+
+    if (!profile) return { notified: false, reason: "no_account", successCount: 0 };
+
+    const { data: tokenRows, error: tokenErr } = await supabaseAdmin
+      .from("device_tokens")
+      .select("token")
+      .eq("user_id", profile.id);
+    if (tokenErr) throw new Error(tokenErr.message);
+
+    const tokens = (tokenRows ?? []).map((r) => r.token);
+    if (tokens.length === 0) {
+      return { notified: false, reason: "no_devices", successCount: 0 };
+    }
+
+    const { sendFcmToTokens } = await import("./fcm.server");
+    const results = await sendFcmToTokens(tokens, {
+      title: data.title,
+      body: data.body,
+      url: `/edits/${data.editId}`,
+    });
+
+    const invalidTokens: string[] = [];
+    let successCount = 0;
+    for (const r of results) {
+      if (r.ok) successCount++;
+      else if (r.error && /UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND/i.test(r.error)) {
+        invalidTokens.push(r.token);
+      }
+    }
+    if (invalidTokens.length > 0) {
+      await supabaseAdmin.from("device_tokens").delete().in("token", invalidTokens);
+    }
+
+    return { notified: successCount > 0, successCount };
+  });
