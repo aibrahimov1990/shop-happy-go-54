@@ -15,6 +15,11 @@ type MirroredAuthStorage = {
   storageValue: string;
 };
 
+type MirroredSession = {
+  access_token: string;
+  refresh_token: string;
+};
+
 let initPromise: Promise<void> | null = null;
 
 function isNative(): boolean {
@@ -86,7 +91,7 @@ export async function initNativeSessionPersistence() {
         } else {
           // Backwards-compatible restore for users who installed the previous build.
           const legacy = await Preferences.get({ key: LEGACY_PREFS_KEY });
-          const parsed = safeJsonParse<{ access_token?: string; refresh_token?: string }>(legacy.value);
+          const parsed = safeJsonParse<Partial<MirroredSession>>(legacy.value);
           if (parsed?.access_token && parsed?.refresh_token) {
             await supabase.auth.setSession({
               access_token: parsed.access_token,
@@ -96,26 +101,36 @@ export async function initNativeSessionPersistence() {
         }
       }
 
-      const mirrorCurrentSession = async () => {
+      const mirrorCurrentSession = async (session?: MirroredSession | null) => {
         const authStorage = readCurrentAuthStorage();
-        if (!authStorage) return;
+        if (authStorage) {
+          await Preferences.set({
+            key: PREFS_STORAGE_KEY,
+            value: JSON.stringify(authStorage),
+          });
+        }
 
-        await Preferences.set({
-          key: PREFS_STORAGE_KEY,
-          value: JSON.stringify(authStorage),
-        });
+        if (session?.access_token && session.refresh_token) {
+          await Preferences.set({
+            key: LEGACY_PREFS_KEY,
+            value: JSON.stringify({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token,
+            }),
+          });
+        }
       };
 
       // Make sure a valid restored/refreshable session is written in the new format.
       const { data } = await supabase.auth.getSession();
-      if (data.session) await mirrorCurrentSession();
+      if (data.session) await mirrorCurrentSession(data.session);
 
       // 2. Mirror future auth changes into Preferences. Do not delete the native
       // copy on INITIAL_SESSION null; only an explicit sign-out should clear it.
       supabase.auth.onAuthStateChange(async (event, session) => {
         try {
           if (session) {
-            await mirrorCurrentSession();
+            await mirrorCurrentSession(session);
             return;
           }
 
