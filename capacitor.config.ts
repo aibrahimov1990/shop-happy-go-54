@@ -8,6 +8,22 @@ const config: CapacitorConfig = {
     url: 'https://shop-happy-go-54.lovable.app?forceHideBadge=true',
     cleartext: false,
   },
+  plugins: {
+    FirebaseMessaging: {
+      presentationOptions: ['alert', 'badge', 'sound'],
+    },
+  },
+  experimental: {
+    ios: {
+      spm: {
+        packageOptions: {
+          '@capacitor-firebase/messaging': {
+            symlink: true,
+          },
+        },
+      },
+    },
+  },
 };
 
 export default config;
