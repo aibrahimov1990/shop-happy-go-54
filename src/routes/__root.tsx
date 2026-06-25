@@ -125,6 +125,7 @@ function RootComponent() {
 
   useEffect(() => {
     void import("../lib/push-client").then((m) => m.initPushNotifications());
+    void import("../lib/native-session").then((m) => m.initNativeSessionPersistence());
   }, []);
 
   useEffect(() => {
