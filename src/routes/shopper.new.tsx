@@ -117,6 +117,32 @@ function NewEdit() {
       const { error: itemsErr } = await supabase.from("edit_items").insert(rows);
       if (itemsErr) throw itemsErr;
 
+      if (sendNow) {
+        try {
+          const origin =
+            typeof window !== "undefined" ? window.location.origin : "https://sellierknightsbridge.com";
+          await sendTransactionalEmail({
+            templateName: "edit-invitation",
+            recipientEmail: clientEmail.trim().toLowerCase(),
+            idempotencyKey: `edit-${edit.id}`,
+            templateData: {
+              editTitle: title.trim(),
+              note: note.trim() || null,
+              shopperName: user.email ?? "Your Sellier shopper",
+              items: items.map((i) => ({
+                title: i.title,
+                imageUrl: i.imageUrl,
+                priceFormatted: formatPrice(i.priceAmount, i.priceCurrency),
+              })),
+              viewUrl: `${origin}/edits/${edit.id}`,
+            },
+          });
+        } catch (emailErr: any) {
+          console.error("Failed to send edit email", emailErr);
+          toast.warning("Edit saved, but email could not be sent");
+        }
+      }
+
       toast.success(sendNow ? "Edit sent" : "Edit saved as draft");
       navigate({ to: "/shopper" });
     } catch (e: any) {
