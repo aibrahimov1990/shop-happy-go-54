@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Loader2, ArrowLeft } from "lucide-react";
 import sellierLogo from "@/assets/sellier-logo.svg";
+import { useAuth } from "@/hooks/useAuth";
 
 
 const searchSchema = z.object({
@@ -28,9 +29,16 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { next } = useSearch({ from: "/auth" });
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate({ to: next ?? "/account" });
+    }
+  }, [loading, navigate, next, user]);
 
   const redirectTo = typeof window !== "undefined"
     ? `${window.location.origin}${next ?? "/edits"}`

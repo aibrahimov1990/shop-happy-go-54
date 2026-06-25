@@ -7,12 +7,13 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
+import sellierLogo from "@/assets/sellier-logo.svg";
 
 function NotFoundComponent() {
   return (
@@ -122,13 +123,25 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  const [nativeSessionReady, setNativeSessionReady] = useState(false);
 
   useEffect(() => {
     void import("../lib/push-client").then((m) => m.initPushNotifications());
-    void import("../lib/native-session").then((m) => m.initNativeSessionPersistence());
+    let mounted = true;
+    void import("../lib/native-session")
+      .then((m) => m.initNativeSessionPersistence())
+      .finally(() => {
+        if (mounted) setNativeSessionReady(true);
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
+    if (!nativeSessionReady) return;
+
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN") {
         const stored = sessionStorage.getItem("post_auth_redirect");
@@ -139,7 +152,15 @@ function RootComponent() {
       }
     });
     return () => sub.subscription.unsubscribe();
-  }, [router]);
+  }, [nativeSessionReady, router]);
+
+  if (!nativeSessionReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-6">
+        <img src={sellierLogo} alt="Sellier" className="h-6 w-auto" />
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
