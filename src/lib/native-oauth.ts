@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { persistNativeSession } from "@/lib/native-session";
 
 const NATIVE_AUTH_REDIRECT_URI = "com.sellierknightsbridge.app://auth-callback";
+const WEBVIEW_AUTH_REDIRECT_PATH = "/auth";
 const OAUTH_STATE_KEY = "sellier_native_oauth_state";
 const POST_AUTH_REDIRECT_KEY = "post_auth_redirect";
 
@@ -54,6 +55,11 @@ function buildOAuthUrl(provider: OAuthProvider, redirectUri: string, state: stri
     state,
   });
   return `${window.location.origin}/~oauth/initiate?${params.toString()}`;
+}
+
+function openOAuthInCurrentWebView(provider: OAuthProvider, state: string) {
+  const redirectUri = `${window.location.origin}${WEBVIEW_AUTH_REDIRECT_PATH}`;
+  window.location.assign(buildOAuthUrl(provider, redirectUri, state));
 }
 
 function isAuthCallbackUrl(url: string) {
@@ -120,7 +126,26 @@ export async function startNativeGoogleSignIn(next?: string) {
   sessionStorage.setItem(OAUTH_STATE_KEY, state);
   sessionStorage.setItem(POST_AUTH_REDIRECT_KEY, safePath(next));
 
-  window.location.assign(buildOAuthUrl("google", NATIVE_AUTH_REDIRECT_URI, state));
+  const provider = "google" satisfies OAuthProvider;
+  const oauthUrl = buildOAuthUrl(provider, NATIVE_AUTH_REDIRECT_URI, state);
+
+  if (!Capacitor.isPluginAvailable("Browser")) {
+    console.warn("Capacitor Browser plugin unavailable; using webview sign-in fallback.");
+    openOAuthInCurrentWebView(provider, state);
+    return true;
+  }
+
+  try {
+    const { Browser } = await import("@capacitor/browser");
+    await Browser.open({
+      url: oauthUrl,
+      presentationStyle: "fullscreen",
+      toolbarColor: "#f7f4ec",
+    });
+  } catch (err) {
+    console.warn("Capacitor Browser plugin failed; using webview sign-in fallback.", err);
+    openOAuthInCurrentWebView(provider, state);
+  }
   return true;
 }
 
@@ -132,6 +157,10 @@ export async function installNativeAuthDeepLinkHandler(onSignedIn?: (path: strin
     try {
       const redirectPath = await completeAuthFromUrl(url);
       if (!redirectPath) return;
+      if (isNativeApp() && Capacitor.isPluginAvailable("Browser")) {
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.close().catch(() => undefined);
+      }
       onSignedIn?.(redirectPath);
     } catch (err) {
       console.error("Native sign-in callback failed", err);

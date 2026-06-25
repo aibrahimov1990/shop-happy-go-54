@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   server: {
     url: 'https://shop-happy-go-54.lovable.app?forceHideBadge=true',
     cleartext: false,
-    allowNavigation: ['shop-happy-go-54.lovable.app'],
+    allowNavigation: ['shop-happy-go-54.lovable.app', 'oauth.lovable.app'],
   },
   plugins: {
     FirebaseMessaging: {
