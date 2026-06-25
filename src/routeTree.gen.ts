@@ -27,6 +27,7 @@ import { Route as ShopperNewRouteImport } from './routes/shopper.new'
 import { Route as ProductHandleRouteImport } from './routes/product.$handle'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as EditsIdRouteImport } from './routes/edits.$id'
+import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -123,6 +124,11 @@ const EditsIdRoute = EditsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => EditsRoute,
 } as any)
+const AdminEmailsRoute = AdminEmailsRouteImport.update({
+  id: '/admin/emails',
+  path: '/admin/emails',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminBroadcastRoute = AdminBroadcastRouteImport.update({
   id: '/admin/broadcast',
   path: '/admin/broadcast',
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe': typeof UnsubscribeRoute
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$handle': typeof ProductHandleRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/unsubscribe': typeof UnsubscribeRoute
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$handle': typeof ProductHandleRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$handle': typeof ProductHandleRoute
@@ -242,6 +251,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/wishlist'
     | '/admin/broadcast'
+    | '/admin/emails'
     | '/edits/$id'
     | '/email/unsubscribe'
     | '/product/$handle'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/wishlist'
     | '/admin/broadcast'
+    | '/admin/emails'
     | '/edits/$id'
     | '/email/unsubscribe'
     | '/product/$handle'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/wishlist'
     | '/admin/broadcast'
+    | '/admin/emails'
     | '/edits/$id'
     | '/email/unsubscribe'
     | '/product/$handle'
@@ -316,6 +328,7 @@ export interface RootRouteChildren {
   UnsubscribeRoute: typeof UnsubscribeRoute
   WishlistRoute: typeof WishlistRoute
   AdminBroadcastRoute: typeof AdminBroadcastRoute
+  AdminEmailsRoute: typeof AdminEmailsRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ProductHandleRoute: typeof ProductHandleRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -452,6 +465,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EditsIdRouteImport
       parentRoute: typeof EditsRoute
     }
+    '/admin/emails': {
+      id: '/admin/emails'
+      path: '/admin/emails'
+      fullPath: '/admin/emails'
+      preLoaderRoute: typeof AdminEmailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/broadcast': {
       id: '/admin/broadcast'
       path: '/admin/broadcast'
@@ -529,6 +549,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeRoute: UnsubscribeRoute,
   WishlistRoute: WishlistRoute,
   AdminBroadcastRoute: AdminBroadcastRoute,
+  AdminEmailsRoute: AdminEmailsRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ProductHandleRoute: ProductHandleRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,

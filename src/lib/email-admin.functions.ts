@@ -27,7 +27,7 @@ export const getEmailStats = createServerFn({ method: 'POST' })
     else since.setDate(since.getDate() - 30)
 
     // Fetch all rows in range, then dedupe client-side by message_id (latest)
-    const { data: rows, error } = await supabaseAdmin
+    const { data: rows, error } = await (supabaseAdmin as any)
       .from('email_send_log')
       .select('id, message_id, template_name, recipient_email, status, error_message, created_at')
       .gte('created_at', since.toISOString())
@@ -35,6 +35,15 @@ export const getEmailStats = createServerFn({ method: 'POST' })
       .limit(2000)
 
     if (error) throw new Error(error.message)
+    const typedRows = (rows ?? []) as Array<{
+      id: string
+      message_id: string | null
+      template_name: string | null
+      recipient_email: string
+      status: string
+      error_message: string | null
+      created_at: string
+    }>
 
     const dedupMap = new Map<string, typeof rows[number]>()
     for (const r of rows ?? []) {
