@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 let listenersInitialized = false;
 let registrationInFlight = false;
 let lastRegisteredToken: string | null = null;
+let currentFcmToken: string | null = null;
+let currentPlatform: "ios" | "android" = "ios";
 
 type PushData = Record<string, unknown> | string | null | undefined;
 
@@ -62,11 +64,19 @@ export async function initPushNotifications() {
       listenersInitialized = true;
 
       void FirebaseMessaging.addListener("tokenReceived", async ({ token }) => {
+        currentFcmToken = token;
         try {
-          await registerTokenWithBackend(token, platform);
+          await registerTokenWithBackend(token, currentPlatform);
         } catch (err) {
           console.warn("Failed to register FCM token", err);
         }
+      });
+
+      supabase.auth.onAuthStateChange((event) => {
+        if (event !== "SIGNED_IN" || !currentFcmToken) return;
+        void registerTokenWithBackend(currentFcmToken, currentPlatform).catch((err) => {
+          console.warn("Failed to register FCM token after sign-in", err);
+        });
       });
 
       void FirebaseMessaging.addListener("notificationActionPerformed", (action) => {
@@ -81,6 +91,8 @@ export async function initPushNotifications() {
     }
 
     const { token } = await FirebaseMessaging.getToken();
+    currentFcmToken = token;
+    currentPlatform = platform;
     if (token && token !== lastRegisteredToken) {
       await registerTokenWithBackend(token, platform);
     }
