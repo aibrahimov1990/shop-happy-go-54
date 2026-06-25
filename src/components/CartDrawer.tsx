@@ -58,12 +58,20 @@ export function CartDrawer({
 
         <div className="flex flex-col flex-1 pt-4 min-h-0">
           {items.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex flex-col items-center justify-center">
               <div className="text-center">
                 <ShoppingBag className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">Your bag is empty</p>
+                <p className="text-sm text-muted-foreground mb-6">Your bag is empty</p>
+                <Button
+                  onClick={() => onOpenChange(false)}
+                  variant="outline"
+                  className="rounded-none h-11 px-6 text-xs tracking-[0.2em] uppercase"
+                >
+                  Continue Shopping
+                </Button>
               </div>
             </div>
+
           ) : (
             <>
               <div className="flex-1 overflow-y-auto pr-1 min-h-0">
@@ -151,6 +159,12 @@ export function CartDrawer({
                     "Checkout"
                   )}
                 </Button>
+                <button
+                  onClick={() => onOpenChange(false)}
+                  className="w-full text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground py-1"
+                >
+                  Continue Shopping
+                </button>
                 <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest">
                   Secure checkout via Shopify
                 </p>
@@ -162,6 +176,7 @@ export function CartDrawer({
     </Sheet>
   );
 }
+
 
 export function CartButton({ onClick }: { onClick: () => void }) {
   const totalItems = useCartStore((s) => s.items.reduce((a, b) => a + b.quantity, 0));
