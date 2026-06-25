@@ -11,6 +11,9 @@ type OAuthProvider = "google";
 
 let deepLinkHandlerInstalled = false;
 let authCallbackInFlight: Promise<string | null> | null = null;
+let browserOpen = false;
+const processedAuthUrls = new Set<string>();
+const PROCESSED_LAUNCH_URL_KEY = "sellier_processed_launch_url";
 
 export function isNativeApp() {
   return typeof window !== "undefined" && Capacitor.isNativePlatform();
@@ -137,12 +140,14 @@ export async function startNativeGoogleSignIn(next?: string) {
 
   try {
     const { Browser } = await import("@capacitor/browser");
+    browserOpen = true;
     await Browser.open({
       url: oauthUrl,
       presentationStyle: "fullscreen",
       toolbarColor: "#f7f4ec",
     });
   } catch (err) {
+    browserOpen = false;
     console.warn("Capacitor Browser plugin failed; using webview sign-in fallback.", err);
     openOAuthInCurrentWebView(provider, state);
   }
@@ -152,14 +157,31 @@ export async function startNativeGoogleSignIn(next?: string) {
 export async function installNativeAuthDeepLinkHandler(onSignedIn?: (path: string) => void) {
   if (typeof window === "undefined") return;
 
-  const finish = async (url: string | undefined | null) => {
+  const finish = async (url: string | undefined | null, fromLaunch = false) => {
     if (!url) return;
+    if (processedAuthUrls.has(url)) return;
+    if (fromLaunch) {
+      try {
+        const last = window.localStorage.getItem(PROCESSED_LAUNCH_URL_KEY);
+        if (last === url) {
+          processedAuthUrls.add(url);
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+    processedAuthUrls.add(url);
     try {
       const redirectPath = await completeAuthFromUrl(url);
+      if (fromLaunch) {
+        try { window.localStorage.setItem(PROCESSED_LAUNCH_URL_KEY, url); } catch { /* ignore */ }
+      }
       if (!redirectPath) return;
-      if (isNativeApp() && Capacitor.isPluginAvailable("Browser")) {
+      if (isNativeApp() && browserOpen && Capacitor.isPluginAvailable("Browser")) {
         const { Browser } = await import("@capacitor/browser");
         await Browser.close().catch(() => undefined);
+        browserOpen = false;
       }
       onSignedIn?.(redirectPath);
     } catch (err) {
@@ -180,8 +202,9 @@ export async function installNativeAuthDeepLinkHandler(onSignedIn?: (path: strin
   try {
     const { App } = await import("@capacitor/app");
     const launch = await App.getLaunchUrl();
-    await finish(launch?.url);
+    await finish(launch?.url, true);
     await App.addListener("appUrlOpen", (event) => {
+      browserOpen = true; // an external URL is opening us back; allow close
       void finish(event.url);
     });
   } catch (err) {
