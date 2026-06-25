@@ -40,6 +40,44 @@ const CART_CREATE_MUTATION = `
     }
   }`;
 
+import { Capacitor } from "@capacitor/core";
+
+function getAppSource(): "ios_app" | "android_app" | "web" {
+  try {
+    if (Capacitor.isNativePlatform()) {
+      const p = Capacitor.getPlatform();
+      if (p === "ios") return "ios_app";
+      if (p === "android") return "android_app";
+    }
+  } catch {}
+  return "web";
+}
+
+function buildCartAttribution() {
+  const source = getAppSource();
+  return {
+    note: source === "web" ? undefined : `Order placed via Sellier ${source === "ios_app" ? "iOS" : "Android"} app`,
+    attributes: [
+      { key: "source", value: source },
+      { key: "channel", value: source === "web" ? "web" : "mobile_app" },
+    ],
+  };
+}
+
+function appendUtm(checkoutUrl: string): string {
+  const source = getAppSource();
+  if (source === "web") return checkoutUrl;
+  try {
+    const url = new URL(checkoutUrl);
+    url.searchParams.set("utm_source", source);
+    url.searchParams.set("utm_medium", "app");
+    url.searchParams.set("utm_campaign", "sellier_app");
+    return url.toString();
+  } catch {
+    return checkoutUrl;
+  }
+}
+
 const CART_LINES_ADD_MUTATION = `
   mutation cartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
     cartLinesAdd(cartId: $cartId, lines: $lines) {
@@ -61,13 +99,14 @@ const CART_LINES_REMOVE_MUTATION = `
     cartLinesRemove(cartId: $cartId, lineIds: $lineIds) { cart { id } userErrors { field message } }
   }`;
 
+
 function formatCheckoutUrl(checkoutUrl: string): string {
   try {
     const url = new URL(checkoutUrl);
     url.searchParams.set("channel", "online_store");
-    return url.toString();
+    return appendUtm(url.toString());
   } catch {
-    return checkoutUrl;
+    return appendUtm(checkoutUrl);
   }
 }
 
@@ -80,8 +119,13 @@ function isCartNotFoundError(errs: Array<{ message: string }>) {
 }
 
 async function createShopifyCart(item: CartItem) {
+  const { note, attributes } = buildCartAttribution();
   const data = await storefrontApiRequest<any>(CART_CREATE_MUTATION, {
-    input: { lines: [{ quantity: item.quantity, merchandiseId: item.variantId }] },
+    input: {
+      lines: [{ quantity: item.quantity, merchandiseId: item.variantId }],
+      ...(note ? { note } : {}),
+      attributes,
+    },
   });
   const errs = data?.data?.cartCreate?.userErrors ?? [];
   if (errs.length) {
