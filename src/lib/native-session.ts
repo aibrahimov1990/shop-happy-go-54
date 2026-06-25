@@ -6,6 +6,10 @@ const STORAGE_KEY_PREFIX = "sb-";
 const STORAGE_KEY_SUFFIX = "-auth-token";
 const PREFS_STORAGE_KEY = "sellier.supabase.auth.storage";
 const LEGACY_PREFS_KEY = "supabase.auth.token";
+const COOKIE_SESSION_KEY = "sellier_native_session";
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 90;
+
+type PreferencesApi = typeof import("@capacitor/preferences").Preferences;
 
 type MirroredAuthStorage = {
   storageKey: string;
@@ -74,6 +78,38 @@ function safeJsonParse<T>(value: string | null): T | null {
   }
 }
 
+function writeSessionCookie(session: MirroredSession | null | undefined) {
+  if (typeof document === "undefined" || !session?.access_token || !session.refresh_token) return;
+
+  const secure = typeof location !== "undefined" && location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${COOKIE_SESSION_KEY}=${encodeURIComponent(JSON.stringify(session))}; Path=/; Max-Age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax${secure}`;
+}
+
+function readSessionCookie(): MirroredSession | null {
+  if (typeof document === "undefined") return null;
+
+  const cookie = document.cookie
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${COOKIE_SESSION_KEY}=`));
+
+  if (!cookie) return null;
+
+  try {
+    const parsed = safeJsonParse<Partial<MirroredSession>>(decodeURIComponent(cookie.slice(COOKIE_SESSION_KEY.length + 1)));
+    if (!parsed?.access_token || !parsed.refresh_token) return null;
+    return { access_token: parsed.access_token, refresh_token: parsed.refresh_token };
+  } catch {
+    return null;
+  }
+}
+
+function clearSessionCookie() {
+  if (typeof document === "undefined") return;
+  const secure = typeof location !== "undefined" && location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${COOKIE_SESSION_KEY}=; Path=/; Max-Age=0; SameSite=Lax${secure}`;
+}
+
 function getSessionTokensFromStorageValue(storageValue: string | null): MirroredSession | null {
   const parsed = safeJsonParse<Partial<MirroredSession>>(storageValue);
   if (!parsed?.access_token || !parsed.refresh_token) return null;
@@ -85,12 +121,16 @@ function getSessionTokensFromStorageValue(storageValue: string | null): Mirrored
 }
 
 async function writeNativeSessionCopy(
-  Preferences: typeof import("@capacitor/preferences").Preferences,
+  Preferences: PreferencesApi | null | undefined,
   authStorage?: MirroredAuthStorage | null,
   session?: MirroredSession | null,
 ) {
   const currentAuthStorage = authStorage ?? readCurrentAuthStorage();
   const currentSession = session ?? getSessionTokensFromStorageValue(currentAuthStorage?.storageValue ?? null);
+
+  writeSessionCookie(currentSession);
+
+  if (!Preferences) return;
 
   if (currentAuthStorage) {
     await Preferences.set({
@@ -126,7 +166,7 @@ async function restoreSessionIntoSupabase(storageValue: string | null) {
   if (error) console.warn("Native session restore failed", error);
 }
 
-function installLocalStorageMirror(Preferences: typeof import("@capacitor/preferences").Preferences) {
+function installLocalStorageMirror(Preferences?: PreferencesApi | null) {
   if (storageMirrorInstalled || typeof window === "undefined" || typeof localStorage === "undefined") return;
   storageMirrorInstalled = true;
 
@@ -135,6 +175,7 @@ function installLocalStorageMirror(Preferences: typeof import("@capacitor/prefer
     originalSetItem.call(this, key, value);
 
     if (this === window.localStorage && isAuthStorageKey(key)) {
+      writeSessionCookie(getSessionTokensFromStorageValue(value));
       void writeNativeSessionCopy(Preferences, { storageKey: key, storageValue: value }).catch((err) => {
         console.warn("Failed to mirror auth storage", err);
       });
@@ -145,9 +186,13 @@ function installLocalStorageMirror(Preferences: typeof import("@capacitor/prefer
 export async function persistNativeSession(session?: Session | MirroredSession | null) {
   if (!isNative()) return;
 
+  const currentAuthStorage = readCurrentAuthStorage();
+  const currentSession = session ?? getSessionTokensFromStorageValue(currentAuthStorage?.storageValue ?? null);
+  writeSessionCookie(currentSession);
+
   try {
     const { Preferences } = await import("@capacitor/preferences");
-    await writeNativeSessionCopy(Preferences, readCurrentAuthStorage(), session ?? null);
+    await writeNativeSessionCopy(Preferences, currentAuthStorage, currentSession);
   } catch (err) {
     console.warn("Failed to persist native session", err);
   }
@@ -155,6 +200,8 @@ export async function persistNativeSession(session?: Session | MirroredSession |
 
 export async function clearNativeSessionPersistence() {
   if (!isNative()) return;
+
+  clearSessionCookie();
 
   try {
     const { Preferences } = await import("@capacitor/preferences");
@@ -171,22 +218,43 @@ export async function initNativeSessionPersistence() {
 
   initPromise = (async () => {
     try {
-      const { Preferences } = await import("@capacitor/preferences");
+      let Preferences: PreferencesApi | null = null;
+      try {
+        const preferencesModule = await import("@capacitor/preferences");
+        Preferences = preferencesModule.Preferences;
+      } catch (err) {
+        console.warn("Capacitor Preferences unavailable; using cookie session fallback", err);
+      }
       installLocalStorageMirror(Preferences);
 
       // 1. On launch: restore the exact Supabase localStorage entry before
       // any auth guard calls getSession(). This avoids a false signed-out state.
       const currentStorage = readCurrentAuthStorage();
       if (!currentStorage) {
-        const { value } = await Preferences.get({ key: PREFS_STORAGE_KEY });
-        const mirrored = safeJsonParse<MirroredAuthStorage>(value);
+        let mirrored: MirroredAuthStorage | null = null;
+        if (Preferences) {
+          try {
+            const { value } = await Preferences.get({ key: PREFS_STORAGE_KEY });
+            mirrored = safeJsonParse<MirroredAuthStorage>(value);
+          } catch (err) {
+            console.warn("Failed to read native session storage; using cookie fallback", err);
+          }
+        }
         if (mirrored?.storageKey && mirrored?.storageValue) {
           localStorage.setItem(mirrored.storageKey, mirrored.storageValue);
           await restoreSessionIntoSupabase(mirrored.storageValue);
         } else {
           // Backwards-compatible restore for users who installed the previous build.
-          const legacy = await Preferences.get({ key: LEGACY_PREFS_KEY });
-          const parsed = safeJsonParse<Partial<MirroredSession>>(legacy.value);
+          let parsed: Partial<MirroredSession> | null = null;
+          if (Preferences) {
+            try {
+              const legacy = await Preferences.get({ key: LEGACY_PREFS_KEY });
+              parsed = safeJsonParse<Partial<MirroredSession>>(legacy.value);
+            } catch {
+              parsed = null;
+            }
+          }
+          parsed = parsed ?? readSessionCookie();
           if (parsed?.access_token && parsed?.refresh_token) {
             await supabase.auth.setSession({
               access_token: parsed.access_token,
@@ -213,8 +281,11 @@ export async function initNativeSessionPersistence() {
         }
 
         if (event === "SIGNED_OUT") {
-          void Preferences.remove({ key: PREFS_STORAGE_KEY });
-          void Preferences.remove({ key: LEGACY_PREFS_KEY });
+          clearSessionCookie();
+          if (Preferences) {
+            void Preferences.remove({ key: PREFS_STORAGE_KEY });
+            void Preferences.remove({ key: LEGACY_PREFS_KEY });
+          }
         }
       });
 
