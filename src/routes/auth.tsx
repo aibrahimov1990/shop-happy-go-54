@@ -4,6 +4,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { isNativeApp, startNativeGoogleSignIn } from "@/lib/native-oauth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Loader2, ArrowLeft } from "lucide-react";
@@ -67,6 +68,8 @@ function AuthPage() {
 
   const handleGoogle = async () => {
     try {
+      if (isNativeApp() && await startNativeGoogleSignIn(next)) return;
+
       if (next && typeof window !== "undefined") {
         sessionStorage.setItem("post_auth_redirect", next);
       }
