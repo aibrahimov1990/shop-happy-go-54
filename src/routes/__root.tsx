@@ -140,6 +140,8 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
+    if (!nativeSessionReady) return;
+
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN") {
         const stored = sessionStorage.getItem("post_auth_redirect");
@@ -150,7 +152,7 @@ function RootComponent() {
       }
     });
     return () => sub.subscription.unsubscribe();
-  }, [router]);
+  }, [nativeSessionReady, router]);
 
   if (!nativeSessionReady) {
     return (
