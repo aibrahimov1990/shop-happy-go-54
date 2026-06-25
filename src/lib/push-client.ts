@@ -9,7 +9,7 @@ let registrationInFlight = false;
 let lastRegisteredToken: string | null = null;
 let currentFcmToken: string | null = null;
 let currentPlatform: "ios" | "android" = "ios";
-let retryTimer: ReturnType<typeof window.setTimeout> | null = null;
+let retryTimer: number | null = null;
 
 type PushData = Record<string, unknown> | string | null | undefined;
 
