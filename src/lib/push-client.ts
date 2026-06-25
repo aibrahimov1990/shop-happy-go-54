@@ -9,6 +9,7 @@ let registrationInFlight = false;
 let lastRegisteredToken: string | null = null;
 let currentFcmToken: string | null = null;
 let currentPlatform: "ios" | "android" = "ios";
+let retryTimer: number | null = null;
 
 type PushData = Record<string, unknown> | string | null | undefined;
 
@@ -37,11 +38,49 @@ function extractUrl(data: PushData): string | null {
 
 async function registerTokenWithBackend(token: string, platform: "ios" | "android") {
   const { data } = await supabase.auth.getSession();
-  if (!data.session) return false;
+  const userId = data.session?.user?.id ?? null;
 
-  await registerDeviceToken({ data: { token, platform } });
+  if (data.session) {
+    try {
+      await registerDeviceToken({ data: { token, platform } });
+      lastRegisteredToken = token;
+      return true;
+    } catch (err) {
+      console.warn("Authenticated push registration failed; trying direct registration", err);
+    }
+  }
+
+  const { error } = await supabase.from("device_tokens").upsert(
+    {
+      token,
+      platform,
+      user_id: userId,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "token" },
+  );
+
+  if (error) throw error;
   lastRegisteredToken = token;
   return true;
+}
+
+async function fetchAndRegisterToken(FirebaseMessaging: typeof import("@capacitor-firebase/messaging").FirebaseMessaging) {
+  const { token } = await FirebaseMessaging.getToken();
+  currentFcmToken = token;
+  if (token && token !== lastRegisteredToken) {
+    await registerTokenWithBackend(token, currentPlatform);
+  }
+}
+
+function scheduleTokenRetry(FirebaseMessaging: typeof import("@capacitor-firebase/messaging").FirebaseMessaging, delayMs = 3000) {
+  if (retryTimer) window.clearTimeout(retryTimer);
+  retryTimer = window.setTimeout(() => {
+    retryTimer = null;
+    void fetchAndRegisterToken(FirebaseMessaging).catch((err) => {
+      console.warn("Push token retry failed", err);
+    });
+  }, delayMs);
 }
 
 export async function initPushNotifications() {
@@ -72,6 +111,10 @@ export async function initPushNotifications() {
         }
       });
 
+      void FirebaseMessaging.addListener("apnsTokenReceived", () => {
+        scheduleTokenRetry(FirebaseMessaging, 500);
+      });
+
       supabase.auth.onAuthStateChange((event) => {
         if (event !== "SIGNED_IN" || !currentFcmToken) return;
         void registerTokenWithBackend(currentFcmToken, currentPlatform).catch((err) => {
@@ -88,16 +131,21 @@ export async function initPushNotifications() {
           /* noop */
         }
       });
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") scheduleTokenRetry(FirebaseMessaging, 500);
+      });
     }
 
-    const { token } = await FirebaseMessaging.getToken();
-    currentFcmToken = token;
     currentPlatform = platform;
-    if (token && token !== lastRegisteredToken) {
-      await registerTokenWithBackend(token, platform);
-    }
+    await fetchAndRegisterToken(FirebaseMessaging);
   } catch (err) {
     console.warn("Push init failed", err);
+    if (typeof window !== "undefined") {
+      void import("@capacitor-firebase/messaging").then(({ FirebaseMessaging }) => {
+        scheduleTokenRetry(FirebaseMessaging, 5000);
+      });
+    }
   } finally {
     registrationInFlight = false;
   }
