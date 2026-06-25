@@ -24,7 +24,7 @@ function RefundPage() {
     <MobileLayout>
       <article className="px-6 py-10 space-y-6">
         <h1 className="font-serif text-3xl">Refund Policy</h1>
-        <ol className="list-decimal pl-5 space-y-4 text-sm text-foreground/80 leading-relaxed marker:font-semibold marker:text-foreground">
+        <ol className="list-[lower-roman] pl-8 space-y-4 text-sm text-foreground/80 leading-relaxed marker:font-semibold marker:text-foreground">
           {items.map((text, i) => (
             <li key={i}>{text}</li>
           ))}
