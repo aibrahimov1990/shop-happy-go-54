@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2, X, Plus, Check } from "lucide-react";
 import { toast } from "sonner";
+import { sendTransactionalEmail } from "@/lib/email/send";
+import { formatPrice as fmtPrice } from "@/lib/shopify";
 
 export const Route = createFileRoute("/shopper/new")({
   head: () => ({ meta: [{ title: "New edit — Sellier" }] }),

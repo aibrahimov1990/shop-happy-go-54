@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WishlistRouteImport } from './routes/wishlist'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ShopperRouteImport } from './routes/shopper'
 import { Route as ShopRouteImport } from './routes/shop'
@@ -35,6 +36,11 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 const WishlistRoute = WishlistRouteImport.update({
   id: '/wishlist',
   path: '/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/shop': typeof ShopRoute
   '/shopper': typeof ShopperRouteWithChildren
   '/terms': typeof TermsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/edits/$id': typeof EditsIdRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/sell-with-us': typeof SellWithUsRoute
   '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/edits/$id': typeof EditsIdRoute
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/shop': typeof ShopRoute
   '/shopper': typeof ShopperRouteWithChildren
   '/terms': typeof TermsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/edits/$id': typeof EditsIdRoute
@@ -230,6 +239,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/shopper'
     | '/terms'
+    | '/unsubscribe'
     | '/wishlist'
     | '/admin/broadcast'
     | '/edits/$id'
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/sell-with-us'
     | '/shop'
     | '/terms'
+    | '/unsubscribe'
     | '/wishlist'
     | '/admin/broadcast'
     | '/edits/$id'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/shopper'
     | '/terms'
+    | '/unsubscribe'
     | '/wishlist'
     | '/admin/broadcast'
     | '/edits/$id'
@@ -301,6 +313,7 @@ export interface RootRouteChildren {
   ShopRoute: typeof ShopRoute
   ShopperRoute: typeof ShopperRouteWithChildren
   TermsRoute: typeof TermsRoute
+  UnsubscribeRoute: typeof UnsubscribeRoute
   WishlistRoute: typeof WishlistRoute
   AdminBroadcastRoute: typeof AdminBroadcastRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -318,6 +331,13 @@ declare module '@tanstack/react-router' {
       path: '/wishlist'
       fullPath: '/wishlist'
       preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -506,6 +526,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShopRoute: ShopRoute,
   ShopperRoute: ShopperRouteWithChildren,
   TermsRoute: TermsRoute,
+  UnsubscribeRoute: UnsubscribeRoute,
   WishlistRoute: WishlistRoute,
   AdminBroadcastRoute: AdminBroadcastRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
