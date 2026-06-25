@@ -1,16 +1,8 @@
 import * as React from 'react'
-
 import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Link,
-  Preview,
-  Text,
+  Body, Button, Container, Head, Heading, Html, Link, Preview, Section, Text, Hr,
 } from '@react-email/components'
+import * as s from './_styles'
 
 interface InviteEmailProps {
   siteName: string
@@ -18,31 +10,35 @@ interface InviteEmailProps {
   confirmationUrl: string
 }
 
-export const InviteEmail = ({
-  siteName,
-  siteUrl,
-  confirmationUrl,
-}: InviteEmailProps) => (
+export const InviteEmail = ({ siteName, confirmationUrl }: InviteEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>You've been invited to join {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>You've been invited</Heading>
-        <Text style={text}>
-          You've been invited to join{' '}
-          <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
-          </Link>
-          . Click the button below to accept the invitation and create your
-          account.
+    <Preview>You've been invited to Sellier Knightsbridge</Preview>
+    <Body style={s.main}>
+      <Container style={s.container}>
+        <Text style={s.brand}>SELLIER</Text>
+        <Hr style={s.hr} />
+
+        <Heading style={s.heading}>You're invited</Heading>
+        <Text style={s.paragraph}>
+          You've been invited to join {siteName}. Accept your invitation below to set up
+          your account.
         </Text>
-        <Button style={button} href={confirmationUrl}>
-          Accept Invitation
-        </Button>
-        <Text style={footer}>
-          If you weren't expecting this invitation, you can safely ignore this
-          email.
+
+        <Section style={s.buttonWrap}>
+          <Button href={confirmationUrl} style={s.button}>Accept invitation</Button>
+        </Section>
+
+        <Text style={s.muted}>
+          If you weren't expecting this, you can safely ignore this email.
+        </Text>
+
+        <Hr style={s.hr} />
+        <Text style={s.footer}>
+          Sellier Knightsbridge ·{' '}
+          <Link href="https://sellierknightsbridge.com" style={s.footerLink}>
+            sellierknightsbridge.com
+          </Link>
         </Text>
       </Container>
     </Body>
@@ -50,28 +46,3 @@ export const InviteEmail = ({
 )
 
 export default InviteEmail
-
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const link = { color: 'inherit', textDecoration: 'underline' }
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }

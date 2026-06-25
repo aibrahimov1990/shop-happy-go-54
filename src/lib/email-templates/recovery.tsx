@@ -1,41 +1,44 @@
 import * as React from 'react'
-
 import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Preview,
-  Text,
+  Body, Button, Container, Head, Heading, Html, Link, Preview, Section, Text, Hr,
 } from '@react-email/components'
+import * as s from './_styles'
 
 interface RecoveryEmailProps {
   siteName: string
   confirmationUrl: string
 }
 
-export const RecoveryEmail = ({
-  siteName,
-  confirmationUrl,
-}: RecoveryEmailProps) => (
+export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Reset your password for {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>Reset your password</Heading>
-        <Text style={text}>
-          We received a request to reset your password for {siteName}. Click
-          the button below to choose a new password.
+    <Preview>Reset your Sellier password</Preview>
+    <Body style={s.main}>
+      <Container style={s.container}>
+        <Text style={s.brand}>SELLIER</Text>
+        <Hr style={s.hr} />
+
+        <Heading style={s.heading}>Reset your password</Heading>
+        <Text style={s.paragraph}>
+          We received a request to reset your password for {siteName}. Tap the button
+          below to choose a new one.
         </Text>
-        <Button style={button} href={confirmationUrl}>
-          Reset Password
-        </Button>
-        <Text style={footer}>
-          If you didn't request a password reset, you can safely ignore this
-          email. Your password will not be changed.
+
+        <Section style={s.buttonWrap}>
+          <Button href={confirmationUrl} style={s.button}>Reset password</Button>
+        </Section>
+
+        <Text style={s.muted}>
+          If you didn't request this, you can safely ignore this email — your password
+          will remain unchanged.
+        </Text>
+
+        <Hr style={s.hr} />
+        <Text style={s.footer}>
+          Sellier Knightsbridge ·{' '}
+          <Link href="https://sellierknightsbridge.com" style={s.footerLink}>
+            sellierknightsbridge.com
+          </Link>
         </Text>
       </Container>
     </Body>
@@ -43,27 +46,3 @@ export const RecoveryEmail = ({
 )
 
 export default RecoveryEmail
-
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
