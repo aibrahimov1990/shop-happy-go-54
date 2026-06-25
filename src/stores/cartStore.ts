@@ -40,6 +40,44 @@ const CART_CREATE_MUTATION = `
     }
   }`;
 
+import { Capacitor } from "@capacitor/core";
+
+function getAppSource(): "ios_app" | "android_app" | "web" {
+  try {
+    if (Capacitor.isNativePlatform()) {
+      const p = Capacitor.getPlatform();
+      if (p === "ios") return "ios_app";
+      if (p === "android") return "android_app";
+    }
+  } catch {}
+  return "web";
+}
+
+function buildCartAttribution() {
+  const source = getAppSource();
+  return {
+    note: source === "web" ? undefined : `Order placed via Sellier ${source === "ios_app" ? "iOS" : "Android"} app`,
+    attributes: [
+      { key: "source", value: source },
+      { key: "channel", value: source === "web" ? "web" : "mobile_app" },
+    ],
+  };
+}
+
+function appendUtm(checkoutUrl: string): string {
+  const source = getAppSource();
+  if (source === "web") return checkoutUrl;
+  try {
+    const url = new URL(checkoutUrl);
+    url.searchParams.set("utm_source", source);
+    url.searchParams.set("utm_medium", "app");
+    url.searchParams.set("utm_campaign", "sellier_app");
+    return url.toString();
+  } catch {
+    return checkoutUrl;
+  }
+}
+
 const CART_LINES_ADD_MUTATION = `
   mutation cartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
     cartLinesAdd(cartId: $cartId, lines: $lines) {
