@@ -157,11 +157,10 @@ function RootComponent() {
   }, [nativeSessionReady, router]);
 
   if (!nativeSessionReady) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-6">
-        <img src={sellierLogo} alt="Sellier" className="h-6 w-auto" />
-      </div>
-    );
+    // Render a blank background so it visually continues the native iOS
+    // LaunchScreen (which already shows the Sellier logo). Showing the logo
+    // again here would create a perceived "second splash screen".
+    return <div className="min-h-screen bg-background" />;
   }
 
   return (
