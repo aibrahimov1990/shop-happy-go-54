@@ -2,7 +2,7 @@ import { Capacitor } from "@capacitor/core";
 import { supabase } from "@/integrations/supabase/client";
 import { persistNativeSession } from "@/lib/native-session";
 
-const WEBVIEW_AUTH_REDIRECT_PATH = "/auth";
+const NATIVE_AUTH_REDIRECT_URI = "com.sellierknightsbridge.app://auth-callback";
 const OAUTH_STATE_KEY = "sellier_native_oauth_state";
 const POST_AUTH_REDIRECT_KEY = "post_auth_redirect";
 
@@ -54,11 +54,6 @@ function buildOAuthUrl(provider: OAuthProvider, redirectUri: string, state: stri
     state,
   });
   return `${window.location.origin}/~oauth/initiate?${params.toString()}`;
-}
-
-function openOAuthInCurrentWebView(provider: OAuthProvider, state: string) {
-  const redirectUri = `${window.location.origin}${WEBVIEW_AUTH_REDIRECT_PATH}`;
-  window.location.assign(buildOAuthUrl(provider, redirectUri, state));
 }
 
 function isAuthCallbackUrl(url: string) {
@@ -125,7 +120,7 @@ export async function startNativeGoogleSignIn(next?: string) {
   sessionStorage.setItem(OAUTH_STATE_KEY, state);
   sessionStorage.setItem(POST_AUTH_REDIRECT_KEY, safePath(next));
 
-  openOAuthInCurrentWebView("google", state);
+  window.location.assign(buildOAuthUrl("google", NATIVE_AUTH_REDIRECT_URI, state));
   return true;
 }
 
