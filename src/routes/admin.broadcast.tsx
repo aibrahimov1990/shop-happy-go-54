@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
-import { isAdmin, listBroadcasts, sendBroadcast } from "@/lib/push.functions";
+import { listBroadcasts, sendBroadcast } from "@/lib/push.functions";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,20 +36,29 @@ export const Route = createFileRoute("/admin/broadcast")({
 });
 
 function BroadcastPage() {
-  const checkAdmin = useServerFn(isAdmin);
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const fetchBroadcasts = useServerFn(listBroadcasts);
   const send = useServerFn(sendBroadcast);
   const qc = useQueryClient();
 
   const adminQuery = useQuery({
-    queryKey: ["isAdmin"],
-    queryFn: () => checkAdmin(),
+    queryKey: ["isAdmin", user?.id],
+    enabled: !loading && !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("has_role", {
+        _user_id: user!.id,
+        _role: "admin",
+      });
+      if (error) throw error;
+      return data === true;
+    },
   });
 
   const broadcastsQuery = useQuery({
     queryKey: ["broadcasts"],
     queryFn: () => fetchBroadcasts(),
-    enabled: adminQuery.data?.isAdmin === true,
+    enabled: adminQuery.data === true,
   });
 
   const [title, setTitle] = useState("");
@@ -69,11 +80,28 @@ function BroadcastPage() {
     onError: (err: Error) => toast.error(err.message),
   });
 
-  if (adminQuery.isLoading) {
+  if (!loading && !user) {
+    return (
+      <div className="mx-auto max-w-md p-8 text-center">
+        <h1 className="font-serif text-2xl">Sign in required</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Sign in with your admin account to send broadcasts.
+        </p>
+        <Button
+          className="mt-6"
+          onClick={() => navigate({ to: "/auth", search: { next: "/admin/broadcast" } })}
+        >
+          Sign in
+        </Button>
+      </div>
+    );
+  }
+
+  if (loading || adminQuery.isLoading || adminQuery.isFetching) {
     return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
   }
 
-  if (adminQuery.isError || !adminQuery.data?.isAdmin) {
+  if (adminQuery.isError || adminQuery.data !== true) {
     return (
       <div className="mx-auto max-w-md p-8 text-center">
         <h1 className="font-serif text-2xl">Restricted</h1>
