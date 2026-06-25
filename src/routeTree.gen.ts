@@ -24,8 +24,12 @@ import { Route as ShopperIndexRouteImport } from './routes/shopper.index'
 import { Route as EditsIndexRouteImport } from './routes/edits.index'
 import { Route as ShopperNewRouteImport } from './routes/shopper.new'
 import { Route as ProductHandleRouteImport } from './routes/product.$handle'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as EditsIdRouteImport } from './routes/edits.$id'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
+import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 
 const WishlistRoute = WishlistRouteImport.update({
@@ -103,6 +107,11 @@ const ProductHandleRoute = ProductHandleRouteImport.update({
   path: '/product/$handle',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EditsIdRoute = EditsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -113,6 +122,23 @@ const AdminBroadcastRoute = AdminBroadcastRouteImport.update({
   path: '/admin/broadcast',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
+  id: '/lovable/email/suppression',
+  path: '/lovable/email/suppression',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailTransactionalSendRoute =
+  LovableEmailTransactionalSendRouteImport.update({
+    id: '/lovable/email/transactional/send',
+    path: '/lovable/email/transactional/send',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -134,11 +160,15 @@ export interface FileRoutesByFullPath {
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/edits/$id': typeof EditsIdRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
   '/edits/': typeof EditsIndexRoute
   '/shopper/': typeof ShopperIndexRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -152,11 +182,15 @@ export interface FileRoutesByTo {
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/edits/$id': typeof EditsIdRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
   '/edits': typeof EditsIndexRoute
   '/shopper': typeof ShopperIndexRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -173,11 +207,15 @@ export interface FileRoutesById {
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/edits/$id': typeof EditsIdRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
   '/edits/': typeof EditsIndexRoute
   '/shopper/': typeof ShopperIndexRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -195,11 +233,15 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/broadcast'
     | '/edits/$id'
+    | '/email/unsubscribe'
     | '/product/$handle'
     | '/shopper/new'
     | '/edits/'
     | '/shopper/'
+    | '/lovable/email/suppression'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -213,11 +255,15 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/broadcast'
     | '/edits/$id'
+    | '/email/unsubscribe'
     | '/product/$handle'
     | '/shopper/new'
     | '/edits'
     | '/shopper'
+    | '/lovable/email/suppression'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   id:
     | '__root__'
     | '/'
@@ -233,11 +279,15 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/broadcast'
     | '/edits/$id'
+    | '/email/unsubscribe'
     | '/product/$handle'
     | '/shopper/new'
     | '/edits/'
     | '/shopper/'
+    | '/lovable/email/suppression'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -253,8 +303,12 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   WishlistRoute: typeof WishlistRoute
   AdminBroadcastRoute: typeof AdminBroadcastRoute
+  EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ProductHandleRoute: typeof ProductHandleRoute
+  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
+  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -364,6 +418,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductHandleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/edits/$id': {
       id: '/edits/$id'
       path: '/$id'
@@ -376,6 +437,27 @@ declare module '@tanstack/react-router' {
       path: '/admin/broadcast'
       fullPath: '/admin/broadcast'
       preLoaderRoute: typeof AdminBroadcastRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lovable/email/queue/process': {
@@ -426,8 +508,12 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   WishlistRoute: WishlistRoute,
   AdminBroadcastRoute: AdminBroadcastRoute,
+  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ProductHandleRoute: ProductHandleRoute,
+  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
+  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
