@@ -45,14 +45,13 @@ export const getEmailStats = createServerFn({ method: 'POST' })
       created_at: string
     }>
 
-    const dedupMap = new Map<string, typeof rows[number]>()
-    for (const r of rows ?? []) {
+    const dedupMap = new Map<string, typeof typedRows[number]>()
+    for (const r of typedRows) {
       const key = r.message_id ?? `__no_id_${r.id}`
       if (!dedupMap.has(key)) dedupMap.set(key, r)
     }
     let latest = Array.from(dedupMap.values())
 
-    // Compute stats from full deduped set
     const stats = {
       total: latest.length,
       sent: latest.filter((r) => r.status === 'sent').length,
@@ -61,9 +60,10 @@ export const getEmailStats = createServerFn({ method: 'POST' })
       pending: latest.filter((r) => r.status === 'pending').length,
     }
 
-    const templates = Array.from(new Set(latest.map((r) => r.template_name).filter(Boolean))) as string[]
+    const templates = Array.from(
+      new Set(latest.map((r) => r.template_name).filter((t): t is string => !!t)),
+    )
 
-    // Apply filters for the log table
     if (data.templateFilter) latest = latest.filter((r) => r.template_name === data.templateFilter)
     if (data.statusFilter) latest = latest.filter((r) => r.status === data.statusFilter)
 
