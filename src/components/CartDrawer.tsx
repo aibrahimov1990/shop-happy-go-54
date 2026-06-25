@@ -159,6 +159,12 @@ export function CartDrawer({
                     "Checkout"
                   )}
                 </Button>
+                <button
+                  onClick={() => onOpenChange(false)}
+                  className="w-full text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground py-1"
+                >
+                  Continue Shopping
+                </button>
                 <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest">
                   Secure checkout via Shopify
                 </p>
@@ -170,6 +176,7 @@ export function CartDrawer({
     </Sheet>
   );
 }
+
 
 export function CartButton({ onClick }: { onClick: () => void }) {
   const totalItems = useCartStore((s) => s.items.reduce((a, b) => a + b.quantity, 0));
