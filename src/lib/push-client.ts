@@ -38,29 +38,12 @@ function extractUrl(data: PushData): string | null {
 
 async function registerTokenWithBackend(token: string, platform: "ios" | "android") {
   const { data } = await supabase.auth.getSession();
-  const userId = data.session?.user?.id ?? null;
-
-  if (data.session) {
-    try {
-      await registerDeviceToken({ data: { token, platform } });
-      lastRegisteredToken = token;
-      return true;
-    } catch (err) {
-      console.warn("Authenticated push registration failed; trying direct registration", err);
-    }
+  if (!data.session) {
+    // No signed-in user yet — defer registration until SIGNED_IN fires.
+    return false;
   }
 
-  const { error } = await supabase.from("device_tokens").upsert(
-    {
-      token,
-      platform,
-      user_id: userId,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "token" },
-  );
-
-  if (error) throw error;
+  await registerDeviceToken({ data: { token, platform } });
   lastRegisteredToken = token;
   return true;
 }
