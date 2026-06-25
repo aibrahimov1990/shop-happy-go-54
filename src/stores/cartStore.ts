@@ -117,9 +117,32 @@ function isCartNotFoundError(errs: Array<{ message: string }>) {
   );
 }
 
+function formatCheckoutUrl(checkoutUrl: string): string {
+  try {
+    const url = new URL(checkoutUrl);
+    url.searchParams.set("channel", "online_store");
+    return appendUtm(url.toString());
+  } catch {
+    return appendUtm(checkoutUrl);
+  }
+}
+
+function isCartNotFoundError(errs: Array<{ message: string }>) {
+  return errs.some(
+    (e) =>
+      e.message.toLowerCase().includes("cart not found") ||
+      e.message.toLowerCase().includes("does not exist"),
+  );
+}
+
 async function createShopifyCart(item: CartItem) {
+  const { note, attributes } = buildCartAttribution();
   const data = await storefrontApiRequest<any>(CART_CREATE_MUTATION, {
-    input: { lines: [{ quantity: item.quantity, merchandiseId: item.variantId }] },
+    input: {
+      lines: [{ quantity: item.quantity, merchandiseId: item.variantId }],
+      ...(note ? { note } : {}),
+      attributes,
+    },
   });
   const errs = data?.data?.cartCreate?.userErrors ?? [];
   if (errs.length) {
