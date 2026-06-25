@@ -132,6 +132,11 @@ function RootComponent() {
       .finally(() => {
         if (mounted) {
           setNativeSessionReady(true);
+          void import("../lib/native-oauth").then((m) =>
+            m.installNativeAuthDeepLinkHandler((path) => {
+              window.location.assign(path);
+            }),
+          );
           void import("../lib/push-client").then((m) => m.initPushNotifications());
         }
       });
