@@ -99,23 +99,6 @@ const CART_LINES_REMOVE_MUTATION = `
     cartLinesRemove(cartId: $cartId, lineIds: $lineIds) { cart { id } userErrors { field message } }
   }`;
 
-function formatCheckoutUrl(checkoutUrl: string): string {
-  try {
-    const url = new URL(checkoutUrl);
-    url.searchParams.set("channel", "online_store");
-    return url.toString();
-  } catch {
-    return checkoutUrl;
-  }
-}
-
-function isCartNotFoundError(errs: Array<{ message: string }>) {
-  return errs.some(
-    (e) =>
-      e.message.toLowerCase().includes("cart not found") ||
-      e.message.toLowerCase().includes("does not exist"),
-  );
-}
 
 function formatCheckoutUrl(checkoutUrl: string): string {
   try {
