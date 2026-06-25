@@ -70,7 +70,7 @@ export async function initPushNotifications() {
       });
 
       void FirebaseMessaging.addListener("notificationActionPerformed", (action) => {
-        const url = extractUrl(action.notification?.data);
+        const url = extractUrl(action.notification?.data as PushData);
         if (!url) return;
         try {
           window.location.assign(url);
