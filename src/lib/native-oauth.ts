@@ -11,6 +11,9 @@ type OAuthProvider = "google";
 
 let deepLinkHandlerInstalled = false;
 let authCallbackInFlight: Promise<string | null> | null = null;
+let browserOpen = false;
+const processedAuthUrls = new Set<string>();
+const PROCESSED_LAUNCH_URL_KEY = "sellier_processed_launch_url";
 
 export function isNativeApp() {
   return typeof window !== "undefined" && Capacitor.isNativePlatform();
