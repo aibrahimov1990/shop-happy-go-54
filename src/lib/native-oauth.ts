@@ -140,12 +140,14 @@ export async function startNativeGoogleSignIn(next?: string) {
 
   try {
     const { Browser } = await import("@capacitor/browser");
+    browserOpen = true;
     await Browser.open({
       url: oauthUrl,
       presentationStyle: "fullscreen",
       toolbarColor: "#f7f4ec",
     });
   } catch (err) {
+    browserOpen = false;
     console.warn("Capacitor Browser plugin failed; using webview sign-in fallback.", err);
     openOAuthInCurrentWebView(provider, state);
   }
