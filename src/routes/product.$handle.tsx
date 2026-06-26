@@ -7,10 +7,13 @@ import { MobileLayout } from "@/components/MobileLayout";
 import {
   storefrontApiRequest,
   PRODUCT_BY_HANDLE_QUERY,
+  PRODUCTS_QUERY,
   formatPrice,
   type ShopifyVariant,
+  type ShopifyProduct,
 } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
+import { ProductCard } from "@/components/ProductCard";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/product/$handle")({
@@ -42,6 +45,59 @@ function ProductPage() {
   useEffect(() => {
     if (!variantId && variants[0]) setVariantId(variants[0].id);
   }, [variants, variantId]);
+
+  const productType: string | undefined = data?.productType;
+  const productTags: string[] = data?.tags ?? [];
+
+  const COLORS = [
+    "black","white","brown","beige","tan","cream","ivory","taupe","grey","gray",
+    "blue","navy","red","pink","green","yellow","orange","purple","gold","silver",
+    "burgundy","camel","khaki","olive","nude",
+  ];
+  const isClothing = /dress|top|shirt|blouse|skirt|trouser|pant|jean|jacket|coat|knit|sweater|clothing/i.test(
+    `${productType ?? ""} ${data?.title ?? ""}`,
+  );
+  const sizeOption = selectedVariant?.selectedOptions?.find((o) =>
+    /size/i.test(o.name),
+  )?.value;
+  const colorFromOption = selectedVariant?.selectedOptions?.find((o) =>
+    /colou?r/i.test(o.name),
+  )?.value;
+  const haystack = `${data?.title ?? ""} ${productTags.join(" ")}`.toLowerCase();
+  const colorFromText = COLORS.find((c) => haystack.includes(c));
+  const color = (colorFromOption ?? colorFromText)?.toString();
+
+  const relatedQueryString = (() => {
+    if (!productType) return "";
+    const parts: string[] = [`product_type:"${productType}"`];
+    if (isClothing && sizeOption) parts.push(`tag:"${sizeOption}"`);
+    else if (color) parts.push(`tag:"${color}"`);
+    return parts.join(" AND ");
+  })();
+
+  const { data: related } = useQuery({
+    queryKey: ["related", data?.id, relatedQueryString],
+    enabled: !!data?.id && !!productType,
+    queryFn: async () => {
+      const tryFetch = async (q: string) => {
+        const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
+          first: 12,
+          query: q,
+          sortKey: "BEST_SELLING",
+          reverse: false,
+        });
+        return (res?.data?.products?.edges ?? []) as ShopifyProduct[];
+      };
+      let edges = relatedQueryString ? await tryFetch(relatedQueryString) : [];
+      edges = edges.filter((e) => e.node.id !== data!.id);
+      if (edges.length < 4 && productType) {
+        const fallback = await tryFetch(`product_type:"${productType}"`);
+        edges = fallback.filter((e) => e.node.id !== data!.id);
+      }
+      return edges.slice(0, 10);
+    },
+  });
+
 
   const handleAdd = async () => {
     if (!selectedVariant || !data) return;
@@ -198,6 +254,21 @@ function ProductPage() {
                 __html: data.descriptionHtml || data.description,
               }}
             />
+          </div>
+        )}
+
+
+
+        {related && related.length > 0 && (
+          <div className="mt-10 pt-6 border-t border-border/60">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-4">
+              You may also like
+            </p>
+            <div className="grid grid-cols-2 gap-x-3 gap-y-6">
+              {related.map((p) => (
+                <ProductCard key={p.node.id} product={p} />
+              ))}
+            </div>
           </div>
         )}
       </div>
