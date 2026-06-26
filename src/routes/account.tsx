@@ -138,6 +138,44 @@ function Account() {
           </Link>
         )}
 
+        <Dialog open={pwOpen} onOpenChange={setPwOpen}>
+          <DialogTrigger asChild>
+            <button className="flex items-center justify-between px-6 py-5 active:bg-muted/40 w-full text-left">
+              <div className="flex items-center gap-3">
+                <Lock className="h-4 w-4" />
+                <span className="text-sm">Set password</span>
+              </div>
+              <span className="text-muted-foreground">›</span>
+            </button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Set a password</DialogTitle>
+              <DialogDescription>
+                Lets you sign in with email + password instead of a magic link.
+              </DialogDescription>
+            </DialogHeader>
+            <Input
+              type="password"
+              autoComplete="new-password"
+              placeholder="New password (min 8 chars)"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="h-11"
+            />
+            <DialogFooter>
+              <Button
+                onClick={handleSetPassword}
+                disabled={savingPassword}
+                className="text-[11px] uppercase tracking-[0.25em]"
+              >
+                {savingPassword ? "Saving…" : "Save password"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+
         <a
           href="https://www.sellierknightsbridge.com/pages/privacy-policy"
           target="_blank"
