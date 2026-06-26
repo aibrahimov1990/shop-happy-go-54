@@ -146,12 +146,13 @@ function ProductPage() {
           <ChevronLeft className="h-4 w-4" />
         </button>
 
-        <div className="aspect-square w-full bg-white overflow-hidden">
+        <div className="aspect-[4/5] w-full bg-white overflow-hidden">
           {images[imgIdx] && (
             <img
               src={images[imgIdx].url}
               alt={images[imgIdx].altText ?? data.title}
               className="h-full w-full object-cover"
+              style={{ objectPosition: "center center" }}
             />
           )}
         </div>
