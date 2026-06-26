@@ -135,6 +135,24 @@ export function ProductCard({
         <h3 className="font-serif text-sm leading-tight line-clamp-2">{p.title}</h3>
         <p className="text-xs mt-1">{formatPrice(price.amount, price.currencyCode)}</p>
       </Link>
+
+      {showAddToBag && (
+        <button
+          type="button"
+          onClick={handleAddToBag}
+          disabled={adding}
+          className="mt-2 w-full flex items-center justify-center gap-1.5 border border-foreground py-2 text-[10px] uppercase tracking-[0.2em] disabled:opacity-50"
+        >
+          {adding ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <>
+              <ShoppingBag className="h-3 w-3" strokeWidth={1.5} />
+              {hasOptions ? "Select options" : "Add to bag"}
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 }
