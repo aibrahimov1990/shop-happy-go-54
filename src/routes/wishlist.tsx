@@ -66,7 +66,7 @@ function WishlistPage() {
         ) : (
           <div className="grid grid-cols-2 gap-x-3 gap-y-6">
             {products.map((p) => (
-              <ProductCard key={p.node.id} product={p} />
+              <ProductCard key={p.node.id} product={p} showAddToBag />
             ))}
           </div>
         )}
