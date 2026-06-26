@@ -45,6 +45,28 @@ function Account() {
   const navigate = useNavigate();
   const deleteAccount = useServerFn(deleteMyAccount);
   const [deleting, setDeleting] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [pwOpen, setPwOpen] = useState(false);
+
+  const handleSetPassword = async () => {
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    setSavingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success("Password set. You can now sign in with email + password.");
+      setNewPassword("");
+      setPwOpen(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not set password");
+    } finally {
+      setSavingPassword(false);
+    }
+  };
 
   if (loading) {
     return (
