@@ -169,6 +169,24 @@ function ProductPage() {
           )}
         </button>
 
+        <button
+          onClick={() => {
+            const wasIn = has(data.id);
+            toggle(data.id);
+            toast.success(wasIn ? "Removed from wishlist" : "Added to wishlist", {
+              position: "top-center",
+            });
+          }}
+          className="mt-3 w-full h-12 border border-foreground text-foreground bg-background text-[11px] uppercase tracking-[0.25em] flex items-center justify-center gap-2"
+        >
+          <Heart
+            className="h-4 w-4"
+            fill={has(data.id) ? "currentColor" : "none"}
+          />
+          {has(data.id) ? "In Wishlist" : "Add to Wishlist"}
+        </button>
+
+
         {(data.descriptionHtml || data.description) && (
           <div className="mt-8 pt-6 border-t border-border/60">
             <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-3">
