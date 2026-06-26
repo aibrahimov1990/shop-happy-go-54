@@ -174,7 +174,7 @@ function AuthPage() {
             </div>
           ) : (
             <>
-              <form onSubmit={handleMagicLink} className="space-y-3">
+              <form onSubmit={mode === "magic" ? handleMagicLink : handlePasswordSignIn} className="space-y-3">
                 <Input
                   type="email"
                   required
@@ -184,10 +184,29 @@ function AuthPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="h-12"
                 />
+                {mode === "password" && (
+                  <Input
+                    type="password"
+                    required
+                    autoComplete="current-password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="h-12"
+                  />
+                )}
                 <Button type="submit" disabled={sending} className="w-full h-12 text-[11px] uppercase tracking-[0.25em]">
-                  {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue with email"}
+                  {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : mode === "magic" ? "Continue with email" : "Sign in"}
                 </Button>
+                <button
+                  type="button"
+                  onClick={() => setMode(mode === "magic" ? "password" : "magic")}
+                  className="block w-full text-center text-[10px] uppercase tracking-[0.25em] text-muted-foreground underline pt-1"
+                >
+                  {mode === "magic" ? "Use password instead" : "Use magic link instead"}
+                </button>
               </form>
+
 
               <div className="flex items-center gap-3 my-5">
                 <div className="h-px flex-1 bg-border" />
