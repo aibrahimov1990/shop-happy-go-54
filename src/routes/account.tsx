@@ -16,8 +16,19 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2 } from "lucide-react";
+import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2, Lock } from "lucide-react";
 import { deleteMyAccount } from "@/lib/account.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/account")({
   head: () => ({
@@ -34,6 +45,28 @@ function Account() {
   const navigate = useNavigate();
   const deleteAccount = useServerFn(deleteMyAccount);
   const [deleting, setDeleting] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [pwOpen, setPwOpen] = useState(false);
+
+  const handleSetPassword = async () => {
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    setSavingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success("Password set. You can now sign in with email + password.");
+      setNewPassword("");
+      setPwOpen(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not set password");
+    } finally {
+      setSavingPassword(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -104,6 +137,44 @@ function Account() {
             <span className="text-muted-foreground">›</span>
           </Link>
         )}
+
+        <Dialog open={pwOpen} onOpenChange={setPwOpen}>
+          <DialogTrigger asChild>
+            <button className="flex items-center justify-between px-6 py-5 active:bg-muted/40 w-full text-left">
+              <div className="flex items-center gap-3">
+                <Lock className="h-4 w-4" />
+                <span className="text-sm">Set password</span>
+              </div>
+              <span className="text-muted-foreground">›</span>
+            </button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Set a password</DialogTitle>
+              <DialogDescription>
+                Lets you sign in with email + password instead of a magic link.
+              </DialogDescription>
+            </DialogHeader>
+            <Input
+              type="password"
+              autoComplete="new-password"
+              placeholder="New password (min 8 chars)"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="h-11"
+            />
+            <DialogFooter>
+              <Button
+                onClick={handleSetPassword}
+                disabled={savingPassword}
+                className="text-[11px] uppercase tracking-[0.25em]"
+              >
+                {savingPassword ? "Saving…" : "Save password"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
 
         <a
           href="https://www.sellierknightsbridge.com/pages/privacy-policy"
