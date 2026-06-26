@@ -256,6 +256,21 @@ function ProductPage() {
             />
           </div>
         )}
+          </div>
+        )}
+
+        {related && related.length > 0 && (
+          <div className="mt-10 pt-6 border-t border-border/60">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-4">
+              You may also like
+            </p>
+            <div className="grid grid-cols-2 gap-x-3 gap-y-6">
+              {related.map((p) => (
+                <ProductCard key={p.node.id} product={p} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </MobileLayout>
   );
