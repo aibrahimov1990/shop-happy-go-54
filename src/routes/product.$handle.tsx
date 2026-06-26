@@ -7,10 +7,13 @@ import { MobileLayout } from "@/components/MobileLayout";
 import {
   storefrontApiRequest,
   PRODUCT_BY_HANDLE_QUERY,
+  PRODUCTS_QUERY,
   formatPrice,
   type ShopifyVariant,
+  type ShopifyProduct,
 } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
+import { ProductCard } from "@/components/ProductCard";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/product/$handle")({
