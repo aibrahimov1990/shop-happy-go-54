@@ -27,6 +27,7 @@ import { Route as ShopperNewRouteImport } from './routes/shopper.new'
 import { Route as ProductHandleRouteImport } from './routes/product.$handle'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as EditsIdRouteImport } from './routes/edits.$id'
+import { Route as CollectionsHandleRouteImport } from './routes/collections.$handle'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -126,6 +127,11 @@ const EditsIdRoute = EditsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => EditsRoute,
 } as any)
+const CollectionsHandleRoute = CollectionsHandleRouteImport.update({
+  id: '/collections/$handle',
+  path: '/collections/$handle',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminEmailsRoute = AdminEmailsRouteImport.update({
   id: '/admin/emails',
   path: '/admin/emails',
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/collections/$handle': typeof CollectionsHandleRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$handle': typeof ProductHandleRoute
@@ -211,6 +218,7 @@ export interface FileRoutesByTo {
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/collections/$handle': typeof CollectionsHandleRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$handle': typeof ProductHandleRoute
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/collections/$handle': typeof CollectionsHandleRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$handle': typeof ProductHandleRoute
@@ -270,6 +279,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/broadcast'
     | '/admin/emails'
+    | '/collections/$handle'
     | '/edits/$id'
     | '/email/unsubscribe'
     | '/product/$handle'
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/broadcast'
     | '/admin/emails'
+    | '/collections/$handle'
     | '/edits/$id'
     | '/email/unsubscribe'
     | '/product/$handle'
@@ -324,6 +335,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/broadcast'
     | '/admin/emails'
+    | '/collections/$handle'
     | '/edits/$id'
     | '/email/unsubscribe'
     | '/product/$handle'
@@ -353,6 +365,7 @@ export interface RootRouteChildren {
   WishlistRoute: typeof WishlistRoute
   AdminBroadcastRoute: typeof AdminBroadcastRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
+  CollectionsHandleRoute: typeof CollectionsHandleRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ProductHandleRoute: typeof ProductHandleRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -491,6 +504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EditsIdRouteImport
       parentRoute: typeof EditsRoute
     }
+    '/collections/$handle': {
+      id: '/collections/$handle'
+      path: '/collections/$handle'
+      fullPath: '/collections/$handle'
+      preLoaderRoute: typeof CollectionsHandleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/emails': {
       id: '/admin/emails'
       path: '/admin/emails'
@@ -590,6 +610,7 @@ const rootRouteChildren: RootRouteChildren = {
   WishlistRoute: WishlistRoute,
   AdminBroadcastRoute: AdminBroadcastRoute,
   AdminEmailsRoute: AdminEmailsRoute,
+  CollectionsHandleRoute: CollectionsHandleRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ProductHandleRoute: ProductHandleRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,

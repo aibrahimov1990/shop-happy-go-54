@@ -83,7 +83,8 @@ function Home() {
           </p>
           <h1 className="font-serif text-4xl leading-none">Authentic<br/>Superbrands</h1>
           <Link
-            to="/shop"
+            to="/collections/$handle"
+            params={{ handle: "new-drops" }}
             className="inline-block mt-5 bg-background text-foreground px-6 py-3 text-[11px] uppercase tracking-[0.25em]"
           >
             New Drops
