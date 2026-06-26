@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { ChevronLeft, Loader2 } from "lucide-react";
+import { ChevronLeft, Heart, Loader2 } from "lucide-react";
+import { useWishlist } from "@/hooks/useWishlist";
 import { MobileLayout } from "@/components/MobileLayout";
 import {
   storefrontApiRequest,
@@ -23,6 +24,7 @@ function ProductPage() {
   const isLoading = useCartStore((s) => s.isLoading);
   const [variantId, setVariantId] = useState<string | null>(null);
   const [imgIdx, setImgIdx] = useState(0);
+  const { has, toggle } = useWishlist();
 
   const { data, isLoading: loadingProduct } = useQuery({
     queryKey: ["product", handle],
@@ -166,6 +168,24 @@ function ProductPage() {
             "Sold Out"
           )}
         </button>
+
+        <button
+          onClick={() => {
+            const wasIn = has(data.id);
+            toggle(data.id);
+            toast.success(wasIn ? "Removed from wishlist" : "Added to wishlist", {
+              position: "top-center",
+            });
+          }}
+          className="mt-3 w-full h-12 border border-foreground text-foreground bg-background text-[11px] uppercase tracking-[0.25em] flex items-center justify-center gap-2"
+        >
+          <Heart
+            className="h-4 w-4"
+            fill={has(data.id) ? "currentColor" : "none"}
+          />
+          {has(data.id) ? "In Wishlist" : "Add to Wishlist"}
+        </button>
+
 
         {(data.descriptionHtml || data.description) && (
           <div className="mt-8 pt-6 border-t border-border/60">
