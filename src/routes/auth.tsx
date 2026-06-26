@@ -68,6 +68,25 @@ function AuthPage() {
     }
   };
 
+  const handlePasswordSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    setSending(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (error) throw error;
+      toast.success("Signed in");
+    } catch (err: any) {
+      toast.error(err.message ?? "Sign-in failed");
+    } finally {
+      setSending(false);
+    }
+  };
+
+
   const handleGoogle = async () => {
     try {
       if (isNativeApp() && await startNativeGoogleSignIn(next)) return;
