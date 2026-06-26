@@ -1,10 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
 import { storefrontApiRequest, PRODUCTS_QUERY, type ShopifyProduct } from "@/lib/shopify";
 import sellierLogo from "@/assets/sellier-logo.svg";
+import hero1 from "@/assets/hero-1.png";
+import hero2 from "@/assets/hero-2.png";
+
+const HERO_IMAGES = [hero1, hero2];
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -42,6 +47,14 @@ function Home() {
     queryFn: fetchFeatured,
   });
 
+  const [heroIndex, setHeroIndex] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setHeroIndex((i) => (i + 1) % HERO_IMAGES.length);
+    }, 5000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <MobileLayout>
       {/* Announcement bar */}
@@ -51,12 +64,17 @@ function Home() {
 
       {/* Hero */}
       <section className="relative">
-        <div className="aspect-[3/4] w-full bg-muted overflow-hidden">
-          <img
-            src="https://www.sellierknightsbridge.com/cdn/shop/files/284A3741_1000x.jpg"
-            alt="Sellier Knightsbridge — Authentic Superbrands"
-            className="h-full w-full object-cover"
-          />
+        <div className="relative aspect-[3/4] w-full bg-muted overflow-hidden">
+          {HERO_IMAGES.map((src, i) => (
+            <img
+              key={src}
+              src={src}
+              alt="Sellier Knightsbridge — Authentic Superbrands"
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+                i === heroIndex ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
           <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 via-foreground/10 to-transparent" />
         </div>
         <div className="absolute bottom-8 left-0 right-0 px-6 text-background">
