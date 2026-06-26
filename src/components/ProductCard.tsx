@@ -1,15 +1,59 @@
 import { Link } from "@tanstack/react-router";
-import { Heart } from "lucide-react";
+import { Heart, ShoppingBag, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { type ShopifyProduct, formatPrice } from "@/lib/shopify";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useCartStore } from "@/stores/cartStore";
 
-export function ProductCard({ product }: { product: ShopifyProduct }) {
+export function ProductCard({
+  product,
+  showAddToBag = false,
+}: {
+  product: ShopifyProduct;
+  showAddToBag?: boolean;
+}) {
   const p = product.node;
   const images = p.images.edges.slice(0, 8);
   const price = p.priceRange.minVariantPrice;
   const { has, toggle } = useWishlist();
   const saved = has(p.id);
+  const addItem = useCartStore((s) => s.addItem);
+  const [adding, setAdding] = useState(false);
+
+  const firstVariant = p.variants.edges[0]?.node;
+  const hasOptions =
+    p.variants.edges.length > 1 ||
+    (p.options?.length === 1 && p.options[0]?.values?.length > 1);
+
+  const handleAddToBag = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!firstVariant || adding) return;
+    if (hasOptions) {
+      toast.info("Select a size or option", { description: p.title });
+      return;
+    }
+    if (!firstVariant.availableForSale) {
+      toast.error("Sold out");
+      return;
+    }
+    setAdding(true);
+    try {
+      await addItem({
+        product,
+        variantId: firstVariant.id,
+        variantTitle: firstVariant.title,
+        price: firstVariant.price,
+        quantity: 1,
+        selectedOptions: firstVariant.selectedOptions ?? [],
+      });
+      toast.success("Added to bag", { description: p.title });
+    } finally {
+      setAdding(false);
+    }
+  };
+
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -91,6 +135,24 @@ export function ProductCard({ product }: { product: ShopifyProduct }) {
         <h3 className="font-serif text-sm leading-tight line-clamp-2">{p.title}</h3>
         <p className="text-xs mt-1">{formatPrice(price.amount, price.currencyCode)}</p>
       </Link>
+
+      {showAddToBag && (
+        <button
+          type="button"
+          onClick={handleAddToBag}
+          disabled={adding}
+          className="mt-2 w-full flex items-center justify-center gap-1.5 border border-foreground py-2 text-[10px] uppercase tracking-[0.2em] disabled:opacity-50"
+        >
+          {adding ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <>
+              <ShoppingBag className="h-3 w-3" strokeWidth={1.5} />
+              {hasOptions ? "Select options" : "Add to bag"}
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 }
