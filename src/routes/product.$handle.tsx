@@ -151,7 +151,7 @@ function ProductPage() {
             <img
               src={images[imgIdx].url}
               alt={images[imgIdx].altText ?? data.title}
-              className="h-full w-full object-contain"
+              className="h-full w-full object-cover"
             />
           )}
         </div>
