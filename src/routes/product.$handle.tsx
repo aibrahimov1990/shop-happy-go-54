@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { ChevronLeft, Loader2 } from "lucide-react";
+import { ChevronLeft, Heart, Loader2 } from "lucide-react";
+import { useWishlist } from "@/hooks/useWishlist";
 import { MobileLayout } from "@/components/MobileLayout";
 import {
   storefrontApiRequest,
