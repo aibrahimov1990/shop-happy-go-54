@@ -4,7 +4,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
-import { isNativeApp, startNativeGoogleSignIn } from "@/lib/native-oauth";
+import { isNativeApp, startNativeGoogleSignIn, startNativeAppleSignIn } from "@/lib/native-oauth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Loader2, ArrowLeft } from "lucide-react";
@@ -92,6 +92,32 @@ function AuthPage() {
     }
   };
 
+  const handleApple = async () => {
+    try {
+      if (isNativeApp() && await startNativeAppleSignIn(next)) return;
+
+      if (next && typeof window !== "undefined") {
+        sessionStorage.setItem("post_auth_redirect", next);
+      }
+      const result = await lovable.auth.signInWithOAuth("apple", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        toast.error("Apple sign-in failed");
+        return;
+      }
+      if (result.redirected) return;
+      const { data } = await supabase.auth.getSession();
+      const { persistNativeSession } = await import("@/lib/native-session");
+      await persistNativeSession(data.session);
+      const stored = typeof window !== "undefined" ? sessionStorage.getItem("post_auth_redirect") : null;
+      if (stored) sessionStorage.removeItem("post_auth_redirect");
+      navigate({ to: stored ?? next ?? "/edits" });
+    } catch (err: any) {
+      toast.error(err.message ?? "Sign-in failed");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col pt-[env(safe-area-inset-top)]">
       <div className="px-4 pt-4">
@@ -157,6 +183,14 @@ function AuthPage() {
                 Continue with Google
               </Button>
 
+              <Button
+                onClick={handleApple}
+                className="w-full h-12 mt-3 text-[11px] uppercase tracking-[0.25em] bg-black text-white hover:bg-black/90"
+              >
+                <AppleIcon className="h-4 w-4 mr-2" />
+                Continue with Apple
+              </Button>
+
               <p className="text-[10px] text-muted-foreground text-center mt-8 leading-relaxed">
                 By continuing you agree to receive personal edits and updates from your Sellier shopper.
               </p>
@@ -165,6 +199,14 @@ function AuthPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function AppleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.05 12.74c-.02-2.06 1.68-3.05 1.76-3.1-.96-1.4-2.45-1.6-2.98-1.62-1.27-.13-2.48.75-3.13.75-.65 0-1.65-.73-2.71-.71-1.4.02-2.69.81-3.41 2.06-1.45 2.52-.37 6.25 1.05 8.3.69.99 1.51 2.11 2.58 2.07 1.04-.04 1.43-.67 2.69-.67 1.25 0 1.6.67 2.7.65 1.11-.02 1.82-1.02 2.51-2.01.79-1.16 1.12-2.28 1.14-2.34-.03-.01-2.19-.84-2.21-3.38zM15.07 6.5c.57-.69.96-1.65.85-2.6-.83.03-1.83.55-2.42 1.24-.53.61-.99 1.58-.87 2.52.93.07 1.87-.47 2.44-1.16z"/>
+    </svg>
   );
 }
 
