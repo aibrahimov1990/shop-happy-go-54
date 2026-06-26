@@ -1,8 +1,23 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { MobileLayout } from "@/components/MobileLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Sparkles, Crown, Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2 } from "lucide-react";
+import { deleteMyAccount } from "@/lib/account.functions";
 
 export const Route = createFileRoute("/account")({
   head: () => ({
@@ -17,6 +32,8 @@ export const Route = createFileRoute("/account")({
 function Account() {
   const { user, loading, isShopper, signOut } = useAuth();
   const navigate = useNavigate();
+  const deleteAccount = useServerFn(deleteMyAccount);
+  const [deleting, setDeleting] = useState(false);
 
   if (loading) {
     return (
@@ -47,6 +64,19 @@ function Account() {
     );
   }
 
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteAccount();
+      toast.success("Your account has been deleted.");
+      await signOut();
+      navigate({ to: "/" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not delete account.");
+      setDeleting(false);
+    }
+  };
+
   return (
     <MobileLayout>
       <div className="px-6 pt-12 pb-6 text-center border-b border-border/60">
@@ -75,6 +105,19 @@ function Account() {
           </Link>
         )}
 
+        <a
+          href="https://www.sellierknightsbridge.com/pages/privacy-policy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between px-6 py-5 active:bg-muted/40"
+        >
+          <div className="flex items-center gap-3">
+            <Shield className="h-4 w-4" />
+            <span className="text-sm">Privacy policy</span>
+          </div>
+          <span className="text-muted-foreground">›</span>
+        </a>
+
         <button
           onClick={async () => {
             await signOut();
@@ -87,6 +130,39 @@ function Account() {
             <span className="text-sm">Sign out</span>
           </div>
         </button>
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button className="flex items-center justify-between px-6 py-5 active:bg-muted/40 w-full text-left">
+              <div className="flex items-center gap-3 text-destructive">
+                <Trash2 className="h-4 w-4" />
+                <span className="text-sm">Delete account</span>
+              </div>
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This permanently removes your Sellier account, personal edits, wishlist, and notification devices.
+                This cannot be undone. Past orders placed through Shopify are kept for legal and accounting reasons.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => {
+                  e.preventDefault();
+                  void handleDelete();
+                }}
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? "Deleting…" : "Delete permanently"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </MobileLayout>
   );
