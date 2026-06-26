@@ -32,8 +32,10 @@ function AuthPage() {
   const navigate = useNavigate();
   const { session, user, loading } = useAuth();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [mode, setMode] = useState<"magic" | "password">("magic");
 
   useEffect(() => {
     if (!loading && user) {
