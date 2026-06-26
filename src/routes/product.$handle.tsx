@@ -24,6 +24,7 @@ function ProductPage() {
   const isLoading = useCartStore((s) => s.isLoading);
   const [variantId, setVariantId] = useState<string | null>(null);
   const [imgIdx, setImgIdx] = useState(0);
+  const { has, toggle } = useWishlist();
 
   const { data, isLoading: loadingProduct } = useQuery({
     queryKey: ["product", handle],
