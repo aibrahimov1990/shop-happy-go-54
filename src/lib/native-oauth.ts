@@ -7,7 +7,7 @@ const WEBVIEW_AUTH_REDIRECT_PATH = "/auth";
 const OAUTH_STATE_KEY = "sellier_native_oauth_state";
 const POST_AUTH_REDIRECT_KEY = "post_auth_redirect";
 
-type OAuthProvider = "google";
+type OAuthProvider = "google" | "apple";
 
 let deepLinkHandlerInstalled = false;
 let authCallbackInFlight: Promise<string | null> | null = null;
@@ -122,14 +122,13 @@ export async function completeAuthFromUrl(url: string): Promise<string | null> {
   return authCallbackInFlight;
 }
 
-export async function startNativeGoogleSignIn(next?: string) {
+export async function startNativeOAuthSignIn(provider: OAuthProvider, next?: string) {
   if (!isNativeApp()) return false;
 
   const state = generateState();
   sessionStorage.setItem(OAUTH_STATE_KEY, state);
   sessionStorage.setItem(POST_AUTH_REDIRECT_KEY, safePath(next));
 
-  const provider = "google" satisfies OAuthProvider;
   const oauthUrl = buildOAuthUrl(provider, NATIVE_AUTH_REDIRECT_URI, state);
 
   if (!Capacitor.isPluginAvailable("Browser")) {
@@ -152,6 +151,14 @@ export async function startNativeGoogleSignIn(next?: string) {
     openOAuthInCurrentWebView(provider, state);
   }
   return true;
+}
+
+export async function startNativeGoogleSignIn(next?: string) {
+  return startNativeOAuthSignIn("google", next);
+}
+
+export async function startNativeAppleSignIn(next?: string) {
+  return startNativeOAuthSignIn("apple", next);
 }
 
 export async function installNativeAuthDeepLinkHandler(onSignedIn?: (path: string) => void) {
