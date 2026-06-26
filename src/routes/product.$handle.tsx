@@ -256,8 +256,8 @@ function ProductPage() {
             />
           </div>
         )}
-          </div>
-        )}
+
+
 
         {related && related.length > 0 && (
           <div className="mt-10 pt-6 border-t border-border/60">
