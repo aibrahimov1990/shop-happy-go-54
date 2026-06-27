@@ -1,0 +1,260 @@
+{% capture email_title %}Your invoice from {{ shop.name }}{% endcapture %}
+{% capture email_body %}
+{% if custom_message != blank %}
+{{ custom_message }}
+{% else %}
+Hi {{ customer.first_name | default: billing_address.first_name }}, thank you for shopping with Sellier. Your invoice is ready — you can complete your purchase securely using the link below.
+{% endif %}
+{% endcapture %}
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>{{ email_title }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Bodoni+Moda:wght@400;500;600&family=Inter:wght@300;400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+      html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+      * { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+      table { border-spacing: 0 !important; border-collapse: collapse !important; }
+      img { border: 0; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+
+      body {
+        background-color: #FAF9F5;
+        font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, 'Times New Roman', serif;
+        color: #1a1a1a;
+      }
+      .wrap { width: 100%; background-color: #FAF9F5; }
+      .container { width: 100%; max-width: 600px; margin: 0 auto; }
+      .px { padding-left: 32px; padding-right: 32px; }
+
+      .brand { text-align: center; padding: 40px 0 30px; }
+      .brand img { display: inline-block; height: 32px; width: auto; max-width: 240px; }
+      .divider { border: 0; border-top: 1px solid #e3ddd1; margin: 0; }
+
+      h1.title {
+        font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, 'Times New Roman', serif;
+        font-weight: 400;
+        font-size: 26px;
+        line-height: 1.25;
+        color: #111;
+        margin: 32px 0 12px;
+        letter-spacing: 0.01em;
+      }
+      .order-meta {
+        font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #7a7268;
+        margin: 0 0 24px;
+      }
+      p.body { font-size: 15px; line-height: 24px; color: #2b2b2b; margin: 0 0 18px; }
+
+      .btn-wrap { text-align: center; margin: 28px 0 8px; }
+      .btn {
+        background-color: #111111;
+        color: #ffffff !important;
+        text-decoration: none;
+        display: inline-block;
+        padding: 15px 36px;
+        font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+      }
+      .link { color: #111; text-decoration: underline; }
+
+      .section-label {
+        font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: #7a7268;
+        margin: 32px 0 14px;
+      }
+
+      .li-title { font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, serif; font-size: 15px; color: #111; margin: 0 0 4px; }
+      .li-variant, .li-qty { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 12px; color: #7a7268; margin: 2px 0; }
+      .li-price { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 14px; color: #111; text-align: right; white-space: nowrap; }
+
+      .totals td { padding: 6px 0; font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 13px; color: #2b2b2b; }
+      .totals .label { color: #7a7268; }
+      .totals .value { text-align: right; }
+      .totals .grand td { padding-top: 14px; font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, serif; font-size: 18px; color: #111; border-top: 1px solid #e3ddd1; }
+
+      .address {
+        font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif;
+        font-size: 13px;
+        line-height: 20px;
+        color: #2b2b2b;
+      }
+
+      .footer {
+        text-align: center;
+        font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        color: #9a9387;
+        padding: 36px 24px 48px;
+      }
+      .footer a { color: #9a9387; text-decoration: underline; }
+
+      @media only screen and (max-width: 600px) {
+        .px { padding-left: 22px !important; padding-right: 22px !important; }
+        h1.title { font-size: 22px !important; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <table class="wrap" role="presentation" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td align="center">
+          <table class="container" role="presentation" cellpadding="0" cellspacing="0" border="0">
+
+            <!-- Brand wordmark -->
+            <tr><td class="brand"><img src="https://shop-happy-go-54.lovable.app/__l5e/assets-v1/94d40ec3-119f-40f4-a67e-27eac3ed3205/sellier-logo.png" alt="Sellier Knightsbridge" height="32"></td></tr>
+            <tr><td><hr class="divider"></td></tr>
+
+            <!-- Headline -->
+            <tr>
+              <td class="px">
+                <h1 class="title">{{ email_title }}</h1>
+                <p class="order-meta">
+                  {% if name != blank %}Invoice {{ name }} · {% endif %}{{ created_at | date: "%B %-d, %Y" }}
+                </p>
+                <p class="body">{{ email_body }}</p>
+
+                {% if invoice_url %}
+                  <div class="btn-wrap">
+                    <a href="{{ invoice_url }}" class="btn">Complete your purchase</a>
+                  </div>
+                  <p class="body" style="text-align:center; font-size:13px; color:#7a7268;">
+                    or <a href="{{ shop.url }}" class="link">return to our store</a>
+                  </p>
+                {% endif %}
+
+                {% if payment_terms %}
+                  <p class="body" style="text-align:center; font-size:12px; color:#7a7268; margin-top:10px;">
+                    Payment due {{ payment_terms.next_payment.due_at | date: "%B %-d, %Y" }}
+                  </p>
+                {% endif %}
+              </td>
+            </tr>
+
+            <tr><td class="px"><hr class="divider" style="margin-top:20px;"></td></tr>
+
+            <!-- Order summary -->
+            <tr>
+              <td class="px">
+                <p class="section-label">Invoice summary</p>
+
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  {% for line in line_items %}
+                    <tr>
+                      <td valign="top" style="padding:16px 0; border-bottom:1px solid #ede7da;">
+                        {% if line.image %}
+                          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td valign="top" width="72" style="padding-right:14px;">
+                                <img src="{{ line | img_url: 'compact_cropped' }}" width="64" alt="{{ line.title | escape }}" style="display:block;">
+                              </td>
+                              <td valign="top">
+                                <p class="li-title">{{ line.product.title | default: line.title }}</p>
+                                {% unless line.variant.title contains 'Default' %}
+                                  <p class="li-variant">{{ line.variant.title }}</p>
+                                {% endunless %}
+                                <p class="li-qty">Qty {{ line.quantity }}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        {% else %}
+                          <p class="li-title">{{ line.product.title | default: line.title }}</p>
+                          {% unless line.variant.title contains 'Default' %}
+                            <p class="li-variant">{{ line.variant.title }}</p>
+                          {% endunless %}
+                          <p class="li-qty">Qty {{ line.quantity }}</p>
+                        {% endif %}
+                      </td>
+                      <td valign="top" align="right" style="padding:16px 0; border-bottom:1px solid #ede7da;">
+                        <span class="li-price">{{ line.final_line_price | money }}</span>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </table>
+
+                <table role="presentation" class="totals" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:18px;">
+                  <tr><td class="label">Subtotal</td><td class="value">{{ subtotal_price | money }}</td></tr>
+                  {% if discounts %}
+                    {% for discount in discounts %}
+                      <tr><td class="label">Discount{% if discount.code %} ({{ discount.code }}){% endif %}</td><td class="value">-{{ discount.savings | money }}</td></tr>
+                    {% endfor %}
+                  {% endif %}
+                  {% if shipping_price and shipping_price > 0 %}
+                    <tr><td class="label">Shipping{% if shipping_method.title %} · {{ shipping_method.title }}{% endif %}</td><td class="value">{{ shipping_price | money }}</td></tr>
+                  {% endif %}
+                  {% if total_tax and total_tax > 0 %}
+                    <tr><td class="label">Tax</td><td class="value">{{ total_tax | money }}</td></tr>
+                  {% endif %}
+                  <tr class="grand"><td>Total</td><td class="value">{{ total_price | money_with_currency }}</td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Addresses -->
+            {% if shipping_address or billing_address %}
+              <tr><td class="px"><hr class="divider" style="margin-top:32px;"></td></tr>
+              <tr>
+                <td class="px">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      {% if shipping_address %}
+                        <td valign="top" width="50%" style="padding-right:12px;">
+                          <p class="section-label" style="margin-top:0;">Shipping to</p>
+                          <p class="address">
+                            {{ shipping_address.name }}<br>
+                            {% if shipping_address.company != blank %}{{ shipping_address.company }}<br>{% endif %}
+                            {{ shipping_address.address1 }}<br>
+                            {% if shipping_address.address2 != blank %}{{ shipping_address.address2 }}<br>{% endif %}
+                            {{ shipping_address.city }}{% if shipping_address.province_code != blank %}, {{ shipping_address.province_code }}{% endif %} {{ shipping_address.zip | upcase }}<br>
+                            {{ shipping_address.country }}
+                          </p>
+                        </td>
+                      {% endif %}
+                      {% if billing_address %}
+                        <td valign="top" width="50%" style="padding-left:12px;">
+                          <p class="section-label" style="margin-top:0;">Billing</p>
+                          <p class="address">
+                            {{ billing_address.name }}<br>
+                            {% if billing_address.company != blank %}{{ billing_address.company }}<br>{% endif %}
+                            {{ billing_address.address1 }}<br>
+                            {% if billing_address.address2 != blank %}{{ billing_address.address2 }}<br>{% endif %}
+                            {{ billing_address.city }}{% if billing_address.province_code != blank %}, {{ billing_address.province_code }}{% endif %} {{ billing_address.zip | upcase }}<br>
+                            {{ billing_address.country }}
+                          </p>
+                        </td>
+                      {% endif %}
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            {% endif %}
+
+            <!-- Footer -->
+            <tr>
+              <td class="footer">
+                SELLIER KNIGHTSBRIDGE<br>
+                <a href="{{ shop.url }}">sellierknightsbridge.com</a><br><br>
+                Questions about this invoice? Reply to this email or contact us at
+                <a href="mailto:{{ shop.email }}">{{ shop.email }}</a>.
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
