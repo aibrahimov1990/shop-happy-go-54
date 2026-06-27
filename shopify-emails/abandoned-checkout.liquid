@@ -61,6 +61,10 @@
                 <h1 class="title">{{ email_title }}</h1>
                 <p class="order-meta">Your saved selection</p>
                 <p class="body">{{ email_body }}</p>
+                {% if custom_message != blank %}
+                  <p class="body" style="font-style: italic; color:#4a4a4a; border-left:2px solid #e3ddd1; padding-left:16px; margin:18px 0;">{{ custom_message }}</p>
+                {% endif %}
+
 
                 {% if url %}
                   <div class="btn-wrap">
