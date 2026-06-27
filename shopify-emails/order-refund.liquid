@@ -1,193 +1,147 @@
-<!DOCTYPE html>
+{% capture email_title %}A refund has been issued{% endcapture %}
+{% capture email_body %}
+Hi {{ customer.first_name }}, we have processed a refund for your order {{ name }}. Details are below.
+{% endcapture %}
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="x-apple-disable-message-reformatting">
-    <title>Refund from {{ shop.name }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>{{ email_title }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Bodoni+Moda:wght@400;500;600&family=Inter:wght@300;400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-      html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; background-color: #FAF9F5; }
-      * { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-      table { border-spacing: 0; border-collapse: collapse; }
-      img { border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
-      a { color: #1a1a1a; text-decoration: underline; }
-      .serif { font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', 'Times New Roman', serif; }
-      .sans  { font-family: 'Inter', 'Jost', 'Futura', 'Helvetica Neue', Arial, sans-serif; }
-      @media only screen and (max-width: 620px) {
-        .container { width: 100% !important; }
-        .px { padding-left: 24px !important; padding-right: 24px !important; }
-        .h1 { font-size: 32px !important; line-height: 38px !important; }
+      html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+      * { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+      table { border-spacing: 0 !important; border-collapse: collapse !important; }
+      img { border: 0; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+
+      body { background-color: #FAF9F5; font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, 'Times New Roman', serif; color: #1a1a1a; }
+      .wrap { width: 100%; background-color: #FAF9F5; }
+      .container { width: 100%; max-width: 600px; margin: 0 auto; }
+      .px { padding-left: 32px; padding-right: 32px; }
+
+      .brand { text-align: center; padding: 40px 0 30px; }
+      .brand img { display: inline-block; height: 32px; width: auto; max-width: 240px; }
+      .divider { border: 0; border-top: 1px solid #e3ddd1; margin: 0; }
+      h1.title { font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, 'Times New Roman', serif; font-weight: 400; font-size: 26px; line-height: 1.25; color: #111; margin: 32px 0 12px; letter-spacing: 0.01em; }
+      .order-meta { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #7a7268; margin: 0 0 24px; }
+      p.body { font-size: 15px; line-height: 24px; color: #2b2b2b; margin: 0 0 18px; }
+
+      .btn-wrap { text-align: center; margin: 28px 0 8px; }
+      .btn { background-color: #111111; color: #ffffff !important; text-decoration: none; display: inline-block; padding: 15px 36px; font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; }
+      .link { color: #111; text-decoration: underline; }
+
+      .section-label { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: #7a7268; margin: 32px 0 14px; }
+
+      .li-title { font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, serif; font-size: 15px; color: #111; margin: 0 0 4px; }
+      .li-variant, .li-qty { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 12px; color: #7a7268; margin: 2px 0; }
+      .li-price { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 14px; color: #111; text-align: right; white-space: nowrap; }
+
+      .totals td { padding: 6px 0; font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 13px; color: #2b2b2b; }
+      .totals .label { color: #7a7268; }
+      .totals .value { text-align: right; }
+      .totals .grand td { padding-top: 14px; font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, serif; font-size: 18px; color: #111; border-top: 1px solid #e3ddd1; }
+
+      .footer { text-align: center; font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.1em; color: #9a9387; padding: 36px 24px 48px; }
+      .footer a { color: #9a9387; text-decoration: underline; }
+
+      @media only screen and (max-width: 600px) {
+        .px { padding-left: 22px !important; padding-right: 22px !important; }
+        h1.title { font-size: 22px !important; }
       }
     </style>
   </head>
-  <body style="margin:0; padding:0; background-color:#FAF9F5;">
-    <span style="display:none !important; visibility:hidden; opacity:0; color:transparent; height:0; width:0; font-size:1px; line-height:1px;">
-      A refund has been issued for order {{ name }} — thank you for shopping with {{ shop.name }}.
-    </span>
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FAF9F5;">
+  <body>
+    <table class="wrap" role="presentation" cellpadding="0" cellspacing="0" border="0">
       <tr>
-        <td align="center" style="padding: 40px 16px;">
-          <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#FAF9F5;">
+        <td align="center">
+          <table class="container" role="presentation" cellpadding="0" cellspacing="0" border="0">
 
-            <!-- Logo -->
+            <tr><td class="brand"><img src="https://shop-happy-go-54.lovable.app/__l5e/assets-v1/94d40ec3-119f-40f4-a67e-27eac3ed3205/sellier-logo.png" alt="Sellier Knightsbridge" height="32"></td></tr>
+            <tr><td><hr class="divider"></td></tr>
+
             <tr>
-              <td align="center" class="px" style="padding: 8px 40px 32px 40px;">
-                {% if shop.email_logo_url %}
-                  <img src="{{ shop.email_logo_url }}" alt="{{ shop.name }}" width="180" style="display:block; max-width:180px; height:auto;">
-                {% else %}
-                  <div class="serif" style="font-family:'Cormorant Garamond','Bodoni Moda','Didot','Times New Roman',serif; font-size:28px; letter-spacing:4px; color:#1a1a1a; text-transform:uppercase;">
-                    {{ shop.name }}
+              <td class="px">
+                <h1 class="title">{{ email_title }}</h1>
+                <p class="order-meta">Order {{ name }} · {{ "now" | date: "%B %-d, %Y" }}</p>
+                <p class="body">{{ email_body }}</p>
+
+                {% if order_status_url %}
+                  <div class="btn-wrap">
+                    <a href="{{ order_status_url }}" class="btn">View your order</a>
                   </div>
                 {% endif %}
               </td>
             </tr>
 
-            <!-- Divider -->
-            <tr><td style="padding: 0 40px;"><div style="border-top:1px solid #E5E2DA; height:1px; line-height:1px; font-size:1px;">&nbsp;</div></td></tr>
+            <tr><td class="px"><hr class="divider" style="margin-top:20px;"></td></tr>
 
-            <!-- Heading -->
             <tr>
-              <td align="center" class="px" style="padding: 48px 40px 16px 40px;">
-                <h1 class="serif h1" style="margin:0; font-family:'Cormorant Garamond','Bodoni Moda','Didot','Times New Roman',serif; font-weight:400; font-size:40px; line-height:46px; color:#1a1a1a; letter-spacing:0.5px;">
-                  A refund has been issued
-                </h1>
-              </td>
-            </tr>
-
-            <!-- Intro -->
-            <tr>
-              <td align="center" class="px" style="padding: 16px 40px 8px 40px;">
-                <p class="sans" style="margin:0; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:24px; color:#4a4a4a; font-weight:300;">
-                  {% if customer.first_name %}Dear {{ customer.first_name }},{% else %}Hello,{% endif %}
-                </p>
-                <p class="sans" style="margin:16px 0 0 0; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:24px; color:#4a4a4a; font-weight:300;">
-                  We have processed a refund for your order <strong style="color:#1a1a1a; font-weight:500;">{{ name }}</strong>. Details are below.
-                </p>
-              </td>
-            </tr>
-
-            <!-- Refund amount card -->
-            <tr>
-              <td align="center" class="px" style="padding: 32px 40px 8px 40px;">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F2EFE7; border:1px solid #E5E2DA;">
-                  <tr>
-                    <td align="center" style="padding: 28px 24px;">
-                      <div class="sans" style="font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:11px; letter-spacing:2.5px; color:#7a7a7a; text-transform:uppercase; font-weight:500;">
-                        Amount Refunded
-                      </div>
-                      <div class="serif" style="margin-top:10px; font-family:'Cormorant Garamond','Bodoni Moda','Didot','Times New Roman',serif; font-size:36px; line-height:42px; color:#1a1a1a; font-weight:500;">
-                        {{ amount | money }}
-                      </div>
-                      <div class="sans" style="margin-top:8px; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:13px; line-height:20px; color:#4a4a4a; font-weight:300;">
-                        Refunded to your original payment method
-                      </div>
-                    </td>
-                  </tr>
+              <td class="px">
+                <p class="section-label">Refund summary</p>
+                <table role="presentation" class="totals" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr class="grand"><td>Amount refunded</td><td class="value">{{ amount | money_with_currency }}</td></tr>
                 </table>
+                <p class="body" style="margin-top:18px; font-size:13px; color:#7a7268;">
+                  Refunded to your original payment method. Funds typically appear within 5–10 business days, depending on your bank or card issuer.
+                </p>
               </td>
             </tr>
 
             {% if refund_line_items.size > 0 %}
-            <!-- Refunded items -->
-            <tr>
-              <td class="px" style="padding: 40px 40px 8px 40px;">
-                <div class="serif" style="font-family:'Cormorant Garamond','Bodoni Moda','Didot','Times New Roman',serif; font-size:22px; color:#1a1a1a; font-weight:500; letter-spacing:0.3px;">
-                  Refunded items
-                </div>
-                <div style="border-top:1px solid #E5E2DA; margin-top:14px; height:1px; line-height:1px; font-size:1px;">&nbsp;</div>
-              </td>
-            </tr>
-
-            {% for refund_line_item in refund_line_items %}
-              {% assign line = refund_line_item.line_item %}
+              <tr><td class="px"><hr class="divider" style="margin-top:20px;"></td></tr>
               <tr>
-                <td class="px" style="padding: 18px 40px;">
+                <td class="px">
+                  <p class="section-label">Refunded items</p>
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                    <tr>
-                      {% if line.image %}
-                      <td valign="top" width="72" style="padding-right:18px;">
-                        <img src="{{ line | img_url: 'compact_cropped' }}" alt="{{ line.title | escape }}" width="72" style="display:block; width:72px; height:auto; border:1px solid #E5E2DA;">
-                      </td>
-                      {% endif %}
-                      <td valign="top">
-                        <div class="sans" style="font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:14px; line-height:20px; color:#1a1a1a; font-weight:500;">
-                          {{ line.title }}
-                        </div>
-                        {% if line.variant.title != 'Default Title' %}
-                        <div class="sans" style="margin-top:4px; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:18px; color:#7a7a7a; font-weight:300;">
-                          {{ line.variant.title }}
-                        </div>
-                        {% endif %}
-                        <div class="sans" style="margin-top:6px; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:18px; color:#7a7a7a; font-weight:300;">
-                          Quantity refunded: {{ refund_line_item.quantity }}
-                        </div>
-                      </td>
-                      <td valign="top" align="right" class="sans" style="font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:14px; color:#1a1a1a; font-weight:500; white-space:nowrap; padding-left:12px;">
-                        {{ line.price | times: refund_line_item.quantity | money }}
-                      </td>
-                    </tr>
+                    {% for refund_line_item in refund_line_items %}
+                      {% assign line = refund_line_item.line_item %}
+                      <tr>
+                        <td valign="top" style="padding:16px 0; border-bottom:1px solid #ede7da;">
+                          {% if line.image %}
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                              <tr>
+                                <td valign="top" width="72" style="padding-right:14px;">
+                                  <img src="{{ line | img_url: 'compact_cropped' }}" width="64" alt="{{ line.title | escape }}" style="display:block;">
+                                </td>
+                                <td valign="top">
+                                  <p class="li-title">{{ line.product.title | default: line.title }}</p>
+                                  {% unless line.variant.title contains 'Default' %}
+                                    <p class="li-variant">{{ line.variant.title }}</p>
+                                  {% endunless %}
+                                  <p class="li-qty">Qty refunded {{ refund_line_item.quantity }}</p>
+                                </td>
+                              </tr>
+                            </table>
+                          {% else %}
+                            <p class="li-title">{{ line.product.title | default: line.title }}</p>
+                            {% unless line.variant.title contains 'Default' %}
+                              <p class="li-variant">{{ line.variant.title }}</p>
+                            {% endunless %}
+                            <p class="li-qty">Qty refunded {{ refund_line_item.quantity }}</p>
+                          {% endif %}
+                        </td>
+                        <td valign="top" align="right" style="padding:16px 0; border-bottom:1px solid #ede7da;">
+                          <span class="li-price">{{ line.price | times: refund_line_item.quantity | money }}</span>
+                        </td>
+                      </tr>
+                    {% endfor %}
                   </table>
                 </td>
               </tr>
-            {% endfor %}
             {% endif %}
 
-            <!-- View order button -->
             <tr>
-              <td align="center" class="px" style="padding: 40px 40px 16px 40px;">
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                  <tr>
-                    <td align="center" style="background-color:#1a1a1a;">
-                      <a href="{{ order_status_url }}" class="sans" style="display:inline-block; padding:16px 38px; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:12px; letter-spacing:2.5px; color:#FAF9F5; text-decoration:none; text-transform:uppercase; font-weight:500;">
-                        View your order
-                      </a>
-                    </td>
-                  </tr>
-                </table>
+              <td class="footer">
+                SELLIER KNIGHTSBRIDGE<br>
+                <a href="{{ shop.url }}">sellierknightsbridge.com</a><br><br>
+                If you have any questions, reply to this email or contact us at
+                <a href="mailto:{{ shop.email }}">{{ shop.email }}</a>.
               </td>
             </tr>
 
-            <!-- Help -->
-            <tr>
-              <td align="center" class="px" style="padding: 24px 40px 8px 40px;">
-                <p class="sans" style="margin:0; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:13px; line-height:22px; color:#4a4a4a; font-weight:300;">
-                  Refunds typically appear on your statement within 5–10 business days, depending on your bank or card issuer.
-                </p>
-              </td>
-            </tr>
-
-            <!-- Sign-off -->
-            <tr>
-              <td align="center" class="px" style="padding: 32px 40px 8px 40px;">
-                <p class="sans" style="margin:0; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:14px; line-height:22px; color:#4a4a4a; font-weight:300;">
-                  With thanks,
-                </p>
-                <p class="serif" style="margin:6px 0 0 0; font-family:'Cormorant Garamond','Bodoni Moda','Didot','Times New Roman',serif; font-size:20px; color:#1a1a1a; font-weight:500; letter-spacing:0.3px;">
-                  {{ shop.name }}
-                </p>
-              </td>
-            </tr>
-
-            <!-- Footer divider -->
-            <tr><td style="padding: 40px 40px 0 40px;"><div style="border-top:1px solid #E5E2DA; height:1px; line-height:1px; font-size:1px;">&nbsp;</div></td></tr>
-
-            <!-- Footer -->
-            <tr>
-              <td align="center" class="px" style="padding: 24px 40px 8px 40px;">
-                <p class="sans" style="margin:0; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:11px; line-height:18px; color:#7a7a7a; letter-spacing:1px; text-transform:uppercase; font-weight:400;">
-                  {{ shop.name }}
-                </p>
-                <p class="sans" style="margin:8px 0 0 0; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:11px; line-height:18px; color:#9a9a9a; font-weight:300;">
-                  If you have any questions, reply to this email or contact us at
-                  <a href="mailto:{{ shop.email }}" style="color:#1a1a1a; text-decoration:underline;">{{ shop.email }}</a>.
-                </p>
-              </td>
-            </tr>
-
-            <tr><td style="padding: 24px 0;">&nbsp;</td></tr>
           </table>
         </td>
       </tr>

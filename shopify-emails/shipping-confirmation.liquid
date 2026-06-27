@@ -1,6 +1,6 @@
 {% capture email_title %}Your order is on its way{% endcapture %}
 {% capture email_body %}
-Hi {{ customer.first_name }}, your order {{ name }} has been shipped and is on its way to you.
+Hi {{ customer.first_name }}, your order has been shipped and is on its way to you.
 {% endcapture %}
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
@@ -16,11 +16,7 @@ Hi {{ customer.first_name }}, your order {{ name }} has been shipped and is on i
       table { border-spacing: 0 !important; border-collapse: collapse !important; }
       img { border: 0; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
 
-      body {
-        background-color: #FAF9F5;
-        font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, 'Times New Roman', serif;
-        color: #1a1a1a;
-      }
+      body { background-color: #FAF9F5; font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, 'Times New Roman', serif; color: #1a1a1a; }
       .wrap { width: 100%; background-color: #FAF9F5; }
       .container { width: 100%; max-width: 600px; margin: 0 auto; }
       .px { padding-left: 32px; padding-right: 32px; }
@@ -28,96 +24,25 @@ Hi {{ customer.first_name }}, your order {{ name }} has been shipped and is on i
       .brand { text-align: center; padding: 40px 0 30px; }
       .brand img { display: inline-block; height: 32px; width: auto; max-width: 240px; }
       .divider { border: 0; border-top: 1px solid #e3ddd1; margin: 0; }
-
-      h1.title {
-        font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, serif;
-        font-weight: 400;
-        font-size: 26px;
-        line-height: 1.25;
-        color: #111;
-        margin: 32px 0 12px;
-        letter-spacing: 0.01em;
-      }
-      .order-meta {
-        font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif;
-        font-size: 11px;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        color: #7a7268;
-        margin: 0 0 24px;
-      }
+      h1.title { font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, 'Times New Roman', serif; font-weight: 400; font-size: 26px; line-height: 1.25; color: #111; margin: 32px 0 12px; letter-spacing: 0.01em; }
+      .order-meta { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #7a7268; margin: 0 0 24px; }
       p.body { font-size: 15px; line-height: 24px; color: #2b2b2b; margin: 0 0 18px; }
 
       .btn-wrap { text-align: center; margin: 28px 0 8px; }
-      .btn {
-        background-color: #111111;
-        color: #ffffff !important;
-        text-decoration: none;
-        display: inline-block;
-        padding: 15px 36px;
-        font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif;
-        font-size: 11px;
-        letter-spacing: 0.28em;
-        text-transform: uppercase;
-      }
+      .btn { background-color: #111111; color: #ffffff !important; text-decoration: none; display: inline-block; padding: 15px 36px; font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; }
       .link { color: #111; text-decoration: underline; }
 
-      .section-label {
-        font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif;
-        font-size: 11px;
-        letter-spacing: 0.24em;
-        text-transform: uppercase;
-        color: #7a7268;
-        margin: 32px 0 14px;
-      }
-
-      .tracking-box {
-        background: #ffffff;
-        border: 1px solid #ede7da;
-        padding: 20px 24px;
-        margin: 8px 0 4px;
-        text-align: center;
-      }
-      .tracking-label {
-        font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif;
-        font-size: 10px;
-        letter-spacing: 0.24em;
-        text-transform: uppercase;
-        color: #7a7268;
-        margin: 0 0 6px;
-      }
-      .tracking-number {
-        font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, serif;
-        font-size: 20px;
-        color: #111;
-        margin: 0 0 4px;
-        word-break: break-all;
-      }
-      .tracking-carrier {
-        font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif;
-        font-size: 12px;
-        color: #7a7268;
-        margin: 0;
-      }
+      .section-label { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: #7a7268; margin: 32px 0 14px; }
 
       .li-title { font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, serif; font-size: 15px; color: #111; margin: 0 0 4px; }
       .li-variant, .li-qty { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 12px; color: #7a7268; margin: 2px 0; }
 
-      .address {
-        font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif;
-        font-size: 13px;
-        line-height: 20px;
-        color: #2b2b2b;
-      }
+      .address { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 20px; color: #2b2b2b; }
 
-      .footer {
-        text-align: center;
-        font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif;
-        font-size: 11px;
-        letter-spacing: 0.1em;
-        color: #9a9387;
-        padding: 36px 24px 48px;
-      }
+      .tracking { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 13px; color: #2b2b2b; line-height: 22px; }
+      .tracking strong { font-family: 'Cormorant Garamond', Georgia, serif; font-weight:500; font-size:16px; color:#111; }
+
+      .footer { text-align: center; font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.1em; color: #9a9387; padding: 36px 24px 48px; }
       .footer a { color: #9a9387; text-decoration: underline; }
 
       @media only screen and (max-width: 600px) {
@@ -133,108 +58,105 @@ Hi {{ customer.first_name }}, your order {{ name }} has been shipped and is on i
         <td align="center">
           <table class="container" role="presentation" cellpadding="0" cellspacing="0" border="0">
 
-            <!-- Brand wordmark -->
             <tr><td class="brand"><img src="https://shop-happy-go-54.lovable.app/__l5e/assets-v1/94d40ec3-119f-40f4-a67e-27eac3ed3205/sellier-logo.png" alt="Sellier Knightsbridge" height="32"></td></tr>
             <tr><td><hr class="divider"></td></tr>
 
-            <!-- Headline -->
             <tr>
               <td class="px">
                 <h1 class="title">{{ email_title }}</h1>
                 <p class="order-meta">Order {{ name }} · {{ "now" | date: "%B %-d, %Y" }}</p>
                 <p class="body">{{ email_body }}</p>
 
-                {% if fulfillment.tracking_numbers.size > 0 %}
-                  <p class="section-label" style="text-align:center;">Tracking</p>
-                  {% for tracking_number in fulfillment.tracking_numbers %}
-                    <div class="tracking-box">
-                      <p class="tracking-label">Tracking number</p>
-                      <p class="tracking-number">{{ tracking_number }}</p>
-                      {% if fulfillment.tracking_company %}
-                        <p class="tracking-carrier">{{ fulfillment.tracking_company }}</p>
-                      {% endif %}
-                    </div>
-                  {% endfor %}
-
-                  {% if fulfillment.tracking_urls.size > 0 %}
-                    <div class="btn-wrap">
-                      <a href="{{ fulfillment.tracking_urls.first }}" class="btn">Track your shipment</a>
-                    </div>
-                  {% endif %}
+                {% if fulfillment.tracking_url %}
+                  <div class="btn-wrap">
+                    <a href="{{ fulfillment.tracking_url }}" class="btn">Track your shipment</a>
+                  </div>
+                {% elsif order_status_url %}
+                  <div class="btn-wrap">
+                    <a href="{{ order_status_url }}" class="btn">View your order</a>
+                  </div>
                 {% endif %}
+              </td>
+            </tr>
 
-                {% if order_status_url %}
-                  <p class="body" style="text-align:center; font-size:13px; color:#7a7268; margin-top:8px;">
-                    or <a href="{{ order_status_url }}" class="link">view your order</a>
+            {% if fulfillment.tracking_numbers.size > 0 %}
+              <tr><td class="px"><hr class="divider" style="margin-top:20px;"></td></tr>
+              <tr>
+                <td class="px">
+                  <p class="section-label">Tracking details</p>
+                  <p class="tracking">
+                    {% if fulfillment.tracking_company %}
+                      <strong>{{ fulfillment.tracking_company }}</strong><br>
+                    {% endif %}
+                    {% for tracking_number in fulfillment.tracking_numbers %}
+                      Tracking number: {{ tracking_number }}<br>
+                    {% endfor %}
                   </p>
-                {% endif %}
-              </td>
-            </tr>
+                </td>
+              </tr>
+            {% endif %}
 
-            <tr><td class="px"><hr class="divider" style="margin-top:20px;"></td></tr>
+            {% if fulfillment.item_count > 0 %}
+              <tr><td class="px"><hr class="divider" style="margin-top:20px;"></td></tr>
+              <tr>
+                <td class="px">
+                  <p class="section-label">Items in this shipment</p>
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    {% for line in fulfillment.fulfillment_line_items %}
+                      {% assign item = line.line_item %}
+                      <tr>
+                        <td valign="top" style="padding:16px 0; border-bottom:1px solid #ede7da;">
+                          {% if item.image %}
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                              <tr>
+                                <td valign="top" width="72" style="padding-right:14px;">
+                                  <img src="{{ item | img_url: 'compact_cropped' }}" width="64" alt="{{ item.title | escape }}" style="display:block;">
+                                </td>
+                                <td valign="top">
+                                  <p class="li-title">{{ item.product.title | default: item.title }}</p>
+                                  {% unless item.variant.title contains 'Default' %}
+                                    <p class="li-variant">{{ item.variant.title }}</p>
+                                  {% endunless %}
+                                  <p class="li-qty">Qty {{ line.quantity }}</p>
+                                </td>
+                              </tr>
+                            </table>
+                          {% else %}
+                            <p class="li-title">{{ item.product.title | default: item.title }}</p>
+                            {% unless item.variant.title contains 'Default' %}
+                              <p class="li-variant">{{ item.variant.title }}</p>
+                            {% endunless %}
+                            <p class="li-qty">Qty {{ line.quantity }}</p>
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </table>
+                </td>
+              </tr>
+            {% endif %}
 
-            <!-- Items in this shipment -->
-            <tr>
-              <td class="px">
-                <p class="section-label">Items in this shipment</p>
-
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                  {% for line in fulfillment.line_items %}
-                    <tr>
-                      <td valign="top" style="padding:16px 0; border-bottom:1px solid #ede7da;">
-                        {% if line.image %}
-                          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                            <tr>
-                              <td valign="top" width="72" style="padding-right:14px;">
-                                <img src="{{ line | img_url: 'compact_cropped' }}" width="64" alt="{{ line.title | escape }}" style="display:block;">
-                              </td>
-                              <td valign="top">
-                                <p class="li-title">{{ line.product.title | default: line.title }}</p>
-                                {% unless line.variant.title contains 'Default' %}
-                                  <p class="li-variant">{{ line.variant.title }}</p>
-                                {% endunless %}
-                                <p class="li-qty">Qty {{ line.quantity }}</p>
-                              </td>
-                            </tr>
-                          </table>
-                        {% else %}
-                          <p class="li-title">{{ line.product.title | default: line.title }}</p>
-                          {% unless line.variant.title contains 'Default' %}
-                            <p class="li-variant">{{ line.variant.title }}</p>
-                          {% endunless %}
-                          <p class="li-qty">Qty {{ line.quantity }}</p>
-                        {% endif %}
-                      </td>
-                    </tr>
-                  {% endfor %}
-                </table>
-              </td>
-            </tr>
-
-            <!-- Shipping address -->
-            {% if shipping_address %}
-              <tr><td class="px"><hr class="divider" style="margin-top:32px;"></td></tr>
+            {% if requires_shipping and shipping_address %}
+              <tr><td class="px"><hr class="divider" style="margin-top:20px;"></td></tr>
               <tr>
                 <td class="px">
                   <p class="section-label">Shipping to</p>
                   <p class="address">
                     {{ shipping_address.name }}<br>
-                    {% if shipping_address.company != blank %}{{ shipping_address.company }}<br>{% endif %}
-                    {{ shipping_address.address1 }}<br>
-                    {% if shipping_address.address2 != blank %}{{ shipping_address.address2 }}<br>{% endif %}
-                    {{ shipping_address.city }}{% if shipping_address.province_code != blank %}, {{ shipping_address.province_code }}{% endif %} {{ shipping_address.zip | upcase }}<br>
+                    {% if shipping_address.company %}{{ shipping_address.company }}<br>{% endif %}
+                    {{ shipping_address.street }}<br>
+                    {{ shipping_address.city }}, {{ shipping_address.province }} {{ shipping_address.zip }}<br>
                     {{ shipping_address.country }}
                   </p>
                 </td>
               </tr>
             {% endif %}
 
-            <!-- Footer -->
             <tr>
               <td class="footer">
                 SELLIER KNIGHTSBRIDGE<br>
                 <a href="{{ shop.url }}">sellierknightsbridge.com</a><br><br>
-                Questions about your shipment? Reply to this email or contact us at
+                If you have any questions, reply to this email or contact us at
                 <a href="mailto:{{ shop.email }}">{{ shop.email }}</a>.
               </td>
             </tr>
