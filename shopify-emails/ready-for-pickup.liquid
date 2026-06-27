@@ -1,203 +1,155 @@
-<!DOCTYPE html>
+{% capture email_title %}Your order is ready for pickup{% endcapture %}
+{% capture email_body %}
+Hi {{ customer.first_name }}, your order is now ready for collection. We look forward to welcoming you in store.
+{% endcapture %}
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="x-apple-disable-message-reformatting">
-    <title>Your order is ready for pickup</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>{{ email_title }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Bodoni+Moda:wght@400;500;600&family=Inter:wght@300;400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-      html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; background-color: #FAF9F5; }
-      * { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-      table { border-spacing: 0; border-collapse: collapse; }
-      img { border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
-      a { color: #1a1a1a; text-decoration: underline; }
-      .serif { font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', 'Times New Roman', serif; }
-      .sans  { font-family: 'Inter', 'Jost', 'Futura', 'Helvetica Neue', Arial, sans-serif; }
-      @media only screen and (max-width: 620px) {
-        .container { width: 100% !important; }
-        .px { padding-left: 24px !important; padding-right: 24px !important; }
-        .h1 { font-size: 32px !important; line-height: 38px !important; }
+      html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+      * { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+      table { border-spacing: 0 !important; border-collapse: collapse !important; }
+      img { border: 0; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+
+      body { background-color: #FAF9F5; font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, 'Times New Roman', serif; color: #1a1a1a; }
+      .wrap { width: 100%; background-color: #FAF9F5; }
+      .container { width: 100%; max-width: 600px; margin: 0 auto; }
+      .px { padding-left: 32px; padding-right: 32px; }
+
+      .brand { text-align: center; padding: 40px 0 30px; }
+      .brand img { display: inline-block; height: 32px; width: auto; max-width: 240px; }
+      .divider { border: 0; border-top: 1px solid #e3ddd1; margin: 0; }
+      h1.title { font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, 'Times New Roman', serif; font-weight: 400; font-size: 26px; line-height: 1.25; color: #111; margin: 32px 0 12px; letter-spacing: 0.01em; }
+      .order-meta { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #7a7268; margin: 0 0 24px; }
+      p.body { font-size: 15px; line-height: 24px; color: #2b2b2b; margin: 0 0 18px; }
+
+      .btn-wrap { text-align: center; margin: 28px 0 8px; }
+      .btn { background-color: #111111; color: #ffffff !important; text-decoration: none; display: inline-block; padding: 15px 36px; font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; }
+      .link { color: #111; text-decoration: underline; }
+
+      .section-label { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: #7a7268; margin: 32px 0 14px; }
+
+      .li-title { font-family: 'Cormorant Garamond', 'Bodoni Moda', 'Didot', Georgia, serif; font-size: 15px; color: #111; margin: 0 0 4px; }
+      .li-variant, .li-qty { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 12px; color: #7a7268; margin: 2px 0; }
+
+      .address { font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 20px; color: #2b2b2b; }
+
+      .footer { text-align: center; font-family: 'Inter', 'Jost', 'Futura', 'Avenir Next', Helvetica, Arial, sans-serif; font-size: 11px; letter-spacing: 0.1em; color: #9a9387; padding: 36px 24px 48px; }
+      .footer a { color: #9a9387; text-decoration: underline; }
+
+      @media only screen and (max-width: 600px) {
+        .px { padding-left: 22px !important; padding-right: 22px !important; }
+        h1.title { font-size: 22px !important; }
       }
     </style>
   </head>
-  <body style="margin:0; padding:0; background-color:#FAF9F5;">
-    <span style="display:none !important; visibility:hidden; opacity:0; color:transparent; height:0; width:0; font-size:1px; line-height:1px;">
-      Your order {{ name }} is ready for collection at {{ shop.name }}.
-    </span>
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FAF9F5;">
+  <body>
+    <table class="wrap" role="presentation" cellpadding="0" cellspacing="0" border="0">
       <tr>
-        <td align="center" style="padding: 40px 16px;">
-          <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#FAF9F5;">
+        <td align="center">
+          <table class="container" role="presentation" cellpadding="0" cellspacing="0" border="0">
 
-            <!-- Logo -->
+            <tr><td class="brand"><img src="https://shop-happy-go-54.lovable.app/__l5e/assets-v1/94d40ec3-119f-40f4-a67e-27eac3ed3205/sellier-logo.png" alt="Sellier Knightsbridge" height="32"></td></tr>
+            <tr><td><hr class="divider"></td></tr>
+
             <tr>
-              <td align="center" class="px" style="padding: 8px 40px 32px 40px;">
-                {% if shop.email_logo_url %}
-                  <img src="{{ shop.email_logo_url }}" alt="{{ shop.name }}" width="180" style="display:block; max-width:180px; height:auto;">
-                {% else %}
-                  <div class="serif" style="font-family:'Cormorant Garamond','Bodoni Moda','Didot','Times New Roman',serif; font-size:28px; letter-spacing:4px; color:#1a1a1a; text-transform:uppercase;">
-                    {{ shop.name }}
+              <td class="px">
+                <h1 class="title">{{ email_title }}</h1>
+                <p class="order-meta">Order {{ name }} · {{ "now" | date: "%B %-d, %Y" }}</p>
+                <p class="body">{{ email_body }}</p>
+
+                {% if order_status_url %}
+                  <div class="btn-wrap">
+                    <a href="{{ order_status_url }}" class="btn">View your order</a>
                   </div>
+                  <p class="body" style="text-align:center; font-size:13px; color:#7a7268;">
+                    or <a href="{{ shop.url }}" class="link">visit our store</a>
+                  </p>
                 {% endif %}
               </td>
             </tr>
 
-            <tr><td style="padding: 0 40px;"><div style="border-top:1px solid #E5E2DA; height:1px; line-height:1px; font-size:1px;">&nbsp;</div></td></tr>
-
-            <!-- Heading -->
-            <tr>
-              <td align="center" class="px" style="padding: 48px 40px 16px 40px;">
-                <h1 class="serif h1" style="margin:0; font-family:'Cormorant Garamond','Bodoni Moda','Didot','Times New Roman',serif; font-weight:400; font-size:40px; line-height:46px; color:#1a1a1a; letter-spacing:0.5px;">
-                  Your order is ready for pickup
-                </h1>
-                <p class="sans" style="margin:14px 0 0 0; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:11px; letter-spacing:2.5px; color:#7a7a7a; text-transform:uppercase; font-weight:500;">
-                  Order {{ name }}
-                </p>
-              </td>
-            </tr>
-
-            <!-- Intro -->
-            <tr>
-              <td align="center" class="px" style="padding: 16px 40px 8px 40px;">
-                <p class="sans" style="margin:0; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:24px; color:#4a4a4a; font-weight:300;">
-                  {% if customer.first_name %}Dear {{ customer.first_name }},{% else %}Hello,{% endif %}
-                </p>
-                <p class="sans" style="margin:16px 0 0 0; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:24px; color:#4a4a4a; font-weight:300;">
-                  Your order is now ready for collection. We look forward to welcoming you in store.
-                </p>
-              </td>
-            </tr>
-
-            <!-- Pickup location card -->
             {% assign location = fulfillment.pickup_location %}
             {% if location %}
-            <tr>
-              <td align="center" class="px" style="padding: 32px 40px 8px 40px;">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F2EFE7; border:1px solid #E5E2DA;">
-                  <tr>
-                    <td align="center" style="padding: 28px 24px;">
-                      <div class="sans" style="font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:11px; letter-spacing:2.5px; color:#7a7a7a; text-transform:uppercase; font-weight:500;">
-                        Collect from
-                      </div>
-                      <div class="serif" style="margin-top:10px; font-family:'Cormorant Garamond','Bodoni Moda','Didot','Times New Roman',serif; font-size:24px; line-height:30px; color:#1a1a1a; font-weight:500;">
-                        {{ location.name }}
-                      </div>
-                      <div class="sans" style="margin-top:10px; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:13px; line-height:20px; color:#4a4a4a; font-weight:300;">
-                        {{ location.address1 }}{% if location.address2 != blank %}, {{ location.address2 }}{% endif %}<br>
-                        {{ location.city }}{% if location.province_code %}, {{ location.province_code }}{% endif %} {{ location.zip | upcase }}<br>
-                        {{ location.country }}
-                      </div>
-                      {% if location.phone != blank %}
-                      <div class="sans" style="margin-top:10px; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:13px; color:#4a4a4a; font-weight:300;">
-                        {{ location.phone }}
-                      </div>
-                      {% endif %}
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
+              <tr><td class="px"><hr class="divider" style="margin-top:20px;"></td></tr>
+              <tr>
+                <td class="px">
+                  <p class="section-label">Collect from</p>
+                  <p class="address">
+                    <strong style="font-family:'Cormorant Garamond',Georgia,serif; font-weight:500; font-size:16px; color:#111;">{{ location.name }}</strong><br>
+                    {{ location.address1 }}{% if location.address2 != blank %}, {{ location.address2 }}{% endif %}<br>
+                    {{ location.city }}{% if location.province_code %}, {{ location.province_code }}{% endif %} {{ location.zip | upcase }}<br>
+                    {{ location.country }}
+                    {% if location.phone != blank %}<br>{{ location.phone }}{% endif %}
+                  </p>
+                </td>
+              </tr>
             {% endif %}
 
-            <!-- Pickup instructions -->
             {% if fulfillment.pickup_instructions != blank %}
-            <tr>
-              <td align="center" class="px" style="padding: 24px 40px 0 40px;">
-                <p class="sans" style="margin:0; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:13px; line-height:22px; color:#4a4a4a; font-weight:300;">
-                  {{ fulfillment.pickup_instructions }}
-                </p>
-              </td>
-            </tr>
+              <tr>
+                <td class="px">
+                  <p class="section-label">Pickup instructions</p>
+                  <p class="body" style="font-size:13px;">{{ fulfillment.pickup_instructions }}</p>
+                </td>
+              </tr>
             {% endif %}
 
             {% if fulfillment.item_count > 0 %}
-            <!-- Items in pickup -->
-            <tr>
-              <td class="px" style="padding: 40px 40px 8px 40px;">
-                <div class="serif" style="font-family:'Cormorant Garamond','Bodoni Moda','Didot','Times New Roman',serif; font-size:22px; color:#1a1a1a; font-weight:500; letter-spacing:0.3px;">
-                  Items ready for collection
-                </div>
-                <div style="border-top:1px solid #E5E2DA; margin-top:14px; height:1px; line-height:1px; font-size:1px;">&nbsp;</div>
-              </td>
-            </tr>
-
-            {% for line in fulfillment.fulfillment_line_items %}
-              {% assign item = line.line_item %}
+              <tr><td class="px"><hr class="divider" style="margin-top:20px;"></td></tr>
               <tr>
-                <td class="px" style="padding: 18px 40px;">
+                <td class="px">
+                  <p class="section-label">Items ready for collection</p>
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                    <tr>
-                      {% if item.image %}
-                      <td valign="top" width="72" style="padding-right:18px;">
-                        <img src="{{ item | img_url: 'compact_cropped' }}" alt="{{ item.title | escape }}" width="72" style="display:block; width:72px; height:auto; border:1px solid #E5E2DA;">
-                      </td>
-                      {% endif %}
-                      <td valign="top">
-                        <div class="sans" style="font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:14px; line-height:20px; color:#1a1a1a; font-weight:500;">
-                          {{ item.title }}
-                        </div>
-                        {% if item.variant.title != 'Default Title' %}
-                        <div class="sans" style="margin-top:4px; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:18px; color:#7a7a7a; font-weight:300;">
-                          {{ item.variant.title }}
-                        </div>
-                        {% endif %}
-                        <div class="sans" style="margin-top:6px; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:18px; color:#7a7a7a; font-weight:300;">
-                          Quantity: {{ line.quantity }}
-                        </div>
-                      </td>
-                    </tr>
+                    {% for line in fulfillment.fulfillment_line_items %}
+                      {% assign item = line.line_item %}
+                      <tr>
+                        <td valign="top" style="padding:16px 0; border-bottom:1px solid #ede7da;">
+                          {% if item.image %}
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                              <tr>
+                                <td valign="top" width="72" style="padding-right:14px;">
+                                  <img src="{{ item | img_url: 'compact_cropped' }}" width="64" alt="{{ item.title | escape }}" style="display:block;">
+                                </td>
+                                <td valign="top">
+                                  <p class="li-title">{{ item.product.title | default: item.title }}</p>
+                                  {% unless item.variant.title contains 'Default' %}
+                                    <p class="li-variant">{{ item.variant.title }}</p>
+                                  {% endunless %}
+                                  <p class="li-qty">Qty {{ line.quantity }}</p>
+                                </td>
+                              </tr>
+                            </table>
+                          {% else %}
+                            <p class="li-title">{{ item.product.title | default: item.title }}</p>
+                            {% unless item.variant.title contains 'Default' %}
+                              <p class="li-variant">{{ item.variant.title }}</p>
+                            {% endunless %}
+                            <p class="li-qty">Qty {{ line.quantity }}</p>
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% endfor %}
                   </table>
                 </td>
               </tr>
-            {% endfor %}
             {% endif %}
 
-            <!-- View order button -->
             <tr>
-              <td align="center" class="px" style="padding: 40px 40px 16px 40px;">
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                  <tr>
-                    <td align="center" style="background-color:#1a1a1a;">
-                      <a href="{{ order_status_url }}" class="sans" style="display:inline-block; padding:16px 38px; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:12px; letter-spacing:2.5px; color:#FAF9F5; text-decoration:none; text-transform:uppercase; font-weight:500;">
-                        View your order
-                      </a>
-                    </td>
-                  </tr>
-                </table>
+              <td class="footer">
+                SELLIER KNIGHTSBRIDGE<br>
+                <a href="{{ shop.url }}">sellierknightsbridge.com</a><br><br>
+                If you have any questions, reply to this email or contact us at
+                <a href="mailto:{{ shop.email }}">{{ shop.email }}</a>.
               </td>
             </tr>
 
-            <!-- Sign-off -->
-            <tr>
-              <td align="center" class="px" style="padding: 24px 40px 8px 40px;">
-                <p class="sans" style="margin:0; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:14px; line-height:22px; color:#4a4a4a; font-weight:300;">
-                  With thanks,
-                </p>
-                <p class="serif" style="margin:6px 0 0 0; font-family:'Cormorant Garamond','Bodoni Moda','Didot','Times New Roman',serif; font-size:20px; color:#1a1a1a; font-weight:500; letter-spacing:0.3px;">
-                  {{ shop.name }}
-                </p>
-              </td>
-            </tr>
-
-            <tr><td style="padding: 40px 40px 0 40px;"><div style="border-top:1px solid #E5E2DA; height:1px; line-height:1px; font-size:1px;">&nbsp;</div></td></tr>
-
-            <!-- Footer -->
-            <tr>
-              <td align="center" class="px" style="padding: 24px 40px 8px 40px;">
-                <p class="sans" style="margin:0; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:11px; line-height:18px; color:#7a7a7a; letter-spacing:1px; text-transform:uppercase; font-weight:400;">
-                  {{ shop.name }}
-                </p>
-                <p class="sans" style="margin:8px 0 0 0; font-family:'Inter','Jost','Futura','Helvetica Neue',Arial,sans-serif; font-size:11px; line-height:18px; color:#9a9a9a; font-weight:300;">
-                  If you have any questions, reply to this email or contact us at
-                  <a href="mailto:{{ shop.email }}" style="color:#1a1a1a; text-decoration:underline;">{{ shop.email }}</a>.
-                </p>
-              </td>
-            </tr>
-
-            <tr><td style="padding: 24px 0;">&nbsp;</td></tr>
           </table>
         </td>
       </tr>
