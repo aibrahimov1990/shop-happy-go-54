@@ -165,7 +165,8 @@ function Shop() {
 
   const sort = newIn ? SORTS[0] : SORTS[sortIdx];
   const userQuery = buildQuery({ types, designers, conditions, colours });
-  const query = newIn ? "status:active" : userQuery;
+  // Storefront API only returns published/active products; "status:active" is Admin-only and returns nothing here.
+  const query = newIn ? "" : userQuery;
   const activeCount = types.length + designers.length + conditions.length + colours.length;
 
   const {
