@@ -168,8 +168,8 @@ function Shop() {
   const query = userQuery;
   const activeCount = types.length + designers.length + conditions.length + colours.length;
 
-  // Collection query used when New In is active — pulls directly from the
-  // Shopify "new-in" collection so it matches the website exactly.
+  // Collection query used when New In is active — pulls the first 100 products
+  // from Shopify's "Everything" collection.
   const NEW_IN_COLLECTION_QUERY = `
     query NewInCollection($handle: String!, $first: Int!, $after: String) {
       collection(handle: $handle) {
@@ -198,20 +198,20 @@ function Shop() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["products", "shop", newIn ? "new-in-collection" : query, sort.label, newIn],
+    queryKey: ["products", "shop", newIn ? "everything-collection-first-100" : query, sort.label, newIn],
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
       if (newIn) {
         const res = await storefrontApiRequest<any>(NEW_IN_COLLECTION_QUERY, {
-          handle: "new-in",
-          first: 24,
-          after: pageParam,
+          handle: "everything",
+          first: 100,
+          after: null,
         });
         const products = res?.data?.collection?.products;
         return {
           edges: (products?.edges ?? []) as ShopifyProduct[],
           endCursor: products?.pageInfo?.endCursor ?? null,
-          hasNextPage: products?.pageInfo?.hasNextPage ?? false,
+          hasNextPage: false,
         };
       }
       const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
