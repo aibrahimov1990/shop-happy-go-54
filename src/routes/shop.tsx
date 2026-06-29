@@ -156,14 +156,16 @@ function FacetGroup({
 function Shop() {
   const [sortIdx, setSortIdx] = useState(0);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [newIn, setNewIn] = useState(false);
 
   const [types, setTypes] = useState<string[]>([]);
   const [designers, setDesigners] = useState<string[]>([]);
   const [conditions, setConditions] = useState<string[]>([]);
   const [colours, setColours] = useState<string[]>([]);
 
-  const sort = SORTS[sortIdx];
-  const query = buildQuery({ types, designers, conditions, colours });
+  const sort = newIn ? SORTS[0] : SORTS[sortIdx];
+  const userQuery = buildQuery({ types, designers, conditions, colours });
+  const query = newIn ? "status:active" : userQuery;
   const activeCount = types.length + designers.length + conditions.length + colours.length;
 
   const {
@@ -173,11 +175,11 @@ function Shop() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["products", "shop", query, sort.label],
+    queryKey: ["products", "shop", query, sort.label, newIn],
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
       const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
-        first: 24,
+        first: newIn ? 150 : 24,
         after: pageParam,
         query,
         sortKey: sort.sortKey,
@@ -187,11 +189,12 @@ function Shop() {
       return {
         edges: (products?.edges ?? []) as ShopifyProduct[],
         endCursor: products?.pageInfo?.endCursor ?? null,
-        hasNextPage: products?.pageInfo?.hasNextPage ?? false,
+        hasNextPage: newIn ? false : (products?.pageInfo?.hasNextPage ?? false),
       };
     },
     getNextPageParam: (last) => (last.hasNextPage ? last.endCursor : undefined),
   });
+
 
   const products: ShopifyProduct[] = data?.pages.flatMap((p) => p.edges) ?? [];
 
