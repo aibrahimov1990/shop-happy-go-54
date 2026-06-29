@@ -265,13 +265,13 @@ function ProductPage() {
             <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-4">
               You may also like
             </p>
-            <div className="-mx-4 overflow-x-auto scrollbar-hide">
-              <div className="flex gap-3 px-4 pb-2 snap-x snap-mandatory">
+            <div
+              className="-mx-4 overflow-x-auto overflow-y-hidden"
+              style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x" }}
+            >
+              <div className="flex gap-3 px-4 pb-2 w-max">
                 {related.map((p) => (
-                  <div
-                    key={p.node.id}
-                    className="flex-shrink-0 w-[45%] snap-start"
-                  >
+                  <div key={p.node.id} className="flex-shrink-0 w-40">
                     <ProductCard product={p} />
                   </div>
                 ))}
