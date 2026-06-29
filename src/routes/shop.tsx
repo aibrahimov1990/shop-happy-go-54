@@ -165,9 +165,31 @@ function Shop() {
 
   const sort = newIn ? SORTS[0] : SORTS[sortIdx];
   const userQuery = buildQuery({ types, designers, conditions, colours });
-  // Storefront API only returns published/active products; "status:active" is Admin-only and returns nothing here.
-  const query = newIn ? "" : userQuery;
+  const query = userQuery;
   const activeCount = types.length + designers.length + conditions.length + colours.length;
+
+  // Collection query used when New In is active — pulls directly from the
+  // Shopify "new-in" collection so it matches the website exactly.
+  const NEW_IN_COLLECTION_QUERY = `
+    query NewInCollection($handle: String!, $first: Int!, $after: String) {
+      collection(handle: $handle) {
+        products(first: $first, after: $after, sortKey: COLLECTION_DEFAULT) {
+          pageInfo { hasNextPage endCursor }
+          edges {
+            node {
+              id title description handle vendor
+              priceRange { minVariantPrice { amount currencyCode } }
+              images(first: 5) { edges { node { url(transform: { preferredContentType: JPG }) altText } } }
+              variants(first: 10) {
+                edges { node { id title price { amount currencyCode } availableForSale selectedOptions { name value } } }
+              }
+              options { name values }
+            }
+          }
+        }
+      }
+    }
+  `;
 
   const {
     data,
@@ -176,11 +198,24 @@ function Shop() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["products", "shop", query, sort.label, newIn],
+    queryKey: ["products", "shop", newIn ? "new-in-collection" : query, sort.label, newIn],
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
+      if (newIn) {
+        const res = await storefrontApiRequest<any>(NEW_IN_COLLECTION_QUERY, {
+          handle: "new-in",
+          first: 24,
+          after: pageParam,
+        });
+        const products = res?.data?.collection?.products;
+        return {
+          edges: (products?.edges ?? []) as ShopifyProduct[],
+          endCursor: products?.pageInfo?.endCursor ?? null,
+          hasNextPage: products?.pageInfo?.hasNextPage ?? false,
+        };
+      }
       const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
-        first: newIn ? 150 : 24,
+        first: 24,
         after: pageParam,
         query,
         sortKey: sort.sortKey,
@@ -190,7 +225,7 @@ function Shop() {
       return {
         edges: (products?.edges ?? []) as ShopifyProduct[],
         endCursor: products?.pageInfo?.endCursor ?? null,
-        hasNextPage: newIn ? false : (products?.pageInfo?.hasNextPage ?? false),
+        hasNextPage: products?.pageInfo?.hasNextPage ?? false,
       };
     },
     getNextPageParam: (last) => (last.hasNextPage ? last.endCursor : undefined),
