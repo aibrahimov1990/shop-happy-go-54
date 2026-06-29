@@ -265,10 +265,17 @@ function ProductPage() {
             <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-4">
               You may also like
             </p>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-6">
-              {related.map((p) => (
-                <ProductCard key={p.node.id} product={p} />
-              ))}
+            <div className="-mx-4 overflow-x-auto scrollbar-hide">
+              <div className="flex gap-3 px-4 pb-2 snap-x snap-mandatory">
+                {related.map((p) => (
+                  <div
+                    key={p.node.id}
+                    className="flex-shrink-0 w-[45%] snap-start"
+                  >
+                    <ProductCard product={p} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
