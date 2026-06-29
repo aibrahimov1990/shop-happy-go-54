@@ -260,11 +260,30 @@ function Shop() {
       <div className="sticky top-14 z-30 bg-background/95 backdrop-blur-sm border-b border-border/60">
         <div className="flex gap-1 overflow-x-auto px-4 py-3 no-scrollbar">
           <button
-            onClick={() => setTypes(bagsActive ? [] : ["Bag"])}
-            className={navBtn(bagsActive)}
+            onClick={() => {
+              const next = !newIn;
+              setNewIn(next);
+              if (next) {
+                setTypes([]);
+                setDesigners([]);
+                setConditions([]);
+                setColours([]);
+              }
+            }}
+            className={navBtn(newIn)}
+          >
+            New In
+          </button>
+          <button
+            onClick={() => {
+              setNewIn(false);
+              setTypes(bagsActive ? [] : ["Bag"]);
+            }}
+            className={navBtn(bagsActive && !newIn)}
           >
             Bags
           </button>
+
           <Popover open={clothingOpen} onOpenChange={setClothingOpen}>
             <PopoverTrigger asChild>
               <button className={`${navBtn(clothingActive)} inline-flex items-center gap-1`}>
