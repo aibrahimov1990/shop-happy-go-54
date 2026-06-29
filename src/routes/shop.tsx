@@ -156,14 +156,16 @@ function FacetGroup({
 function Shop() {
   const [sortIdx, setSortIdx] = useState(0);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [newIn, setNewIn] = useState(false);
 
   const [types, setTypes] = useState<string[]>([]);
   const [designers, setDesigners] = useState<string[]>([]);
   const [conditions, setConditions] = useState<string[]>([]);
   const [colours, setColours] = useState<string[]>([]);
 
-  const sort = SORTS[sortIdx];
-  const query = buildQuery({ types, designers, conditions, colours });
+  const sort = newIn ? SORTS[0] : SORTS[sortIdx];
+  const userQuery = buildQuery({ types, designers, conditions, colours });
+  const query = newIn ? "status:active" : userQuery;
   const activeCount = types.length + designers.length + conditions.length + colours.length;
 
   const {
@@ -173,11 +175,11 @@ function Shop() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["products", "shop", query, sort.label],
+    queryKey: ["products", "shop", query, sort.label, newIn],
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
       const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
-        first: 24,
+        first: newIn ? 150 : 24,
         after: pageParam,
         query,
         sortKey: sort.sortKey,
@@ -187,11 +189,12 @@ function Shop() {
       return {
         edges: (products?.edges ?? []) as ShopifyProduct[],
         endCursor: products?.pageInfo?.endCursor ?? null,
-        hasNextPage: products?.pageInfo?.hasNextPage ?? false,
+        hasNextPage: newIn ? false : (products?.pageInfo?.hasNextPage ?? false),
       };
     },
     getNextPageParam: (last) => (last.hasNextPage ? last.endCursor : undefined),
   });
+
 
   const products: ShopifyProduct[] = data?.pages.flatMap((p) => p.edges) ?? [];
 
@@ -257,11 +260,30 @@ function Shop() {
       <div className="sticky top-14 z-30 bg-background/95 backdrop-blur-sm border-b border-border/60">
         <div className="flex gap-1 overflow-x-auto px-4 py-3 no-scrollbar">
           <button
-            onClick={() => setTypes(bagsActive ? [] : ["Bag"])}
-            className={navBtn(bagsActive)}
+            onClick={() => {
+              const next = !newIn;
+              setNewIn(next);
+              if (next) {
+                setTypes([]);
+                setDesigners([]);
+                setConditions([]);
+                setColours([]);
+              }
+            }}
+            className={navBtn(newIn)}
+          >
+            New In
+          </button>
+          <button
+            onClick={() => {
+              setNewIn(false);
+              setTypes(bagsActive ? [] : ["Bag"]);
+            }}
+            className={navBtn(bagsActive && !newIn)}
           >
             Bags
           </button>
+
           <Popover open={clothingOpen} onOpenChange={setClothingOpen}>
             <PopoverTrigger asChild>
               <button className={`${navBtn(clothingActive)} inline-flex items-center gap-1`}>
