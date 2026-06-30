@@ -86,7 +86,14 @@ function CollectionPage() {
     });
 
   const first = data?.pages[0];
-  const products: ShopifyProduct[] = data?.pages.flatMap((p) => p.edges) ?? [];
+  const allProducts: ShopifyProduct[] = data?.pages.flatMap((p) => p.edges) ?? [];
+  // Hide sold-out products for selected collections
+  const HIDE_SOLD_OUT_HANDLES = new Set(["bags-under-2-500"]);
+  const products: ShopifyProduct[] = HIDE_SOLD_OUT_HANDLES.has(handle)
+    ? allProducts.filter((p) =>
+        p.node.variants.edges.some((v) => v.node.availableForSale),
+      )
+    : allProducts;
   const title = first?.title ?? handle.replace(/-/g, " ");
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
