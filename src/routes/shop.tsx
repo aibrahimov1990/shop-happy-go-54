@@ -488,7 +488,8 @@ function Shop() {
               </div>
               <SheetFooter className="mt-6 sticky bottom-0 bg-background pb-4">
                 <Button className="w-full" onClick={() => setFilterOpen(false)}>
-                  Show {isLoading ? "…" : products.length} results
+                  Show {isLoading ? "…" : products.length}
+                  {hasNextPage || isFetchingNextPage ? "+" : ""} results
                 </Button>
               </SheetFooter>
             </SheetContent>
