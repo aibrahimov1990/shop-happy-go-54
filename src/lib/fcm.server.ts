@@ -10,6 +10,7 @@ interface ServiceAccount {
 }
 
 const FCM_SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
+const IOS_BUNDLE_ID = "com.sellierknightsbridge.app";
 export { BROADCAST_TOPIC };
 
 function base64UrlEncode(input: ArrayBuffer | string): string {
@@ -106,13 +107,16 @@ function buildVisibleMessageTarget(
     notification: { title: payload.title, body: payload.body },
     apns: {
       headers: {
+        "apns-topic": IOS_BUNDLE_ID,
         "apns-priority": "10",
         "apns-push-type": "alert",
       },
       payload: {
         aps: {
           alert: { title: payload.title, body: payload.body },
+          badge: 1,
           sound: "default",
+          "interruption-level": "active",
         },
       },
     },
