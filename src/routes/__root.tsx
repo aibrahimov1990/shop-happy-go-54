@@ -138,6 +138,7 @@ function RootComponent() {
             }),
           );
           void import("../lib/push-client").then((m) => m.initPushNotifications());
+          void import("../lib/analytics-client").then((m) => m.initAnalytics());
         }
       });
 
@@ -159,6 +160,14 @@ function RootComponent() {
       }
     });
     return () => sub.subscription.unsubscribe();
+  }, [nativeSessionReady, router]);
+
+  useEffect(() => {
+    if (!nativeSessionReady) return;
+    const unsub = router.subscribe("onResolved", ({ toLocation }) => {
+      void import("../lib/analytics-client").then((m) => m.trackScreenView(toLocation.pathname));
+    });
+    return unsub;
   }, [nativeSessionReady, router]);
 
   if (!nativeSessionReady) {
