@@ -71,6 +71,8 @@ function buildQuery(filters: {
   designers: string[];
   conditions: string[];
   colours: string[];
+  sizes: string[];
+  shoeSizes: string[];
 }) {
   const parts: string[] = [];
   if (filters.types.length) {
@@ -94,6 +96,24 @@ function buildQuery(filters: {
       "(" +
         filters.colours
           .map((c) => `title:"${c}" OR tag:"${c}"`)
+          .join(" OR ") +
+        ")",
+    );
+  }
+  if (filters.sizes.length) {
+    parts.push(
+      "(" +
+        filters.sizes
+          .map((s) => `tag:"${s}" OR tag:"Size ${s}" OR tag:"Size:${s}"`)
+          .join(" OR ") +
+        ")",
+    );
+  }
+  if (filters.shoeSizes.length) {
+    parts.push(
+      "(" +
+        filters.shoeSizes
+          .map((s) => `tag:"${s}" OR tag:"Size ${s}" OR tag:"EU ${s}" OR tag:"Size:${s}"`)
           .join(" OR ") +
         ")",
     );
