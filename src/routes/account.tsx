@@ -48,6 +48,8 @@ function Account() {
   const [newPassword, setNewPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
+  const [fcmOpen, setFcmOpen] = useState(false);
+  const [fcmToken, setFcmToken] = useState("");
 
   const handleSetPassword = async () => {
     if (newPassword.length < 8) {
@@ -158,18 +160,28 @@ function Account() {
                   return;
                 }
                 const { FirebaseMessaging } = await import("@capacitor-firebase/messaging");
+                const perm = await FirebaseMessaging.checkPermissions();
+                if (perm.receive !== "granted") {
+                  const req = await FirebaseMessaging.requestPermissions();
+                  if (req.receive !== "granted") {
+                    toast.error("Notifications permission denied.");
+                    return;
+                  }
+                }
                 const { token } = await FirebaseMessaging.getToken();
                 if (!token) {
-                  toast.error("No FCM token yet — try again in a few seconds.");
+                  toast.error("No FCM token yet — reopen the app and try again.");
                   return;
                 }
+                setFcmToken(token);
+                setFcmOpen(true);
                 try {
                   const { Clipboard } = await import("@capacitor/clipboard");
                   await Clipboard.write({ string: token });
+                  toast.success("FCM token copied");
                 } catch {
-                  await navigator.clipboard.writeText(token);
+                  try { await navigator.clipboard.writeText(token); toast.success("FCM token copied"); } catch { /* shown in dialog */ }
                 }
-                toast.success("FCM token copied to clipboard");
                 console.log("FCM token:", token);
               } catch (err) {
                 toast.error(err instanceof Error ? err.message : "Could not get FCM token");
@@ -184,6 +196,22 @@ function Account() {
             <span className="text-muted-foreground">›</span>
           </button>
         )}
+
+        <Dialog open={fcmOpen} onOpenChange={setFcmOpen}>
+          <DialogContent className="max-w-[92vw]">
+            <DialogHeader>
+              <DialogTitle>Your FCM token</DialogTitle>
+            </DialogHeader>
+            <textarea
+              readOnly
+              value={fcmToken}
+              onFocus={(e) => e.currentTarget.select()}
+              className="w-full h-40 text-xs font-mono border rounded p-2 break-all"
+            />
+            <p className="text-xs text-muted-foreground">Long-press to select all, then copy. Paste into Firebase Console → Cloud Messaging → Send test message.</p>
+          </DialogContent>
+        </Dialog>
+
 
         <Dialog open={pwOpen} onOpenChange={setPwOpen}>
           <DialogTrigger asChild>
