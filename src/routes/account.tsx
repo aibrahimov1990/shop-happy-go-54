@@ -267,30 +267,6 @@ function Account() {
           </div>
         )}
 
-        <Dialog open={fcmOpen} onOpenChange={setFcmOpen}>
-          <DialogContent className="max-w-[92vw]">
-            <DialogHeader>
-              <DialogTitle>Your FCM token</DialogTitle>
-            </DialogHeader>
-            <p className="text-sm text-muted-foreground">{fcmStatus}</p>
-            {fcmToken ? (
-              <textarea
-                readOnly
-                value={fcmToken}
-                onFocus={(e) => e.currentTarget.select()}
-                className="w-full h-40 text-xs font-mono border rounded p-2 break-all"
-              />
-            ) : (
-              <div className="flex items-center gap-2 rounded border border-border/70 p-3 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Waiting for token…
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground">Long-press to select all, then copy. Paste into Firebase Console → Cloud Messaging → Send test message.</p>
-          </DialogContent>
-        </Dialog>
-
-
         <Dialog open={pwOpen} onOpenChange={setPwOpen}>
           <DialogTrigger asChild>
             <button className="flex items-center justify-between px-6 py-5 active:bg-muted/40 w-full text-left">
