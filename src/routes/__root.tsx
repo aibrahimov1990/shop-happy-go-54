@@ -139,6 +139,11 @@ function RootComponent() {
           );
           void import("../lib/push-client").then((m) => m.initPushNotifications());
           void import("../lib/analytics-client").then((m) => m.initAnalytics());
+          void import("../lib/native-deep-links").then((m) =>
+            m.installAppDeepLinkHandler((path) => {
+              router.navigate({ to: path });
+            }),
+          );
         }
       });
 
