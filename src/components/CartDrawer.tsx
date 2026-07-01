@@ -48,7 +48,7 @@ export function CartDrawer({
       {trigger ? (
         <SheetTrigger asChild>{trigger}</SheetTrigger>
       ) : null}
-      <SheetContent className="w-full sm:max-w-md flex flex-col h-full bg-background">
+      <SheetContent className="w-full sm:max-w-md flex flex-col h-full bg-background pt-[calc(env(safe-area-inset-top)+1rem)]">
         <SheetHeader className="flex-shrink-0 border-b pb-4">
           <SheetTitle className="font-serif text-2xl tracking-wide">Your Bag</SheetTitle>
           <SheetDescription className="text-xs uppercase tracking-widest">

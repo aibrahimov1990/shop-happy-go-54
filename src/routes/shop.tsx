@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SlidersHorizontal, X, Loader2, ChevronDown } from "lucide-react";
+import { SlidersHorizontal, X, Loader2, ChevronDown, Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const PRODUCT_TYPES = [
@@ -184,6 +184,14 @@ function Shop() {
   const [sortIdx, setSortIdx] = useState(0);
   const [filterOpen, setFilterOpen] = useState(false);
   const [newIn, setNewIn] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+
+  // Debounce the search input so we don't hammer Shopify on every keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(searchInput.trim()), 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
 
   const [types, setTypes] = useState<string[]>([]);
   const [designers, setDesigners] = useState<string[]>([]);
@@ -192,9 +200,14 @@ function Shop() {
   const [sizes, setSizes] = useState<string[]>([]);
   const [shoeSizes, setShoeSizes] = useState<string[]>([]);
 
-  const sort = newIn ? SORTS[0] : SORTS[sortIdx];
-  const userQuery = buildQuery({ types, designers, conditions, colours, sizes, shoeSizes });
-  const query = userQuery;
+  const searchActive = search.length > 0;
+  const sort = newIn && !searchActive ? SORTS[0] : SORTS[sortIdx];
+  const filterQuery = buildQuery({ types, designers, conditions, colours, sizes, shoeSizes });
+  const query = searchActive
+    ? [filterQuery, `(title:*${search}* OR tag:*${search}* OR vendor:*${search}* OR product_type:*${search}*)`]
+        .filter(Boolean)
+        .join(" AND ")
+    : filterQuery;
   const activeCount =
     types.length + designers.length + conditions.length + colours.length + sizes.length + shoeSizes.length;
 
@@ -228,10 +241,10 @@ function Shop() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["products", "shop", newIn ? "all-collection-first-100" : query, sort.label, newIn],
+    queryKey: ["products", "shop", newIn && !searchActive ? "all-collection-first-100" : query, sort.label, newIn, searchActive],
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
-      if (newIn) {
+      if (newIn && !searchActive) {
         const res = await storefrontApiRequest<any>(NEW_IN_COLLECTION_QUERY, {
           handle: "all",
           first: 100,
@@ -341,6 +354,29 @@ function Shop() {
       </div>
 
       <div className="sticky top-14 z-30 bg-background/95 backdrop-blur-sm border-b border-border/60">
+        <div className="px-4 pt-3 pb-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="search"
+              inputMode="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search products, designers…"
+              className="w-full h-10 pl-9 pr-9 text-sm bg-muted/40 border border-border/60 focus:outline-none focus:border-foreground/60 placeholder:text-muted-foreground"
+            />
+            {searchInput && (
+              <button
+                type="button"
+                onClick={() => setSearchInput("")}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
         <div className="flex gap-1 overflow-x-auto px-4 py-3 no-scrollbar">
           <button
             onClick={() => {
