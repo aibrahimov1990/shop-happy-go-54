@@ -48,6 +48,8 @@ function Account() {
   const [newPassword, setNewPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
+  const [fcmOpen, setFcmOpen] = useState(false);
+  const [fcmToken, setFcmToken] = useState("");
 
   const handleSetPassword = async () => {
     if (newPassword.length < 8) {
