@@ -65,12 +65,22 @@ export const sendBroadcast = createServerFn({ method: "POST" })
     const errorCounts: Record<string, number> = {};
 
     if (tokens.length > 0) {
-      const { sendFcmToTokens } = await import("./fcm.server");
-      const results = await sendFcmToTokens(tokens, {
+      const { BROADCAST_TOPIC, sendFcmToTokens, sendFcmToTopic } = await import("./fcm.server");
+      const payload = {
         title: data.title,
         body: data.body,
         url: data.url,
-      });
+      };
+      const topicResult = await sendFcmToTopic(BROADCAST_TOPIC, payload);
+      let results = topicResult.ok ? tokens.map((token) => ({ token, ok: true })) : [];
+
+      if (!topicResult.ok) {
+        console.error("[broadcast] FCM topic send failed; falling back to device tokens", {
+          topic: BROADCAST_TOPIC,
+          error: topicResult.error,
+        });
+        results = await sendFcmToTokens(tokens, payload);
+      }
       for (const r of results) {
         if (r.ok) successCount++;
         else {
