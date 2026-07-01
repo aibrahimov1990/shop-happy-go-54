@@ -264,7 +264,15 @@ function Shop() {
 
   const products: ShopifyProduct[] = data?.pages.flatMap((p) => p.edges) ?? [];
 
-  // Infinite scroll sentinel
+  // When any refine filter is active, auto-fetch all remaining pages so the
+  // user sees the full catalogue for that filter — not just the first page.
+  useEffect(() => {
+    if (activeCount > 0 && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [activeCount, hasNextPage, isFetchingNextPage, fetchNextPage, products.length]);
+
+  // Infinite scroll sentinel (used when no filters are active)
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const el = sentinelRef.current;
