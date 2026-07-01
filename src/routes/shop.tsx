@@ -504,6 +504,8 @@ function Shop() {
               ...designers.map((v) => ({ label: v, clear: () => setDesigners((s) => s.filter((x) => x !== v)) })),
               ...conditions.map((v) => ({ label: v, clear: () => setConditions((s) => s.filter((x) => x !== v)) })),
               ...colours.map((v) => ({ label: v, clear: () => setColours((s) => s.filter((x) => x !== v)) })),
+              ...sizes.map((v) => ({ label: `Size ${v}`, clear: () => setSizes((s) => s.filter((x) => x !== v)) })),
+              ...shoeSizes.map((v) => ({ label: `Shoe ${v}`, clear: () => setShoeSizes((s) => s.filter((x) => x !== v)) })),
             ].map((chip, i) => (
               <button
                 key={i}
