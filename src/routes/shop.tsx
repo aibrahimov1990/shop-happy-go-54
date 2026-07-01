@@ -241,10 +241,10 @@ function Shop() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["products", "shop", newIn ? "all-collection-first-100" : query, sort.label, newIn],
+    queryKey: ["products", "shop", newIn && !searchActive ? "all-collection-first-100" : query, sort.label, newIn, searchActive],
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
-      if (newIn) {
+      if (newIn && !searchActive) {
         const res = await storefrontApiRequest<any>(NEW_IN_COLLECTION_QUERY, {
           handle: "all",
           first: 100,
