@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { flushSync } from "react-dom";
 import { useServerFn } from "@tanstack/react-start";
 import { MobileLayout } from "@/components/MobileLayout";
 import { useAuth } from "@/hooks/useAuth";
@@ -116,10 +117,13 @@ function Account() {
   };
 
   const handleCopyFcmToken = () => {
-    setFcmToken("");
-    setFcmStatus("Starting notification token check…");
-    setFcmOpen(true);
-    setCheckingFcm(true);
+    flushSync(() => {
+      setFcmToken("");
+      setFcmStatus("Starting notification token check…");
+      setFcmOpen(true);
+      setCheckingFcm(true);
+    });
+    toast.info("Notification token check started");
 
     window.setTimeout(() => {
       void (async () => {
