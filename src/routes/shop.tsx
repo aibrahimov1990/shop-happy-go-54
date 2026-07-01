@@ -101,20 +101,20 @@ function buildQuery(filters: {
     );
   }
   if (filters.sizes.length) {
+    // Clothing sizes: match "UK <size>" anywhere in the product's default
+    // search fields (title, description, tags, vendor, product_type).
     parts.push(
       "(" +
-        filters.sizes
-          .map((s) => `tag:"${s}" OR tag:"Size ${s}" OR tag:"Size:${s}"`)
-          .join(" OR ") +
+        filters.sizes.map((s) => `"UK ${s}"`).join(" OR ") +
         ")",
     );
   }
   if (filters.shoeSizes.length) {
+    // Shoe sizes: match "EU <size>" anywhere in default search fields
+    // (Shopify Storefront search includes the product description/body).
     parts.push(
       "(" +
-        filters.shoeSizes
-          .map((s) => `tag:"${s}" OR tag:"Size ${s}" OR tag:"EU ${s}" OR tag:"Size:${s}"`)
-          .join(" OR ") +
+        filters.shoeSizes.map((s) => `"EU ${s}"`).join(" OR ") +
         ")",
     );
   }
