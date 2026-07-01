@@ -319,6 +319,13 @@ function Shop() {
   const accessoriesActive = types.length === 1 && types[0] === "Accessories";
   const [clothingOpen, setClothingOpen] = useState(false);
 
+  // Reset size / shoe-size selections when the category no longer matches,
+  // so stale filters don't silently constrain the query.
+  useEffect(() => {
+    if (!clothingActive && sizes.length) setSizes([]);
+    if (!shoesActive && shoeSizes.length) setShoeSizes([]);
+  }, [clothingActive, shoesActive, sizes.length, shoeSizes.length]);
+
   const navBtn = (active: boolean) =>
     `shrink-0 px-4 py-2 text-[10px] uppercase tracking-[0.2em] border transition-colors ${
       active
