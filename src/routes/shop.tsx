@@ -463,6 +463,20 @@ function Shop() {
                   onToggle={toggle(setColours)}
                   onClear={() => setColours([])}
                 />
+                <FacetGroup
+                  title="Size"
+                  options={SIZES}
+                  selected={sizes}
+                  onToggle={toggle(setSizes)}
+                  onClear={() => setSizes([])}
+                />
+                <FacetGroup
+                  title="Shoe Size"
+                  options={SHOE_SIZES}
+                  selected={shoeSizes}
+                  onToggle={toggle(setShoeSizes)}
+                  onClear={() => setShoeSizes([])}
+                />
               </div>
               <SheetFooter className="mt-6 sticky bottom-0 bg-background pb-4">
                 <Button className="w-full" onClick={() => setFilterOpen(false)}>
