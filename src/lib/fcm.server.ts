@@ -1,6 +1,8 @@
 // Server-only helper for sending push notifications via Firebase Cloud Messaging HTTP v1 API.
 // Reads FIREBASE_SERVICE_ACCOUNT_JSON (service account key) and FIREBASE_PROJECT_ID.
 
+import { BROADCAST_TOPIC } from "./push-constants";
+
 interface ServiceAccount {
   client_email: string;
   private_key: string;
@@ -8,6 +10,7 @@ interface ServiceAccount {
 }
 
 const FCM_SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
+export { BROADCAST_TOPIC };
 
 function base64UrlEncode(input: ArrayBuffer | string): string {
   const bytes =
@@ -89,15 +92,12 @@ export interface SendResult {
   error?: string;
 }
 
-export async function sendFcmToTokens(
-  tokens: string[],
-  payload: { title: string; body: string; url?: string },
-): Promise<SendResult[]> {
-  const rawJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  const projectId = process.env.FIREBASE_PROJECT_ID;
-  if (!rawJson) throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON is not set");
-  if (!projectId) throw new Error("FIREBASE_PROJECT_ID is not set");
+export interface FcmSendOutcome {
+  ok: boolean;
+  error?: string;
+}
 
+function parseServiceAccount(rawJson: string): ServiceAccount {
   let sa: ServiceAccount;
   try {
     sa = JSON.parse(rawJson) as ServiceAccount;
@@ -107,17 +107,71 @@ export async function sendFcmToTokens(
   if (!sa.client_email || !sa.private_key) {
     throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON is missing client_email or private_key");
   }
+  return sa;
+}
 
+async function sendFcmMessage(
+  message: Record<string, unknown>,
+  payloadProjectId?: string,
+): Promise<FcmSendOutcome> {
+  const rawJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+  const projectId = payloadProjectId ?? process.env.FIREBASE_PROJECT_ID;
+  if (!rawJson) throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON is not set");
+  if (!projectId) throw new Error("FIREBASE_PROJECT_ID is not set");
+
+  const sa = parseServiceAccount(rawJson);
   const endpoint = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
 
-  async function sendOne(token: string, forceFreshToken = false): Promise<SendResult> {
+  async function attempt(forceFreshToken = false): Promise<FcmSendOutcome> {
     const accessToken = await getAccessToken(sa, forceFreshToken);
-    const url = new URL(endpoint);
-    // FCM officially documents the Authorization header. We also include the
-    // OAuth token as a query parameter because the published Worker runtime can
-    // intermittently drop Authorization on repeated third-party subrequests.
-    // This keeps the request authenticated without exposing the token to users.
-    url.searchParams.set("access_token", accessToken);
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json; charset=UTF-8",
+      },
+      cache: "no-store",
+      body: JSON.stringify({ message }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      return { ok: false, error: `${res.status}: ${text.slice(0, 300)}` };
+    }
+    return { ok: true };
+  }
+
+  let result = await attempt();
+  if (result.error?.startsWith("401:")) {
+    cachedToken = null;
+    result = await attempt(true);
+  }
+  return result;
+}
+
+export async function sendFcmToTopic(
+  topic: string,
+  payload: { title: string; body: string; url?: string },
+): Promise<FcmSendOutcome> {
+  const message: Record<string, unknown> = {
+    topic,
+    notification: { title: payload.title, body: payload.body },
+  };
+  if (payload.url) message.data = { url: payload.url };
+  return sendFcmMessage(message);
+}
+
+export async function sendFcmToTokens(
+  tokens: string[],
+  payload: { title: string; body: string; url?: string },
+): Promise<SendResult[]> {
+  const rawJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  if (!rawJson) throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON is not set");
+  if (!projectId) throw new Error("FIREBASE_PROJECT_ID is not set");
+
+  parseServiceAccount(rawJson);
+
+  async function sendOne(token: string): Promise<SendResult> {
     const message: Record<string, unknown> = {
       token,
       notification: { title: payload.title, body: payload.body },
@@ -125,20 +179,8 @@ export async function sendFcmToTokens(
     if (payload.url) message.data = { url: payload.url };
 
     try {
-      const res = await fetch(url.toString(), {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json; charset=UTF-8",
-        },
-        cache: "no-store",
-        body: JSON.stringify({ message }),
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        return { token, ok: false, error: `${res.status}: ${text.slice(0, 300)}` };
-      }
-      return { token, ok: true };
+      const result = await sendFcmMessage(message, projectId);
+      return { token, ...result };
     } catch (e) {
       return { token, ok: false, error: e instanceof Error ? e.message : String(e) };
     }
@@ -146,11 +188,7 @@ export async function sendFcmToTokens(
 
   const results: SendResult[] = [];
   for (const token of tokens) {
-    let result = await sendOne(token);
-    if (result.error?.startsWith("401:")) {
-      cachedToken = null;
-      result = await sendOne(token, true);
-    }
+    const result = await sendOne(token);
     results.push(result);
   }
   return results;

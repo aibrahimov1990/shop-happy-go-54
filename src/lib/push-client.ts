@@ -2,6 +2,7 @@
 // Safe to import everywhere — it no-ops outside a Capacitor native runtime.
 
 import { registerDeviceToken } from "./push.functions";
+import { BROADCAST_TOPIC } from "./push-constants";
 import { supabase } from "@/integrations/supabase/client";
 
 let listenersInitialized = false;
@@ -121,6 +122,7 @@ export async function initPushNotifications() {
     }
 
     currentPlatform = platform;
+    await FirebaseMessaging.subscribeToTopic({ topic: BROADCAST_TOPIC });
     await fetchAndRegisterToken(FirebaseMessaging);
   } catch (err) {
     console.warn("Push init failed", err);

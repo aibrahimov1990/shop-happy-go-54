@@ -1,0 +1,1 @@
+export const BROADCAST_TOPIC = "sellier_broadcasts";
