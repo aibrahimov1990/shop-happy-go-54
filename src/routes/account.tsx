@@ -148,6 +148,43 @@ function Account() {
           </Link>
         )}
 
+        {isAdmin && (
+          <button
+            onClick={async () => {
+              try {
+                const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+                if (!cap?.isNativePlatform?.()) {
+                  toast.error("Run this inside the native app.");
+                  return;
+                }
+                const { FirebaseMessaging } = await import("@capacitor-firebase/messaging");
+                const { token } = await FirebaseMessaging.getToken();
+                if (!token) {
+                  toast.error("No FCM token yet — try again in a few seconds.");
+                  return;
+                }
+                try {
+                  const { Clipboard } = await import("@capacitor/clipboard");
+                  await Clipboard.write({ string: token });
+                } catch {
+                  await navigator.clipboard.writeText(token);
+                }
+                toast.success("FCM token copied to clipboard");
+                console.log("FCM token:", token);
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Could not get FCM token");
+              }
+            }}
+            className="flex items-center justify-between px-6 py-5 active:bg-muted/40 w-full text-left"
+          >
+            <div className="flex items-center gap-3">
+              <Copy className="h-4 w-4" />
+              <span className="text-sm">Copy my FCM token</span>
+            </div>
+            <span className="text-muted-foreground">›</span>
+          </button>
+        )}
+
         <Dialog open={pwOpen} onOpenChange={setPwOpen}>
           <DialogTrigger asChild>
             <button className="flex items-center justify-between px-6 py-5 active:bg-muted/40 w-full text-left">
