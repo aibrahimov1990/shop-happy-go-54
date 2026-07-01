@@ -72,7 +72,9 @@ export const sendBroadcast = createServerFn({ method: "POST" })
         url: data.url,
       };
       const topicResult = await sendFcmToTopic(BROADCAST_TOPIC, payload);
-      let results = topicResult.ok ? tokens.map((token) => ({ token, ok: true })) : [];
+      let results: Array<{ token: string; ok: boolean; error?: string }> = topicResult.ok
+        ? tokens.map((token) => ({ token, ok: true }))
+        : [];
 
       if (!topicResult.ok) {
         console.error("[broadcast] FCM topic send failed; falling back to device tokens", {

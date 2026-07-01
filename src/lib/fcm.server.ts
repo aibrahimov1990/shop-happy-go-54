@@ -1,6 +1,8 @@
 // Server-only helper for sending push notifications via Firebase Cloud Messaging HTTP v1 API.
 // Reads FIREBASE_SERVICE_ACCOUNT_JSON (service account key) and FIREBASE_PROJECT_ID.
 
+import { BROADCAST_TOPIC } from "./push-constants";
+
 interface ServiceAccount {
   client_email: string;
   private_key: string;
@@ -8,7 +10,7 @@ interface ServiceAccount {
 }
 
 const FCM_SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
-export const BROADCAST_TOPIC = "sellier_broadcasts";
+export { BROADCAST_TOPIC };
 
 function base64UrlEncode(input: ArrayBuffer | string): string {
   const bytes =
