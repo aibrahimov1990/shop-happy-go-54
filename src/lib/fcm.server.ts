@@ -101,8 +101,17 @@ export async function sendFcmToTokens(
   const accessToken = await getAccessToken(sa);
   const endpoint = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
 
-  return Promise.all(
-    tokens.map(async (token): Promise<SendResult> => {
+  // Cap concurrency: the Worker runtime drops headers on some in-flight
+  // fetches under heavy parallelism, causing spurious 401s from FCM.
+  const CONCURRENCY = 3;
+  const results: SendResult[] = new Array(tokens.length);
+  let cursor = 0;
+
+  async function worker() {
+    while (true) {
+      const i = cursor++;
+      if (i >= tokens.length) return;
+      const token = tokens[i];
       const message: Record<string, unknown> = {
         token,
         notification: { title: payload.title, body: payload.body },
@@ -119,12 +128,16 @@ export async function sendFcmToTokens(
         });
         if (!res.ok) {
           const text = await res.text();
-          return { token, ok: false, error: `${res.status}: ${text.slice(0, 200)}` };
+          results[i] = { token, ok: false, error: `${res.status}: ${text.slice(0, 200)}` };
+        } else {
+          results[i] = { token, ok: true };
         }
-        return { token, ok: true };
       } catch (e) {
-        return { token, ok: false, error: e instanceof Error ? e.message : String(e) };
+        results[i] = { token, ok: false, error: e instanceof Error ? e.message : String(e) };
       }
-    }),
-  );
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, tokens.length) }, worker));
+  return results;
 }
