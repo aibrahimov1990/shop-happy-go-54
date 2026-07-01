@@ -41,7 +41,7 @@ export const Route = createFileRoute("/account")({
 });
 
 function Account() {
-  const { user, loading, isShopper, signOut } = useAuth();
+  const { user, loading, isShopper, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const deleteAccount = useServerFn(deleteMyAccount);
   const [deleting, setDeleting] = useState(false);
