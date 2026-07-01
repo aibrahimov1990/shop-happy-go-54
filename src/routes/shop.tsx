@@ -184,6 +184,14 @@ function Shop() {
   const [sortIdx, setSortIdx] = useState(0);
   const [filterOpen, setFilterOpen] = useState(false);
   const [newIn, setNewIn] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+
+  // Debounce the search input so we don't hammer Shopify on every keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(searchInput.trim()), 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
 
   const [types, setTypes] = useState<string[]>([]);
   const [designers, setDesigners] = useState<string[]>([]);
@@ -192,9 +200,14 @@ function Shop() {
   const [sizes, setSizes] = useState<string[]>([]);
   const [shoeSizes, setShoeSizes] = useState<string[]>([]);
 
-  const sort = newIn ? SORTS[0] : SORTS[sortIdx];
-  const userQuery = buildQuery({ types, designers, conditions, colours, sizes, shoeSizes });
-  const query = userQuery;
+  const searchActive = search.length > 0;
+  const sort = newIn && !searchActive ? SORTS[0] : SORTS[sortIdx];
+  const filterQuery = buildQuery({ types, designers, conditions, colours, sizes, shoeSizes });
+  const query = searchActive
+    ? [filterQuery, `(title:*${search}* OR tag:*${search}* OR vendor:*${search}* OR product_type:*${search}*)`]
+        .filter(Boolean)
+        .join(" AND ")
+    : filterQuery;
   const activeCount =
     types.length + designers.length + conditions.length + colours.length + sizes.length + shoeSizes.length;
 
