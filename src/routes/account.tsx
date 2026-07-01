@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2, Lock, Megaphone, Copy } from "lucide-react";
 import { deleteMyAccount } from "@/lib/account.functions";
+import { initPushNotifications } from "@/lib/push-client";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import {
@@ -50,6 +51,7 @@ function Account() {
   const [pwOpen, setPwOpen] = useState(false);
   const [fcmOpen, setFcmOpen] = useState(false);
   const [fcmToken, setFcmToken] = useState("");
+  const [fcmStatus, setFcmStatus] = useState("");
 
   const handleSetPassword = async () => {
     if (newPassword.length < 8) {
@@ -153,27 +155,37 @@ function Account() {
         {isAdmin && (
           <button
             onClick={async () => {
+              setFcmToken("");
+              setFcmStatus("Opening notification token check…");
+              setFcmOpen(true);
               try {
                 const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
                 if (!cap?.isNativePlatform?.()) {
+                  setFcmStatus("This button only works inside the installed iPhone app, not the web preview.");
                   toast.error("Run this inside the native app.");
                   return;
                 }
                 const { FirebaseMessaging } = await import("@capacitor-firebase/messaging");
                 const perm = await FirebaseMessaging.checkPermissions();
                 if (perm.receive !== "granted") {
+                  setFcmStatus("Requesting notification permission…");
                   const req = await FirebaseMessaging.requestPermissions();
                   if (req.receive !== "granted") {
+                    setFcmStatus("Notifications permission was not granted. Enable it in iPhone Settings → Sellier → Notifications.");
                     toast.error("Notifications permission denied.");
                     return;
                   }
                 }
+                setFcmStatus("Getting this phone’s notification token…");
+                await initPushNotifications();
                 const { token } = await FirebaseMessaging.getToken();
                 if (!token) {
+                  setFcmStatus("No token yet. Fully close and reopen the app, then try this button again.");
                   toast.error("No FCM token yet — reopen the app and try again.");
                   return;
                 }
                 setFcmToken(token);
+                setFcmStatus("Token ready. Paste this into Firebase’s Send test message box.");
                 setFcmOpen(true);
                 try {
                   const { Clipboard } = await import("@capacitor/clipboard");
@@ -182,8 +194,8 @@ function Account() {
                 } catch {
                   try { await navigator.clipboard.writeText(token); toast.success("FCM token copied"); } catch { /* shown in dialog */ }
                 }
-                console.log("FCM token:", token);
               } catch (err) {
+                setFcmStatus(err instanceof Error ? err.message : "Could not get FCM token. Reopen the app and try again.");
                 toast.error(err instanceof Error ? err.message : "Could not get FCM token");
               }
             }}
@@ -202,12 +214,20 @@ function Account() {
             <DialogHeader>
               <DialogTitle>Your FCM token</DialogTitle>
             </DialogHeader>
-            <textarea
-              readOnly
-              value={fcmToken}
-              onFocus={(e) => e.currentTarget.select()}
-              className="w-full h-40 text-xs font-mono border rounded p-2 break-all"
-            />
+            <p className="text-sm text-muted-foreground">{fcmStatus}</p>
+            {fcmToken ? (
+              <textarea
+                readOnly
+                value={fcmToken}
+                onFocus={(e) => e.currentTarget.select()}
+                className="w-full h-40 text-xs font-mono border rounded p-2 break-all"
+              />
+            ) : (
+              <div className="flex items-center gap-2 rounded border border-border/70 p-3 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Waiting for token…
+              </div>
+            )}
             <p className="text-xs text-muted-foreground">Long-press to select all, then copy. Paste into Firebase Console → Cloud Messaging → Send test message.</p>
           </DialogContent>
         </Dialog>
