@@ -1,7 +1,7 @@
 // Client-only: registers the native device with FCM and stores its token.
 // Safe to import everywhere — it no-ops outside a Capacitor native runtime.
 
-import { registerDeviceToken } from "./push.functions";
+import { registerAnonymousDeviceToken, registerDeviceToken } from "./push.functions";
 import { BROADCAST_TOPIC } from "./push-constants";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -45,12 +45,12 @@ function extractUrl(data: PushData): string | null {
 
 async function registerTokenWithBackend(token: string, platform: "ios" | "android") {
   const { data } = await supabase.auth.getSession();
-  if (!data.session) {
-    // No signed-in user yet — defer registration until SIGNED_IN fires.
-    return false;
+  if (data.session) {
+    await registerDeviceToken({ data: { token, platform } });
+  } else {
+    // Anonymous device — still register so broadcasts reach guests.
+    await registerAnonymousDeviceToken({ data: { token, platform } });
   }
-
-  await registerDeviceToken({ data: { token, platform } });
   lastRegisteredToken = token;
   return true;
 }
@@ -140,6 +140,8 @@ export async function initPushNotifications() {
 
       supabase.auth.onAuthStateChange((event) => {
         if (event !== "SIGNED_IN" || !currentFcmToken) return;
+        // Force re-register so the anonymous row gets claimed by this user.
+        lastRegisteredToken = null;
         void ensureBroadcastTopicSubscription(FirebaseMessaging)
           .then(() => registerTokenWithBackend(currentFcmToken!, currentPlatform))
           .catch((err) => {
