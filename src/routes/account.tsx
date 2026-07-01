@@ -209,10 +209,7 @@ function Account() {
             <p className="text-xs text-muted-foreground">Long-press to select all, then copy. Paste into Firebase Console → Cloud Messaging → Send test message.</p>
           </DialogContent>
         </Dialog>
-      </>
-    );
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    _rest;
+
 
         <Dialog open={pwOpen} onOpenChange={setPwOpen}>
           <DialogTrigger asChild>
