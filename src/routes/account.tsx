@@ -19,7 +19,7 @@ import {
 import { toast } from "sonner";
 import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2, Lock, Megaphone, Copy } from "lucide-react";
 import { deleteMyAccount } from "@/lib/account.functions";
-import { initPushNotifications } from "@/lib/push-client";
+import { getPushDiagnostics, initPushNotifications } from "@/lib/push-client";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import {
@@ -52,6 +52,7 @@ function Account() {
   const [pwOpen, setPwOpen] = useState(false);
   const [fcmOpen, setFcmOpen] = useState(false);
   const [fcmToken, setFcmToken] = useState("");
+  const [apnsToken, setApnsToken] = useState("");
   const [fcmStatus, setFcmStatus] = useState("");
   const [checkingFcm, setCheckingFcm] = useState(false);
 
@@ -119,6 +120,7 @@ function Account() {
   const handleCopyFcmToken = () => {
     flushSync(() => {
       setFcmToken("");
+      setApnsToken("");
       setFcmStatus("Starting notification token check…");
       setFcmOpen(true);
       setCheckingFcm(true);
@@ -137,6 +139,9 @@ function Account() {
 
           setFcmStatus("Loading notification tools…");
           const { FirebaseMessaging } = await import("@capacitor-firebase/messaging");
+          const apnsListener = await FirebaseMessaging.addListener("apnsTokenReceived", ({ token }) => {
+            setApnsToken(token);
+          });
           const perm = await FirebaseMessaging.checkPermissions();
 
           if (perm.receive !== "granted") {
@@ -152,6 +157,9 @@ function Account() {
           setFcmStatus("Getting this phone’s notification token…");
           await initPushNotifications();
           const { token } = await FirebaseMessaging.getToken();
+          const diagnostics = getPushDiagnostics();
+          if (diagnostics.apnsToken) setApnsToken(diagnostics.apnsToken);
+          void apnsListener.remove();
 
           if (!token) {
             setFcmStatus("No token yet. Fully close and reopen the app, then try this button again.");
@@ -160,7 +168,11 @@ function Account() {
           }
 
           setFcmToken(token);
-          setFcmStatus("Token ready. Paste this into Firebase’s Send test message box.");
+          setFcmStatus(
+            diagnostics.platform === "ios" && !diagnostics.apnsToken
+              ? "FCM token is ready, but no APNs token was detected. Check Xcode Push Notifications capability, Background Modes → Remote notifications, and AppDelegate APNs handoff."
+              : "FCM + APNs token ready. Paste the FCM token into Firebase’s Send test message box.",
+          );
 
           try {
             const { Clipboard } = await import("@capacitor/clipboard");
@@ -242,6 +254,9 @@ function Account() {
               Notification token test
             </div>
             <p className="text-sm text-muted-foreground">{fcmStatus}</p>
+            {apnsToken && (
+              <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">APNs: {apnsToken}</p>
+            )}
             {fcmToken && (
               <textarea
                 readOnly

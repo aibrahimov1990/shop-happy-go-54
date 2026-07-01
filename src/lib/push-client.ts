@@ -9,6 +9,7 @@ let listenersInitialized = false;
 let registrationInFlight = false;
 let lastRegisteredToken: string | null = null;
 let currentFcmToken: string | null = null;
+let currentApnsToken: string | null = null;
 let currentPlatform: "ios" | "android" = "ios";
 let retryTimer: number | null = null;
 let topicSubscriptionInFlight = false;
@@ -132,7 +133,8 @@ export async function initPushNotifications() {
         }
       });
 
-      void FirebaseMessaging.addListener("apnsTokenReceived", () => {
+      void FirebaseMessaging.addListener("apnsTokenReceived", ({ token }) => {
+        currentApnsToken = token;
         scheduleTokenRetry(FirebaseMessaging, 500);
       });
 
@@ -174,4 +176,12 @@ export async function initPushNotifications() {
   } finally {
     registrationInFlight = false;
   }
+}
+
+export function getPushDiagnostics() {
+  return {
+    fcmToken: currentFcmToken,
+    apnsToken: currentApnsToken,
+    platform: currentPlatform,
+  };
 }
