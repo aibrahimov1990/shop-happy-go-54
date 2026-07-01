@@ -34,6 +34,13 @@ const COLOURS = [
   "Red", "Silver", "White", "Yellow",
 ];
 
+const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "4", "6", "8", "10", "12", "14", "16", "18"];
+
+const SHOE_SIZES = [
+  "35", "35.5", "36", "36.5", "37", "37.5", "38", "38.5", "39", "39.5",
+  "40", "40.5", "41", "41.5", "42",
+];
+
 const SORTS = [
   { label: "New In", sortKey: "CREATED_AT", reverse: true },
   { label: "Price: Low to High", sortKey: "PRICE", reverse: false },
@@ -64,6 +71,8 @@ function buildQuery(filters: {
   designers: string[];
   conditions: string[];
   colours: string[];
+  sizes: string[];
+  shoeSizes: string[];
 }) {
   const parts: string[] = [];
   if (filters.types.length) {
@@ -87,6 +96,24 @@ function buildQuery(filters: {
       "(" +
         filters.colours
           .map((c) => `title:"${c}" OR tag:"${c}"`)
+          .join(" OR ") +
+        ")",
+    );
+  }
+  if (filters.sizes.length) {
+    parts.push(
+      "(" +
+        filters.sizes
+          .map((s) => `tag:"${s}" OR tag:"Size ${s}" OR tag:"Size:${s}"`)
+          .join(" OR ") +
+        ")",
+    );
+  }
+  if (filters.shoeSizes.length) {
+    parts.push(
+      "(" +
+        filters.shoeSizes
+          .map((s) => `tag:"${s}" OR tag:"Size ${s}" OR tag:"EU ${s}" OR tag:"Size:${s}"`)
           .join(" OR ") +
         ")",
     );
@@ -162,11 +189,14 @@ function Shop() {
   const [designers, setDesigners] = useState<string[]>([]);
   const [conditions, setConditions] = useState<string[]>([]);
   const [colours, setColours] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<string[]>([]);
+  const [shoeSizes, setShoeSizes] = useState<string[]>([]);
 
   const sort = newIn ? SORTS[0] : SORTS[sortIdx];
-  const userQuery = buildQuery({ types, designers, conditions, colours });
+  const userQuery = buildQuery({ types, designers, conditions, colours, sizes, shoeSizes });
   const query = userQuery;
-  const activeCount = types.length + designers.length + conditions.length + colours.length;
+  const activeCount =
+    types.length + designers.length + conditions.length + colours.length + sizes.length + shoeSizes.length;
 
   // Collection query used when New In is active — pulls the first 100 products
   // from Shopify's automatic "All" collection.
@@ -260,6 +290,8 @@ function Shop() {
     setDesigners([]);
     setConditions([]);
     setColours([]);
+    setSizes([]);
+    setShoeSizes([]);
   };
 
   // Top category nav
@@ -431,6 +463,20 @@ function Shop() {
                   onToggle={toggle(setColours)}
                   onClear={() => setColours([])}
                 />
+                <FacetGroup
+                  title="Size"
+                  options={SIZES}
+                  selected={sizes}
+                  onToggle={toggle(setSizes)}
+                  onClear={() => setSizes([])}
+                />
+                <FacetGroup
+                  title="Shoe Size"
+                  options={SHOE_SIZES}
+                  selected={shoeSizes}
+                  onToggle={toggle(setShoeSizes)}
+                  onClear={() => setShoeSizes([])}
+                />
               </div>
               <SheetFooter className="mt-6 sticky bottom-0 bg-background pb-4">
                 <Button className="w-full" onClick={() => setFilterOpen(false)}>
@@ -458,6 +504,8 @@ function Shop() {
               ...designers.map((v) => ({ label: v, clear: () => setDesigners((s) => s.filter((x) => x !== v)) })),
               ...conditions.map((v) => ({ label: v, clear: () => setConditions((s) => s.filter((x) => x !== v)) })),
               ...colours.map((v) => ({ label: v, clear: () => setColours((s) => s.filter((x) => x !== v)) })),
+              ...sizes.map((v) => ({ label: `Size ${v}`, clear: () => setSizes((s) => s.filter((x) => x !== v)) })),
+              ...shoeSizes.map((v) => ({ label: `Shoe ${v}`, clear: () => setShoeSizes((s) => s.filter((x) => x !== v)) })),
             ].map((chip, i) => (
               <button
                 key={i}
