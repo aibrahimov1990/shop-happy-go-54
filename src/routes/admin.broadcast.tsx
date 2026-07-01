@@ -73,7 +73,7 @@ function BroadcastPage() {
         .map(([k, n]) => `${n}× ${k}`)
         .join(", ");
       toast.success(
-        `Sent to ${res.successCount} of ${res.totalTokens} device${res.totalTokens === 1 ? "" : "s"}` +
+        `Submitted to ${res.successCount} of ${res.totalTokens} device${res.totalTokens === 1 ? "" : "s"}` +
           (res.failureCount ? ` — ${res.failureCount} failed${errBreakdown ? ` (${errBreakdown})` : ""}` : "") +
           (res.prunedTokens ? `; pruned ${res.prunedTokens} stale token${res.prunedTokens === 1 ? "" : "s"}` : ""),
         { duration: 8000 },
@@ -200,7 +200,7 @@ function BroadcastPage() {
               </div>
               <p className="mt-1 text-sm text-muted-foreground">{b.body}</p>
               <p className="mt-2 text-[11px] text-muted-foreground">
-                ✓ {b.success_count} delivered · ✕ {b.failure_count} failed
+                ✓ {b.success_count} submitted · ✕ {b.failure_count} failed
               </p>
             </div>
           ))}
