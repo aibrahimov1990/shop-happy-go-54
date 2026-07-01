@@ -26,6 +26,25 @@ export const registerDeviceToken = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/**
+ * Register a device token for an anonymous (signed-out) user.
+ * Uses the service-role client because there is no bearer to satisfy RLS,
+ * and only writes rows with user_id = NULL.
+ */
+export const registerAnonymousDeviceToken = createServerFn({ method: "POST" })
+  .inputValidator((input) => registerSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("device_tokens")
+      .upsert(
+        { token: data.token, platform: data.platform, user_id: null, updated_at: new Date().toISOString() },
+        { onConflict: "token" },
+      );
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 const broadcastSchema = z.object({
   title: z.string().min(1).max(120),
   body: z.string().min(1).max(500),
