@@ -101,20 +101,20 @@ function buildQuery(filters: {
     );
   }
   if (filters.sizes.length) {
+    // Clothing sizes: match "UK <size>" anywhere in the product's default
+    // search fields (title, description, tags, vendor, product_type).
     parts.push(
       "(" +
-        filters.sizes
-          .map((s) => `tag:"${s}" OR tag:"Size ${s}" OR tag:"Size:${s}"`)
-          .join(" OR ") +
+        filters.sizes.map((s) => `"UK ${s}"`).join(" OR ") +
         ")",
     );
   }
   if (filters.shoeSizes.length) {
+    // Shoe sizes: match "EU <size>" anywhere in default search fields
+    // (Shopify Storefront search includes the product description/body).
     parts.push(
       "(" +
-        filters.shoeSizes
-          .map((s) => `tag:"${s}" OR tag:"Size ${s}" OR tag:"EU ${s}" OR tag:"Size:${s}"`)
-          .join(" OR ") +
+        filters.shoeSizes.map((s) => `"EU ${s}"`).join(" OR ") +
         ")",
     );
   }
@@ -524,8 +524,8 @@ function Shop() {
               ...designers.map((v) => ({ label: v, clear: () => setDesigners((s) => s.filter((x) => x !== v)) })),
               ...conditions.map((v) => ({ label: v, clear: () => setConditions((s) => s.filter((x) => x !== v)) })),
               ...colours.map((v) => ({ label: v, clear: () => setColours((s) => s.filter((x) => x !== v)) })),
-              ...sizes.map((v) => ({ label: `Size ${v}`, clear: () => setSizes((s) => s.filter((x) => x !== v)) })),
-              ...shoeSizes.map((v) => ({ label: `Shoe ${v}`, clear: () => setShoeSizes((s) => s.filter((x) => x !== v)) })),
+              ...sizes.map((v) => ({ label: `UK ${v}`, clear: () => setSizes((s) => s.filter((x) => x !== v)) })),
+              ...shoeSizes.map((v) => ({ label: `EU ${v}`, clear: () => setShoeSizes((s) => s.filter((x) => x !== v)) })),
             ].map((chip, i) => (
               <button
                 key={i}
