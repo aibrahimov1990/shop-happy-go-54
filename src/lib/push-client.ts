@@ -11,6 +11,8 @@ let lastRegisteredToken: string | null = null;
 let currentFcmToken: string | null = null;
 let currentPlatform: "ios" | "android" = "ios";
 let retryTimer: number | null = null;
+let topicSubscriptionInFlight = false;
+let broadcastTopicSubscribed = false;
 
 type PushData = Record<string, unknown> | string | null | undefined;
 
@@ -55,6 +57,22 @@ async function fetchAndRegisterToken(FirebaseMessaging: typeof import("@capacito
   if (token && token !== lastRegisteredToken) {
     await registerTokenWithBackend(token, currentPlatform);
   }
+  if (token) {
+    await ensureBroadcastTopicSubscription(FirebaseMessaging);
+  }
+}
+
+async function ensureBroadcastTopicSubscription(
+  FirebaseMessaging: typeof import("@capacitor-firebase/messaging").FirebaseMessaging,
+) {
+  if (broadcastTopicSubscribed || topicSubscriptionInFlight) return;
+  topicSubscriptionInFlight = true;
+  try {
+    await FirebaseMessaging.subscribeToTopic({ topic: BROADCAST_TOPIC });
+    broadcastTopicSubscribed = true;
+  } finally {
+    topicSubscriptionInFlight = false;
+  }
 }
 
 function scheduleTokenRetry(FirebaseMessaging: typeof import("@capacitor-firebase/messaging").FirebaseMessaging, delayMs = 3000) {
@@ -89,9 +107,11 @@ export async function initPushNotifications() {
       void FirebaseMessaging.addListener("tokenReceived", async ({ token }) => {
         currentFcmToken = token;
         try {
+          await ensureBroadcastTopicSubscription(FirebaseMessaging);
           await registerTokenWithBackend(token, currentPlatform);
         } catch (err) {
           console.warn("Failed to register FCM token", err);
+          scheduleTokenRetry(FirebaseMessaging, 3000);
         }
       });
 
@@ -101,9 +121,12 @@ export async function initPushNotifications() {
 
       supabase.auth.onAuthStateChange((event) => {
         if (event !== "SIGNED_IN" || !currentFcmToken) return;
-        void registerTokenWithBackend(currentFcmToken, currentPlatform).catch((err) => {
-          console.warn("Failed to register FCM token after sign-in", err);
-        });
+        void ensureBroadcastTopicSubscription(FirebaseMessaging)
+          .then(() => registerTokenWithBackend(currentFcmToken!, currentPlatform))
+          .catch((err) => {
+            console.warn("Failed to register FCM token after sign-in", err);
+            scheduleTokenRetry(FirebaseMessaging, 3000);
+          });
       });
 
       void FirebaseMessaging.addListener("notificationActionPerformed", (action) => {
@@ -122,7 +145,6 @@ export async function initPushNotifications() {
     }
 
     currentPlatform = platform;
-    await FirebaseMessaging.subscribeToTopic({ topic: BROADCAST_TOPIC });
     await fetchAndRegisterToken(FirebaseMessaging);
   } catch (err) {
     console.warn("Push init failed", err);

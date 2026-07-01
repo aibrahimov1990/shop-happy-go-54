@@ -97,6 +97,30 @@ export interface FcmSendOutcome {
   error?: string;
 }
 
+function buildVisibleMessageTarget(
+  target: { token: string } | { topic: string },
+  payload: { title: string; body: string; url?: string },
+): Record<string, unknown> {
+  const message: Record<string, unknown> = {
+    ...target,
+    notification: { title: payload.title, body: payload.body },
+    apns: {
+      headers: {
+        "apns-priority": "10",
+        "apns-push-type": "alert",
+      },
+      payload: {
+        aps: {
+          alert: { title: payload.title, body: payload.body },
+          sound: "default",
+        },
+      },
+    },
+  };
+  if (payload.url) message.data = { url: payload.url };
+  return message;
+}
+
 function parseServiceAccount(rawJson: string): ServiceAccount {
   let sa: ServiceAccount;
   try {
@@ -152,11 +176,7 @@ export async function sendFcmToTopic(
   topic: string,
   payload: { title: string; body: string; url?: string },
 ): Promise<FcmSendOutcome> {
-  const message: Record<string, unknown> = {
-    topic,
-    notification: { title: payload.title, body: payload.body },
-  };
-  if (payload.url) message.data = { url: payload.url };
+  const message = buildVisibleMessageTarget({ topic }, payload);
   return sendFcmMessage(message);
 }
 
@@ -172,11 +192,7 @@ export async function sendFcmToTokens(
   parseServiceAccount(rawJson);
 
   async function sendOne(token: string): Promise<SendResult> {
-    const message: Record<string, unknown> = {
-      token,
-      notification: { title: payload.title, body: payload.body },
-    };
-    if (payload.url) message.data = { url: payload.url };
+    const message = buildVisibleMessageTarget({ token }, payload);
 
     try {
       const result = await sendFcmMessage(message, projectId);
