@@ -45,8 +45,14 @@ function AuthPage() {
     }
   }, [loading, navigate, next, session, user]);
 
+  // In the native app, the magic-link email must return the user back into
+  // the app via the custom URL scheme — otherwise the link opens in Safari,
+  // sets a session there, and the native app never sees it. The deep-link
+  // handler in `native-oauth.ts` picks up this URL and hydrates the session.
   const redirectTo = typeof window !== "undefined"
-    ? `${window.location.origin}${next ?? "/edits"}`
+    ? (isNativeApp()
+        ? `com.sellierknightsbridge.app://auth-callback${next ? `?next=${encodeURIComponent(next)}` : ""}`
+        : `${window.location.origin}${next ?? "/edits"}`)
     : undefined;
 
   const handleMagicLink = async (e: React.FormEvent) => {
