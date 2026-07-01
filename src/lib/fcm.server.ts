@@ -169,9 +169,7 @@ export async function sendFcmToTokens(
 
   parseServiceAccount(rawJson);
 
-  const endpoint = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
-
-  async function sendOne(token: string, forceFreshToken = false): Promise<SendResult> {
+  async function sendOne(token: string): Promise<SendResult> {
     const message: Record<string, unknown> = {
       token,
       notification: { title: payload.title, body: payload.body },
@@ -188,11 +186,7 @@ export async function sendFcmToTokens(
 
   const results: SendResult[] = [];
   for (const token of tokens) {
-    let result = await sendOne(token);
-    if (result.error?.startsWith("401:")) {
-      cachedToken = null;
-      result = await sendOne(token, true);
-    }
+    const result = await sendOne(token);
     results.push(result);
   }
   return results;
