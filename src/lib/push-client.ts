@@ -14,6 +14,9 @@ let retryTimer: number | null = null;
 let topicSubscriptionInFlight = false;
 let broadcastTopicSubscribed = false;
 
+const PUSH_TOKEN_REFRESH_PREF = "sellier.pushTokenRefreshVersion";
+const PUSH_TOKEN_REFRESH_VERSION = "2026-07-01-production-apns";
+
 type PushData = Record<string, unknown> | string | null | undefined;
 
 function getNativeRuntime() {
@@ -60,6 +63,20 @@ async function fetchAndRegisterToken(FirebaseMessaging: typeof import("@capacito
   if (token) {
     await ensureBroadcastTopicSubscription(FirebaseMessaging);
   }
+}
+
+async function refreshNativeTokenIfNeeded(
+  FirebaseMessaging: typeof import("@capacitor-firebase/messaging").FirebaseMessaging,
+) {
+  const { Preferences } = await import("@capacitor/preferences");
+  const { value } = await Preferences.get({ key: PUSH_TOKEN_REFRESH_PREF });
+  if (value === PUSH_TOKEN_REFRESH_VERSION) return;
+
+  await FirebaseMessaging.deleteToken();
+  lastRegisteredToken = null;
+  currentFcmToken = null;
+  broadcastTopicSubscribed = false;
+  await Preferences.set({ key: PUSH_TOKEN_REFRESH_PREF, value: PUSH_TOKEN_REFRESH_VERSION });
 }
 
 async function ensureBroadcastTopicSubscription(
@@ -145,6 +162,7 @@ export async function initPushNotifications() {
     }
 
     currentPlatform = platform;
+    await refreshNativeTokenIfNeeded(FirebaseMessaging);
     await fetchAndRegisterToken(FirebaseMessaging);
   } catch (err) {
     console.warn("Push init failed", err);
