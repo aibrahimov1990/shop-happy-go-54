@@ -290,6 +290,8 @@ function Shop() {
     setDesigners([]);
     setConditions([]);
     setColours([]);
+    setSizes([]);
+    setShoeSizes([]);
   };
 
   // Top category nav
