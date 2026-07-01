@@ -100,7 +100,7 @@ export const PRODUCT_BY_HANDLE_QUERY = `
       productType
       tags
       priceRange { minVariantPrice { amount currencyCode } }
-      images(first: 10) { edges { node { url(transform: { preferredContentType: JPG }) altText } } }
+      images(first: 50) { edges { node { url(transform: { preferredContentType: JPG }) altText } } }
       variants(first: 25) {
         edges {
           node {
