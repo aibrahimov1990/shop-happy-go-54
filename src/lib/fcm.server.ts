@@ -7,6 +7,8 @@ interface ServiceAccount {
   project_id?: string;
 }
 
+const FCM_SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
+
 function base64UrlEncode(input: ArrayBuffer | string): string {
   const bytes =
     typeof input === "string" ? new TextEncoder().encode(input) : new Uint8Array(input);
@@ -16,7 +18,9 @@ function base64UrlEncode(input: ArrayBuffer | string): string {
 }
 
 function pemToArrayBuffer(pem: string): ArrayBuffer {
+  const normalizedPem = pem.replace(/\\n/g, "\n");
   const b64 = pem
+    .replace(/\\n/g, "\n")
     .replace(/-----BEGIN [^-]+-----/g, "")
     .replace(/-----END [^-]+-----/g, "")
     .replace(/\s+/g, "");
@@ -37,7 +41,7 @@ async function getAccessToken(sa: ServiceAccount, forceRefresh = false): Promise
   const header = { alg: "RS256", typ: "JWT" };
   const claim = {
     iss: sa.client_email,
-    scope: "https://www.googleapis.com/auth/firebase.messaging",
+    scope: FCM_SCOPE,
     aud: "https://oauth2.googleapis.com/token",
     iat: now,
     exp: now + 3600,
@@ -64,6 +68,7 @@ async function getAccessToken(sa: ServiceAccount, forceRefresh = false): Promise
   const res = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    cache: "no-store",
     body: new URLSearchParams({
       grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
       assertion: jwt,
@@ -71,6 +76,7 @@ async function getAccessToken(sa: ServiceAccount, forceRefresh = false): Promise
   });
   if (!res.ok) throw new Error(`FCM token exchange failed: ${res.status} ${await res.text()}`);
   const json = (await res.json()) as { access_token: string; expires_in: number };
+  if (!json.access_token) throw new Error("FCM token exchange did not return an access token");
   cachedToken = {
     token: json.access_token,
     expiresAt: Date.now() + json.expires_in * 1000,
@@ -99,11 +105,20 @@ export async function sendFcmToTokens(
   } catch {
     throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON");
   }
+  if (!sa.client_email || !sa.private_key) {
+    throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON is missing client_email or private_key");
+  }
 
   const endpoint = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
 
   async function sendOne(token: string, forceFreshToken = false): Promise<SendResult> {
     const accessToken = await getAccessToken(sa, forceFreshToken);
+    const url = new URL(endpoint);
+    // FCM officially documents the Authorization header. We also include the
+    // OAuth token as a query parameter because the published Worker runtime can
+    // intermittently drop Authorization on repeated third-party subrequests.
+    // This keeps the request authenticated without exposing the token to users.
+    url.searchParams.set("access_token", accessToken);
     const message: Record<string, unknown> = {
       token,
       notification: { title: payload.title, body: payload.body },
@@ -111,12 +126,13 @@ export async function sendFcmToTokens(
     if (payload.url) message.data = { url: payload.url };
 
     try {
-      const res = await fetch(endpoint, {
+      const res = await fetch(url.toString(), {
         method: "POST",
-        headers: new Headers({
+        headers: {
           Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        }),
+          "Content-Type": "application/json; charset=UTF-8",
+        },
+        cache: "no-store",
         body: JSON.stringify({ message }),
       });
       if (!res.ok) {
