@@ -61,6 +61,7 @@ export const sendBroadcast = createServerFn({ method: "POST" })
     let successCount = 0;
     let failureCount = 0;
     const invalidTokens: string[] = [];
+    const authFailedTokens: string[] = [];
     const errorSamples: string[] = [];
     const errorCounts: Record<string, number> = {};
 
@@ -89,7 +90,14 @@ export const sendBroadcast = createServerFn({ method: "POST" })
           if (/UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND|registration token is not|Requested entity was not found/i.test(err)) {
             invalidTokens.push(r.token);
           }
+          if (/^401:/.test(err) && /UNAUTHENTICATED|THIRD_PARTY_AUTH_ERROR/i.test(err)) {
+            authFailedTokens.push(r.token);
+          }
         }
+      }
+
+      if (successCount > 0 && authFailedTokens.length > 0) {
+        invalidTokens.push(...authFailedTokens);
       }
 
       if (successCount === 0) {
