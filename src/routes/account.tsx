@@ -16,7 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2, Lock } from "lucide-react";
+import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2, Lock, Megaphone } from "lucide-react";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/account")({
 });
 
 function Account() {
-  const { user, loading, isShopper, signOut } = useAuth();
+  const { user, loading, isShopper, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const deleteAccount = useServerFn(deleteMyAccount);
   const [deleting, setDeleting] = useState(false);
@@ -133,6 +133,16 @@ function Account() {
             <div className="flex items-center gap-3">
               <Crown className="h-4 w-4" />
               <span className="text-sm">Shopper area</span>
+            </div>
+            <span className="text-muted-foreground">›</span>
+          </Link>
+        )}
+
+        {isAdmin && (
+          <Link to="/admin/broadcast" className="flex items-center justify-between px-6 py-5 active:bg-muted/40">
+            <div className="flex items-center gap-3">
+              <Megaphone className="h-4 w-4" />
+              <span className="text-sm">Send push notification</span>
             </div>
             <span className="text-muted-foreground">›</span>
           </Link>
