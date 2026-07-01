@@ -72,17 +72,16 @@ export const sendBroadcast = createServerFn({ method: "POST" })
         url: data.url,
       };
       const topicResult = await sendFcmToTopic(BROADCAST_TOPIC, payload);
-      let results: Array<{ token: string; ok: boolean; error?: string }> = topicResult.ok
-        ? tokens.map((token) => ({ token, ok: true }))
-        : [];
-
       if (!topicResult.ok) {
         console.error("[broadcast] FCM topic send failed; falling back to device tokens", {
           topic: BROADCAST_TOPIC,
           error: topicResult.error,
         });
-        results = await sendFcmToTokens(tokens, payload);
       }
+
+      // Transitional safety: older App Store installs may not yet be subscribed to
+      // the broadcast topic, so keep the direct token fan-out active as well.
+      const results = await sendFcmToTokens(tokens, payload);
       for (const r of results) {
         if (r.ok) successCount++;
         else {
