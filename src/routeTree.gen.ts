@@ -31,6 +31,7 @@ import { Route as CollectionsHandleRouteImport } from './routes/collections.$han
 import { Route as AdminStatsRouteImport } from './routes/admin.stats'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
+import { Route as ShopperEditsIdRouteImport } from './routes/shopper.edits.$id'
 import { Route as OpenEditsIdRouteImport } from './routes/open.edits.$id'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -149,6 +150,11 @@ const AdminBroadcastRoute = AdminBroadcastRouteImport.update({
   path: '/admin/broadcast',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShopperEditsIdRoute = ShopperEditsIdRouteImport.update({
+  id: '/edits/$id',
+  path: '/edits/$id',
+  getParentRoute: () => ShopperRoute,
+} as any)
 const OpenEditsIdRoute = OpenEditsIdRouteImport.update({
   id: '/open/edits/$id',
   path: '/open/edits/$id',
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/shopper/': typeof ShopperIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/open/edits/$id': typeof OpenEditsIdRoute
+  '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/shopper': typeof ShopperIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/open/edits/$id': typeof OpenEditsIdRoute
+  '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -274,6 +282,7 @@ export interface FileRoutesById {
   '/shopper/': typeof ShopperIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/open/edits/$id': typeof OpenEditsIdRoute
+  '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -307,6 +316,7 @@ export interface FileRouteTypes {
     | '/shopper/'
     | '/lovable/email/suppression'
     | '/open/edits/$id'
+    | '/shopper/edits/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -336,6 +346,7 @@ export interface FileRouteTypes {
     | '/shopper'
     | '/lovable/email/suppression'
     | '/open/edits/$id'
+    | '/shopper/edits/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -367,6 +378,7 @@ export interface FileRouteTypes {
     | '/shopper/'
     | '/lovable/email/suppression'
     | '/open/edits/$id'
+    | '/shopper/edits/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -558,6 +570,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBroadcastRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shopper/edits/$id': {
+      id: '/shopper/edits/$id'
+      path: '/edits/$id'
+      fullPath: '/shopper/edits/$id'
+      preLoaderRoute: typeof ShopperEditsIdRouteImport
+      parentRoute: typeof ShopperRoute
+    }
     '/open/edits/$id': {
       id: '/open/edits/$id'
       path: '/open/edits/$id'
@@ -625,11 +644,13 @@ const EditsRouteWithChildren = EditsRoute._addFileChildren(EditsRouteChildren)
 interface ShopperRouteChildren {
   ShopperNewRoute: typeof ShopperNewRoute
   ShopperIndexRoute: typeof ShopperIndexRoute
+  ShopperEditsIdRoute: typeof ShopperEditsIdRoute
 }
 
 const ShopperRouteChildren: ShopperRouteChildren = {
   ShopperNewRoute: ShopperNewRoute,
   ShopperIndexRoute: ShopperIndexRoute,
+  ShopperEditsIdRoute: ShopperEditsIdRoute,
 }
 
 const ShopperRouteWithChildren =
