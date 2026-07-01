@@ -385,7 +385,7 @@ function Shop() {
                 )}
               </button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto pt-[calc(env(safe-area-inset-top)+1rem)] [&>button]:top-[calc(env(safe-area-inset-top)+1rem)]">
+            <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto pt-[calc(env(safe-area-inset-top)+1rem)] [&>button.absolute]:!top-[calc(env(safe-area-inset-top)+1rem)]">
               <SheetHeader>
                 <SheetTitle className="font-serif text-2xl text-left">Refine By</SheetTitle>
               </SheetHeader>
