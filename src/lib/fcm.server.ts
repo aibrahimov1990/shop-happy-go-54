@@ -18,7 +18,6 @@ function base64UrlEncode(input: ArrayBuffer | string): string {
 }
 
 function pemToArrayBuffer(pem: string): ArrayBuffer {
-  const normalizedPem = pem.replace(/\\n/g, "\n");
   const b64 = pem
     .replace(/\\n/g, "\n")
     .replace(/-----BEGIN [^-]+-----/g, "")
