@@ -174,7 +174,12 @@ function ShopperEditsList({ isAdmin }: { isAdmin: boolean }) {
       ) : (
         <div className="divide-y divide-border/60">
           {edits.map((edit) => (
-            <div key={edit.id} className="px-6 py-5">
+            <Link
+              key={edit.id}
+              to="/shopper/edits/$id"
+              params={{ id: edit.id }}
+              className="block px-6 py-5 active:bg-muted/40"
+            >
               <div className="flex items-start justify-between gap-3 mb-1">
                 <h3 className="font-serif text-lg leading-tight flex-1">{edit.title}</h3>
                 <StatusBadge status={edit.status} />
@@ -186,7 +191,7 @@ function ShopperEditsList({ isAdmin }: { isAdmin: boolean }) {
                   : `Created ${formatDistanceToNow(new Date(edit.created_at), { addSuffix: true })}`}
                 {edit.viewed_at && ` · Viewed ${formatDistanceToNow(new Date(edit.viewed_at), { addSuffix: true })}`}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
       )}

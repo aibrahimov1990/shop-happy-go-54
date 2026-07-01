@@ -280,6 +280,39 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          body: string
+          client_user_id: string
+          created_at: string
+          id: string
+          read_by_client_at: string | null
+          read_by_shopper_at: string | null
+          sender_id: string
+          shopper_id: string
+        }
+        Insert: {
+          body: string
+          client_user_id: string
+          created_at?: string
+          id?: string
+          read_by_client_at?: string | null
+          read_by_shopper_at?: string | null
+          sender_id: string
+          shopper_id: string
+        }
+        Update: {
+          body?: string
+          client_user_id?: string
+          created_at?: string
+          id?: string
+          read_by_client_at?: string | null
+          read_by_shopper_at?: string | null
+          sender_id?: string
+          shopper_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
