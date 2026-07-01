@@ -28,8 +28,10 @@ function pemToArrayBuffer(pem: string): ArrayBuffer {
 
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
-async function getAccessToken(sa: ServiceAccount): Promise<string> {
-  if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000) return cachedToken.token;
+async function getAccessToken(sa: ServiceAccount, forceRefresh = false): Promise<string> {
+  if (!forceRefresh && cachedToken && cachedToken.expiresAt > Date.now() + 60_000) {
+    return cachedToken.token;
+  }
 
   const now = Math.floor(Date.now() / 1000);
   const header = { alg: "RS256", typ: "JWT" };
@@ -98,46 +100,43 @@ export async function sendFcmToTokens(
     throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON");
   }
 
-  const accessToken = await getAccessToken(sa);
   const endpoint = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
 
-  // Cap concurrency: the Worker runtime drops headers on some in-flight
-  // fetches under heavy parallelism, causing spurious 401s from FCM.
-  const CONCURRENCY = 3;
-  const results: SendResult[] = new Array(tokens.length);
-  let cursor = 0;
+  async function sendOne(token: string, forceFreshToken = false): Promise<SendResult> {
+    const accessToken = await getAccessToken(sa, forceFreshToken);
+    const message: Record<string, unknown> = {
+      token,
+      notification: { title: payload.title, body: payload.body },
+    };
+    if (payload.url) message.data = { url: payload.url };
 
-  async function worker() {
-    while (true) {
-      const i = cursor++;
-      if (i >= tokens.length) return;
-      const token = tokens[i];
-      const message: Record<string, unknown> = {
-        token,
-        notification: { title: payload.title, body: payload.body },
-      };
-      if (payload.url) message.data = { url: payload.url };
-      try {
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ message }),
-        });
-        if (!res.ok) {
-          const text = await res.text();
-          results[i] = { token, ok: false, error: `${res.status}: ${text.slice(0, 200)}` };
-        } else {
-          results[i] = { token, ok: true };
-        }
-      } catch (e) {
-        results[i] = { token, ok: false, error: e instanceof Error ? e.message : String(e) };
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: new Headers({
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ message }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        return { token, ok: false, error: `${res.status}: ${text.slice(0, 300)}` };
       }
+      return { token, ok: true };
+    } catch (e) {
+      return { token, ok: false, error: e instanceof Error ? e.message : String(e) };
     }
   }
 
-  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, tokens.length) }, worker));
+  const results: SendResult[] = [];
+  for (const token of tokens) {
+    let result = await sendOne(token);
+    if (result.error?.startsWith("401:")) {
+      cachedToken = null;
+      result = await sendOne(token, true);
+    }
+    results.push(result);
+  }
   return results;
 }
