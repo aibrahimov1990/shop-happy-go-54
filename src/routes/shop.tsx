@@ -34,6 +34,13 @@ const COLOURS = [
   "Red", "Silver", "White", "Yellow",
 ];
 
+const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "4", "6", "8", "10", "12", "14", "16", "18"];
+
+const SHOE_SIZES = [
+  "35", "35.5", "36", "36.5", "37", "37.5", "38", "38.5", "39", "39.5",
+  "40", "40.5", "41", "41.5", "42",
+];
+
 const SORTS = [
   { label: "New In", sortKey: "CREATED_AT", reverse: true },
   { label: "Price: Low to High", sortKey: "PRICE", reverse: false },
