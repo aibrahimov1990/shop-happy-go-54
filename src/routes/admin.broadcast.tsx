@@ -69,9 +69,18 @@ function BroadcastPage() {
     mutationFn: (input: { title: string; body: string; url: string }) =>
       send({ data: { title: input.title, body: input.body, url: input.url || undefined } }),
     onSuccess: (res) => {
+      const errBreakdown = Object.entries(res.errorCounts ?? {})
+        .map(([k, n]) => `${n}× ${k}`)
+        .join(", ");
       toast.success(
-        `Sent to ${res.successCount} of ${res.totalTokens} device${res.totalTokens === 1 ? "" : "s"}`,
+        `Sent to ${res.successCount} of ${res.totalTokens} device${res.totalTokens === 1 ? "" : "s"}` +
+          (res.failureCount ? ` — ${res.failureCount} failed${errBreakdown ? ` (${errBreakdown})` : ""}` : "") +
+          (res.prunedTokens ? `; pruned ${res.prunedTokens} stale token${res.prunedTokens === 1 ? "" : "s"}` : ""),
+        { duration: 8000 },
       );
+      if (res.errorSamples && res.errorSamples.length > 0) {
+        console.warn("[broadcast] FCM error samples", res.errorSamples);
+      }
       setTitle("");
       setBody("");
       setUrl("");
