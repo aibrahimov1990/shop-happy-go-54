@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { ChevronLeft, Heart, Loader2 } from "lucide-react";
@@ -23,6 +23,7 @@ export const Route = createFileRoute("/product/$handle")({
 function ProductPage() {
   const { handle } = Route.useParams();
   const navigate = useNavigate();
+  const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
   const isLoading = useCartStore((s) => s.isLoading);
   const [variantId, setVariantId] = useState<string | null>(null);
@@ -139,7 +140,10 @@ function ProductPage() {
     <MobileLayout>
       <div className="relative">
         <button
-          onClick={() => navigate({ to: "/shop" })}
+          onClick={() => {
+            if (router.history.canGoBack()) router.history.back();
+            else navigate({ to: "/shop" });
+          }}
           className="absolute top-3 left-3 z-10 h-9 w-9 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-full"
           aria-label="Back"
         >
