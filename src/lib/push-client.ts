@@ -1,7 +1,7 @@
 // Client-only: registers the native device with FCM and stores its token.
 // Safe to import everywhere — it no-ops outside a Capacitor native runtime.
 
-import { registerDeviceToken } from "./push.functions";
+import { registerAnonymousDeviceToken, registerDeviceToken } from "./push.functions";
 import { BROADCAST_TOPIC } from "./push-constants";
 import { supabase } from "@/integrations/supabase/client";
 
