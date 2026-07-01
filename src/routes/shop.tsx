@@ -189,11 +189,14 @@ function Shop() {
   const [designers, setDesigners] = useState<string[]>([]);
   const [conditions, setConditions] = useState<string[]>([]);
   const [colours, setColours] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<string[]>([]);
+  const [shoeSizes, setShoeSizes] = useState<string[]>([]);
 
   const sort = newIn ? SORTS[0] : SORTS[sortIdx];
-  const userQuery = buildQuery({ types, designers, conditions, colours });
+  const userQuery = buildQuery({ types, designers, conditions, colours, sizes, shoeSizes });
   const query = userQuery;
-  const activeCount = types.length + designers.length + conditions.length + colours.length;
+  const activeCount =
+    types.length + designers.length + conditions.length + colours.length + sizes.length + shoeSizes.length;
 
   // Collection query used when New In is active — pulls the first 100 products
   // from Shopify's automatic "All" collection.
