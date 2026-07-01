@@ -354,6 +354,29 @@ function Shop() {
       </div>
 
       <div className="sticky top-14 z-30 bg-background/95 backdrop-blur-sm border-b border-border/60">
+        <div className="px-4 pt-3 pb-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="search"
+              inputMode="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search products, designers…"
+              className="w-full h-10 pl-9 pr-9 text-sm bg-muted/40 border border-border/60 focus:outline-none focus:border-foreground/60 placeholder:text-muted-foreground"
+            />
+            {searchInput && (
+              <button
+                type="button"
+                onClick={() => setSearchInput("")}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
         <div className="flex gap-1 overflow-x-auto px-4 py-3 no-scrollbar">
           <button
             onClick={() => {
