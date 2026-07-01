@@ -319,6 +319,13 @@ function Shop() {
   const accessoriesActive = types.length === 1 && types[0] === "Accessories";
   const [clothingOpen, setClothingOpen] = useState(false);
 
+  // Reset size / shoe-size selections when the category no longer matches,
+  // so stale filters don't silently constrain the query.
+  useEffect(() => {
+    if (!clothingActive && sizes.length) setSizes([]);
+    if (!shoesActive && shoeSizes.length) setShoeSizes([]);
+  }, [clothingActive, shoesActive, sizes.length, shoeSizes.length]);
+
   const navBtn = (active: boolean) =>
     `shrink-0 px-4 py-2 text-[10px] uppercase tracking-[0.2em] border transition-colors ${
       active
@@ -471,20 +478,24 @@ function Shop() {
                   onToggle={toggle(setColours)}
                   onClear={() => setColours([])}
                 />
-                <FacetGroup
-                  title="Size"
-                  options={SIZES}
-                  selected={sizes}
-                  onToggle={toggle(setSizes)}
-                  onClear={() => setSizes([])}
-                />
-                <FacetGroup
-                  title="Shoe Size"
-                  options={SHOE_SIZES}
-                  selected={shoeSizes}
-                  onToggle={toggle(setShoeSizes)}
-                  onClear={() => setShoeSizes([])}
-                />
+                {clothingActive && (
+                  <FacetGroup
+                    title="Size"
+                    options={SIZES}
+                    selected={sizes}
+                    onToggle={toggle(setSizes)}
+                    onClear={() => setSizes([])}
+                  />
+                )}
+                {shoesActive && (
+                  <FacetGroup
+                    title="Shoe Size"
+                    options={SHOE_SIZES}
+                    selected={shoeSizes}
+                    onToggle={toggle(setShoeSizes)}
+                    onClear={() => setShoeSizes([])}
+                  />
+                )}
               </div>
               <SheetFooter className="mt-6 sticky bottom-0 bg-background pb-4">
                 <Button className="w-full" onClick={() => setFilterOpen(false)}>
