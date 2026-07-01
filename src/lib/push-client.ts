@@ -140,6 +140,8 @@ export async function initPushNotifications() {
 
       supabase.auth.onAuthStateChange((event) => {
         if (event !== "SIGNED_IN" || !currentFcmToken) return;
+        // Force re-register so the anonymous row gets claimed by this user.
+        lastRegisteredToken = null;
         void ensureBroadcastTopicSubscription(FirebaseMessaging)
           .then(() => registerTokenWithBackend(currentFcmToken!, currentPlatform))
           .catch((err) => {
