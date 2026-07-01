@@ -31,6 +31,7 @@ import { Route as CollectionsHandleRouteImport } from './routes/collections.$han
 import { Route as AdminStatsRouteImport } from './routes/admin.stats'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
+import { Route as OpenEditsIdRouteImport } from './routes/open.edits.$id'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -148,6 +149,11 @@ const AdminBroadcastRoute = AdminBroadcastRouteImport.update({
   path: '/admin/broadcast',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OpenEditsIdRoute = OpenEditsIdRouteImport.update({
+  id: '/open/edits/$id',
+  path: '/open/edits/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -206,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/edits/': typeof EditsIndexRoute
   '/shopper/': typeof ShopperIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/open/edits/$id': typeof OpenEditsIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -234,6 +241,7 @@ export interface FileRoutesByTo {
   '/edits': typeof EditsIndexRoute
   '/shopper': typeof ShopperIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/open/edits/$id': typeof OpenEditsIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -265,6 +273,7 @@ export interface FileRoutesById {
   '/edits/': typeof EditsIndexRoute
   '/shopper/': typeof ShopperIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/open/edits/$id': typeof OpenEditsIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -297,6 +306,7 @@ export interface FileRouteTypes {
     | '/edits/'
     | '/shopper/'
     | '/lovable/email/suppression'
+    | '/open/edits/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/edits'
     | '/shopper'
     | '/lovable/email/suppression'
+    | '/open/edits/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -355,6 +366,7 @@ export interface FileRouteTypes {
     | '/edits/'
     | '/shopper/'
     | '/lovable/email/suppression'
+    | '/open/edits/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -382,6 +394,7 @@ export interface RootRouteChildren {
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ProductHandleRoute: typeof ProductHandleRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  OpenEditsIdRoute: typeof OpenEditsIdRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -545,6 +558,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBroadcastRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/open/edits/$id': {
+      id: '/open/edits/$id'
+      path: '/open/edits/$id'
+      fullPath: '/open/edits/$id'
+      preLoaderRoute: typeof OpenEditsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -635,6 +655,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ProductHandleRoute: ProductHandleRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  OpenEditsIdRoute: OpenEditsIdRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
