@@ -16,7 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2, Lock, Megaphone } from "lucide-react";
+import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2, Lock, Megaphone, Copy } from "lucide-react";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
