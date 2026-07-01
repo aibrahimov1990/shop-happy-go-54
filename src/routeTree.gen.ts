@@ -28,6 +28,7 @@ import { Route as ProductHandleRouteImport } from './routes/product.$handle'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as EditsIdRouteImport } from './routes/edits.$id'
 import { Route as CollectionsHandleRouteImport } from './routes/collections.$handle'
+import { Route as AdminStatsRouteImport } from './routes/admin.stats'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -132,6 +133,11 @@ const CollectionsHandleRoute = CollectionsHandleRouteImport.update({
   path: '/collections/$handle',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminStatsRoute = AdminStatsRouteImport.update({
+  id: '/admin/stats',
+  path: '/admin/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminEmailsRoute = AdminEmailsRouteImport.update({
   id: '/admin/emails',
   path: '/admin/emails',
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/stats': typeof AdminStatsRoute
   '/collections/$handle': typeof CollectionsHandleRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -218,6 +225,7 @@ export interface FileRoutesByTo {
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/stats': typeof AdminStatsRoute
   '/collections/$handle': typeof CollectionsHandleRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -248,6 +256,7 @@ export interface FileRoutesById {
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/stats': typeof AdminStatsRoute
   '/collections/$handle': typeof CollectionsHandleRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -279,6 +288,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/broadcast'
     | '/admin/emails'
+    | '/admin/stats'
     | '/collections/$handle'
     | '/edits/$id'
     | '/email/unsubscribe'
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/broadcast'
     | '/admin/emails'
+    | '/admin/stats'
     | '/collections/$handle'
     | '/edits/$id'
     | '/email/unsubscribe'
@@ -335,6 +346,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/broadcast'
     | '/admin/emails'
+    | '/admin/stats'
     | '/collections/$handle'
     | '/edits/$id'
     | '/email/unsubscribe'
@@ -365,6 +377,7 @@ export interface RootRouteChildren {
   WishlistRoute: typeof WishlistRoute
   AdminBroadcastRoute: typeof AdminBroadcastRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
+  AdminStatsRoute: typeof AdminStatsRoute
   CollectionsHandleRoute: typeof CollectionsHandleRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ProductHandleRoute: typeof ProductHandleRoute
@@ -511,6 +524,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CollectionsHandleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/stats': {
+      id: '/admin/stats'
+      path: '/admin/stats'
+      fullPath: '/admin/stats'
+      preLoaderRoute: typeof AdminStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/emails': {
       id: '/admin/emails'
       path: '/admin/emails'
@@ -610,6 +630,7 @@ const rootRouteChildren: RootRouteChildren = {
   WishlistRoute: WishlistRoute,
   AdminBroadcastRoute: AdminBroadcastRoute,
   AdminEmailsRoute: AdminEmailsRoute,
+  AdminStatsRoute: AdminStatsRoute,
   CollectionsHandleRoute: CollectionsHandleRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ProductHandleRoute: ProductHandleRoute,

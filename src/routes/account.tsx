@@ -235,6 +235,16 @@ function Account() {
         )}
 
         {isAdmin && (
+          <Link to="/admin/stats" className="flex items-center justify-between px-6 py-5 active:bg-muted/40">
+            <div className="flex items-center gap-3">
+              <Shield className="h-4 w-4" />
+              <span className="text-sm">App statistics</span>
+            </div>
+            <span className="text-muted-foreground">›</span>
+          </Link>
+        )}
+
+        {isAdmin && (
           <button
             onClick={handleCopyFcmToken}
             className="flex items-center justify-between px-6 py-5 active:bg-muted/40 w-full text-left"
