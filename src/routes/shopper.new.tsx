@@ -135,7 +135,7 @@ function NewEdit() {
                 imageUrl: i.imageUrl,
                 priceFormatted: formatPrice(i.priceAmount, i.priceCurrency),
               })),
-              viewUrl: `${origin}/edits/${edit.id}`,
+              viewUrl: `${origin}/open/edits/${edit.id}`,
             },
           });
         } catch (emailErr: any) {
