@@ -52,6 +52,7 @@ function Account() {
   const [fcmOpen, setFcmOpen] = useState(false);
   const [fcmToken, setFcmToken] = useState("");
   const [fcmStatus, setFcmStatus] = useState("");
+  const [checkingFcm, setCheckingFcm] = useState(false);
 
   const handleSetPassword = async () => {
     if (newPassword.length < 8) {
@@ -114,6 +115,71 @@ function Account() {
     }
   };
 
+  const handleCopyFcmToken = () => {
+    setFcmToken("");
+    setFcmStatus("Starting notification token check…");
+    setFcmOpen(true);
+    setCheckingFcm(true);
+
+    window.setTimeout(() => {
+      void (async () => {
+        try {
+          const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+          if (!cap?.isNativePlatform?.()) {
+            setFcmStatus("This test only works inside the installed iPhone app, not the web preview.");
+            toast.error("Run this inside the native app.");
+            return;
+          }
+
+          setFcmStatus("Loading notification tools…");
+          const { FirebaseMessaging } = await import("@capacitor-firebase/messaging");
+          const perm = await FirebaseMessaging.checkPermissions();
+
+          if (perm.receive !== "granted") {
+            setFcmStatus("Requesting notification permission…");
+            const req = await FirebaseMessaging.requestPermissions();
+            if (req.receive !== "granted") {
+              setFcmStatus("Notifications permission was not granted. Enable it in iPhone Settings → Sellier → Notifications.");
+              toast.error("Notifications permission denied.");
+              return;
+            }
+          }
+
+          setFcmStatus("Getting this phone’s notification token…");
+          await initPushNotifications();
+          const { token } = await FirebaseMessaging.getToken();
+
+          if (!token) {
+            setFcmStatus("No token yet. Fully close and reopen the app, then try this button again.");
+            toast.error("No FCM token yet — reopen the app and try again.");
+            return;
+          }
+
+          setFcmToken(token);
+          setFcmStatus("Token ready. Paste this into Firebase’s Send test message box.");
+
+          try {
+            const { Clipboard } = await import("@capacitor/clipboard");
+            await Clipboard.write({ string: token });
+            toast.success("FCM token copied");
+          } catch {
+            try {
+              await navigator.clipboard.writeText(token);
+              toast.success("FCM token copied");
+            } catch {
+              setFcmStatus("Token ready. Copy it manually from the box below.");
+            }
+          }
+        } catch (err) {
+          setFcmStatus(err instanceof Error ? err.message : "Could not get FCM token. Reopen the app and try again.");
+          toast.error(err instanceof Error ? err.message : "Could not get FCM token");
+        } finally {
+          setCheckingFcm(false);
+        }
+      })();
+    }, 50);
+  };
+
   return (
     <MobileLayout>
       <div className="px-6 pt-12 pb-6 text-center border-b border-border/60">
@@ -154,51 +220,7 @@ function Account() {
 
         {isAdmin && (
           <button
-            onClick={async () => {
-              setFcmToken("");
-              setFcmStatus("Opening notification token check…");
-              setFcmOpen(true);
-              try {
-                const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
-                if (!cap?.isNativePlatform?.()) {
-                  setFcmStatus("This button only works inside the installed iPhone app, not the web preview.");
-                  toast.error("Run this inside the native app.");
-                  return;
-                }
-                const { FirebaseMessaging } = await import("@capacitor-firebase/messaging");
-                const perm = await FirebaseMessaging.checkPermissions();
-                if (perm.receive !== "granted") {
-                  setFcmStatus("Requesting notification permission…");
-                  const req = await FirebaseMessaging.requestPermissions();
-                  if (req.receive !== "granted") {
-                    setFcmStatus("Notifications permission was not granted. Enable it in iPhone Settings → Sellier → Notifications.");
-                    toast.error("Notifications permission denied.");
-                    return;
-                  }
-                }
-                setFcmStatus("Getting this phone’s notification token…");
-                await initPushNotifications();
-                const { token } = await FirebaseMessaging.getToken();
-                if (!token) {
-                  setFcmStatus("No token yet. Fully close and reopen the app, then try this button again.");
-                  toast.error("No FCM token yet — reopen the app and try again.");
-                  return;
-                }
-                setFcmToken(token);
-                setFcmStatus("Token ready. Paste this into Firebase’s Send test message box.");
-                setFcmOpen(true);
-                try {
-                  const { Clipboard } = await import("@capacitor/clipboard");
-                  await Clipboard.write({ string: token });
-                  toast.success("FCM token copied");
-                } catch {
-                  try { await navigator.clipboard.writeText(token); toast.success("FCM token copied"); } catch { /* shown in dialog */ }
-                }
-              } catch (err) {
-                setFcmStatus(err instanceof Error ? err.message : "Could not get FCM token. Reopen the app and try again.");
-                toast.error(err instanceof Error ? err.message : "Could not get FCM token");
-              }
-            }}
+            onClick={handleCopyFcmToken}
             className="flex items-center justify-between px-6 py-5 active:bg-muted/40 w-full text-left"
           >
             <div className="flex items-center gap-3">
@@ -207,6 +229,42 @@ function Account() {
             </div>
             <span className="text-muted-foreground">›</span>
           </button>
+        )}
+
+        {isAdmin && fcmOpen && (
+          <div className="mx-6 my-4 rounded-md border border-border bg-card p-4 text-left">
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium">
+              {checkingFcm && <Loader2 className="h-4 w-4 animate-spin" />}
+              Notification token test
+            </div>
+            <p className="text-sm text-muted-foreground">{fcmStatus}</p>
+            {fcmToken && (
+              <textarea
+                readOnly
+                value={fcmToken}
+                onFocus={(e) => e.currentTarget.select()}
+                className="mt-3 h-40 w-full rounded border border-border bg-background p-2 font-mono text-xs"
+              />
+            )}
+            <div className="mt-3 flex gap-2">
+              {fcmToken && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(fcmToken);
+                    toast.success("FCM token copied");
+                  }}
+                  className="text-[10px] uppercase tracking-[0.18em]"
+                >
+                  Copy token
+                </Button>
+              )}
+              <Button type="button" variant="outline" size="sm" onClick={() => setFcmOpen(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
         )}
 
         <Dialog open={fcmOpen} onOpenChange={setFcmOpen}>
