@@ -72,9 +72,13 @@ function BroadcastPage() {
       const errBreakdown = Object.entries(res.errorCounts ?? {})
         .map(([k, n]) => `${n}× ${k}`)
         .join(", ");
+      const registeredCount = res.registeredTokenCount ?? res.totalTokens;
       toast.success(
-        `Submitted to ${res.successCount} of ${res.totalTokens} device${res.totalTokens === 1 ? "" : "s"}` +
+        (res.topicSubmitted
+          ? `Submitted to app broadcast channel (${registeredCount} registered device${registeredCount === 1 ? "" : "s"} currently visible)`
+          : `Submitted to ${res.successCount} of ${res.totalTokens} registered device${res.totalTokens === 1 ? "" : "s"}`) +
           (res.failureCount ? ` — ${res.failureCount} failed${errBreakdown ? ` (${errBreakdown})` : ""}` : "") +
+          (res.topicError && !res.topicSubmitted ? ` — channel error: ${res.topicError.slice(0, 120)}` : "") +
           (res.prunedTokens ? `; pruned ${res.prunedTokens} stale token${res.prunedTokens === 1 ? "" : "s"}` : ""),
         { duration: 8000 },
       );
@@ -131,7 +135,7 @@ function BroadcastPage() {
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="font-serif text-3xl">Send a push broadcast</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Sent to every registered iOS and Android device.
+        Sent through the app broadcast channel, plus registered devices as fallback.
       </p>
 
       <form
@@ -200,7 +204,7 @@ function BroadcastPage() {
               </div>
               <p className="mt-1 text-sm text-muted-foreground">{b.body}</p>
               <p className="mt-2 text-[11px] text-muted-foreground">
-                ✓ {b.success_count} submitted · ✕ {b.failure_count} failed
+                ✓ submitted · {b.success_count} registered · ✕ {b.failure_count} failed
               </p>
             </div>
           ))}

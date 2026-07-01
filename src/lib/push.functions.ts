@@ -75,60 +75,63 @@ export const sendBroadcast = createServerFn({ method: "POST" })
       .select("token");
     if (tokenErr) throw new Error(tokenErr.message);
 
-    const tokens = (tokenRows ?? []).map((r) => r.token);
+    const tokens = Array.from(new Set((tokenRows ?? []).map((r) => r.token)));
 
     let successCount = 0;
     let failureCount = 0;
+    let topicSubmitted = false;
+    let topicError: string | undefined;
     const invalidTokens: string[] = [];
     const authFailedTokens: string[] = [];
     const errorSamples: string[] = [];
     const errorCounts: Record<string, number> = {};
 
-    if (tokens.length > 0) {
+    {
       const { BROADCAST_TOPIC, sendFcmToTokens, sendFcmToTopic } = await import("./fcm.server");
       const payload = {
         title: data.title,
         body: data.body,
         url: data.url,
       };
-      const results = await sendFcmToTokens(tokens, payload);
-      for (const r of results) {
-        if (r.ok) successCount++;
-        else {
-          failureCount++;
-          const err = r.error ?? "unknown";
-          // Bucket by short signature (status code + FCM error code if present)
-          const status = err.match(/^(\d{3})/)?.[1] ?? "?";
-          const code = err.match(/"status"\s*:\s*"([A-Z_]+)"/)?.[1]
-            ?? err.match(/(UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND|SENDER_ID_MISMATCH|THIRD_PARTY_AUTH_ERROR|QUOTA_EXCEEDED|UNAVAILABLE|INTERNAL)/)?.[1]
-            ?? "OTHER";
-          const key = `${status} ${code}`;
-          errorCounts[key] = (errorCounts[key] ?? 0) + 1;
-          if (errorSamples.length < 3) errorSamples.push(err.slice(0, 300));
-          // Drop tokens FCM has invalidated
-          if (/UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND|registration token is not|Requested entity was not found/i.test(err)) {
-            invalidTokens.push(r.token);
-          }
-          if (/^401:/.test(err) && /UNAUTHENTICATED|THIRD_PARTY_AUTH_ERROR/i.test(err)) {
-            authFailedTokens.push(r.token);
+
+      const topicResult = await sendFcmToTopic(BROADCAST_TOPIC, payload);
+      topicSubmitted = topicResult.ok;
+      topicError = topicResult.error;
+
+      // The topic is the main delivery path because it reaches opted-in app installs
+      // even before their token has been claimed into our device table. If Firebase
+      // rejects the topic send, fall back to the tokens we do have saved.
+      if (!topicSubmitted && tokens.length > 0) {
+        console.error("[broadcast] FCM topic send failed; falling back to saved tokens", {
+          topic: BROADCAST_TOPIC,
+          error: topicError,
+        });
+        const results = await sendFcmToTokens(tokens, payload);
+        for (const r of results) {
+          if (r.ok) successCount++;
+          else {
+            failureCount++;
+            const err = r.error ?? "unknown";
+            // Bucket by short signature (status code + FCM error code if present)
+            const status = err.match(/^(\d{3})/)?.[1] ?? "?";
+            const code = err.match(/"status"\s*:\s*"([A-Z_]+)"/)?.[1]
+              ?? err.match(/(UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND|SENDER_ID_MISMATCH|THIRD_PARTY_AUTH_ERROR|QUOTA_EXCEEDED|UNAVAILABLE|INTERNAL)/)?.[1]
+              ?? "OTHER";
+            const key = `${status} ${code}`;
+            errorCounts[key] = (errorCounts[key] ?? 0) + 1;
+            if (errorSamples.length < 3) errorSamples.push(err.slice(0, 300));
+            // Drop tokens FCM has invalidated
+            if (/UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND|registration token is not|Requested entity was not found/i.test(err)) {
+              invalidTokens.push(r.token);
+            }
+            if (/^401:/.test(err) && /UNAUTHENTICATED|THIRD_PARTY_AUTH_ERROR/i.test(err)) {
+              authFailedTokens.push(r.token);
+            }
           }
         }
-      }
 
-      if (successCount > 0 && authFailedTokens.length > 0) {
-        invalidTokens.push(...authFailedTokens);
-      }
-
-      if (successCount === 0) {
-        const topicResult = await sendFcmToTopic(BROADCAST_TOPIC, payload);
-        if (topicResult.ok) {
-          successCount = tokens.length;
-          failureCount = 0;
-        } else {
-          console.error("[broadcast] FCM topic fallback failed", {
-            topic: BROADCAST_TOPIC,
-            error: topicResult.error,
-          });
+        if (successCount > 0 && authFailedTokens.length > 0) {
+          invalidTokens.push(...authFailedTokens);
         }
       }
       if (failureCount > 0) {
@@ -152,7 +155,7 @@ export const sendBroadcast = createServerFn({ method: "POST" })
         title: data.title,
         body: data.body,
         url: data.url ?? null,
-        success_count: successCount,
+        success_count: topicSubmitted ? tokens.length : successCount,
         failure_count: failureCount,
       })
       .select("id")
@@ -162,11 +165,14 @@ export const sendBroadcast = createServerFn({ method: "POST" })
     return {
       broadcastId: inserted.id,
       totalTokens: tokens.length,
+      registeredTokenCount: tokens.length,
       successCount,
       failureCount,
       prunedTokens: invalidTokens.length,
       errorCounts,
       errorSamples,
+      topicSubmitted,
+      topicError,
     };
   });
 
