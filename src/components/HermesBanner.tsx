@@ -21,12 +21,9 @@ export function HermesBanner({ variant = 1 }: { variant?: 1 | 2 }) {
           loading="lazy"
         />
       </div>
-      <div className="bg-[#f5f1ea] text-center py-6 px-4">
-        <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-2">
-          The House of Hermès
-        </p>
-        <h3 className="font-serif text-2xl mb-4">Birkin. Kelly. Beyond.</h3>
-        <span className="inline-block bg-foreground text-background px-6 py-3 text-[11px] uppercase tracking-[0.25em]">
+      <div className="bg-[#f5f1ea] text-left py-5 px-4">
+        <h3 className="font-serif text-xl mb-3">Most Wanted — Neutral Hermès</h3>
+        <span className="inline-block bg-foreground text-background px-4 py-2 text-[10px] uppercase tracking-[0.2em]">
           Shop Hermès →
         </span>
       </div>
