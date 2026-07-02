@@ -7,6 +7,8 @@ import { storefrontApiRequest, type ShopifyProduct } from "@/lib/shopify";
 import React, { useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
 
+const HERMES_HANDLE = "hermes-bags-birkin-kelly-london";
+
 const COLLECTION_QUERY = `
   query GetCollection($handle: String!, $first: Int!, $after: String) {
     collection(handle: $handle) {
@@ -155,8 +157,8 @@ function CollectionPage() {
               {products.map((p, i) => (
                 <React.Fragment key={p.node.id}>
                   <ProductCard product={p} />
-                  {handle === "new-drops" && (i + 1) % 40 === 0 && i < products.length - 1 && (
-                    <HermesBanner />
+                  {handle !== HERMES_HANDLE && (i + 1) % 20 === 0 && i < products.length - 1 && (
+                    <HermesBanner variant={((i + 1) / 20) % 2 === 1 ? 1 : 2} />
                   )}
                 </React.Fragment>
               ))}
