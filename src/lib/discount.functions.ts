@@ -4,10 +4,26 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const SHOP_DOMAIN = "sellier-knightsbridge.myshopify.com";
 const API_VERSION = "2025-07";
 
-// Entitled Shopify collections (Clothing + Shoes) — excludes Bags & Accessories.
+// Entitled Shopify collections — Clothing + Shoes sub-collections only.
+// NOTE: We intentionally do NOT use "All Clothing" (163159113803) or "All Shoes"
+// (163159375947) because in this store those collections are miscurated and
+// contain Bags and Accessories, which would leak the discount to them.
 const ENTITLED_COLLECTION_GIDS = [
-  "gid://shopify/Collection/163159113803", // All Clothing
-  "gid://shopify/Collection/163159375947", // All Shoes
+  // Clothing sub-collections
+  "gid://shopify/Collection/163157049419", // Tops
+  "gid://shopify/Collection/163157147723", // Co-ords
+  "gid://shopify/Collection/163157213259", // Jumpsuit
+  "gid://shopify/Collection/163157311563", // Knitwear
+  "gid://shopify/Collection/163157377099", // Skirts
+  "gid://shopify/Collection/163157508171", // Trousers
+  "gid://shopify/Collection/163157868619", // Coats & Jackets
+  "gid://shopify/Collection/163158655051", // Dresses
+  // Shoes sub-collections
+  "gid://shopify/Collection/163157442635", // Boots
+  "gid://shopify/Collection/163157704779", // Pumps
+  "gid://shopify/Collection/163158523979", // Heels
+  "gid://shopify/Collection/163158589515", // Sandals
+  "gid://shopify/Collection/163158622283", // Trainers
 ];
 
 function generateCode(): string {
