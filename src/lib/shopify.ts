@@ -76,6 +76,7 @@ export const PRODUCTS_QUERY = `
           description
           handle
           vendor
+          tags
           priceRange { minVariantPrice { amount currencyCode } }
           images(first: 5) { edges { node { url(transform: { preferredContentType: JPG }) altText } } }
           variants(first: 10) {
