@@ -48,7 +48,17 @@ export const registerAnonymousDeviceToken = createServerFn({ method: "POST" })
 const broadcastSchema = z.object({
   title: z.string().min(1).max(120),
   body: z.string().min(1).max(500),
-  url: z.string().url().optional().or(z.literal("")).transform((v) => (v ? v : undefined)),
+  // Accepts either an in-app path (e.g. "/shop", "/edits/abc") — opens inside
+  // the native app — or a full https URL. Paths are preferred so taps stay in-app.
+  url: z
+    .string()
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v ? v.trim() : undefined))
+    .refine(
+      (v) => !v || v.startsWith("/") || /^https?:\/\//i.test(v),
+      { message: "URL must start with / (in-app path) or https://" },
+    ),
 });
 
 /**

@@ -178,14 +178,17 @@ function BroadcastPage() {
           />
         </div>
         <div>
-          <Label htmlFor="url">Open URL (optional)</Label>
+          <Label htmlFor="url">Open in app (optional)</Label>
           <Input
             id="url"
-            type="url"
+            type="text"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://shop-happy-go-54.lovable.app/shop"
+            placeholder="/shop"
           />
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Use an in-app path like <code>/shop</code>, <code>/wishlist</code>, or <code>/edits/&lt;id&gt;</code> so the tap opens the app screen. A full https link will open the website instead.
+          </p>
         </div>
         <Button type="submit" disabled={mutation.isPending} className="w-full">
           {mutation.isPending ? "Sending…" : "Send broadcast"}
