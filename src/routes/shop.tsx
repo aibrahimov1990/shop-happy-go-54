@@ -597,7 +597,7 @@ function Shop() {
               {products.map((p, i) => (
                 <React.Fragment key={p.node.id}>
                   <ProductCard product={p} />
-                  {newIn && (i + 1) % 40 === 0 && i < products.length - 1 && (
+                  {!searchActive && (i + 1) % 20 === 0 && i < products.length - 1 && (
                     <HermesBanner />
                   )}
                 </React.Fragment>
