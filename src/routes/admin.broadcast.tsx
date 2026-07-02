@@ -73,14 +73,18 @@ function BroadcastPage() {
         .map(([k, n]) => `${n}× ${k}`)
         .join(", ");
       const registeredCount = res.registeredTokenCount ?? res.totalTokens;
+      const apnsCredentialMessage = res.apnsCredentialIssue
+        ? " — APNs credential issue in Firebase: upload/replace the Apple Push Notifications Auth Key (.p8) for com.sellierknightsbridge.app"
+        : "";
       toast.success(
         (res.topicSubmitted
           ? `Submitted to app broadcast channel (${registeredCount} registered device${registeredCount === 1 ? "" : "s"} currently visible)`
           : `Submitted to ${res.successCount} of ${res.totalTokens} registered device${res.totalTokens === 1 ? "" : "s"}`) +
           (res.failureCount ? ` — ${res.failureCount} failed${errBreakdown ? ` (${errBreakdown})` : ""}` : "") +
+          apnsCredentialMessage +
           (res.topicError && !res.topicSubmitted ? ` — channel error: ${res.topicError.slice(0, 120)}` : "") +
           (res.prunedTokens ? `; pruned ${res.prunedTokens} stale token${res.prunedTokens === 1 ? "" : "s"}` : ""),
-        { duration: 8000 },
+        { duration: res.apnsCredentialIssue ? 14000 : 8000 },
       );
       if (res.errorSamples && res.errorSamples.length > 0) {
         console.warn("[broadcast] FCM error samples", res.errorSamples);
