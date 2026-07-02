@@ -225,7 +225,7 @@ function Shop() {
           pageInfo { hasNextPage endCursor }
           edges {
             node {
-              id title description handle vendor
+              id title description handle vendor tags
               priceRange { minVariantPrice { amount currencyCode } }
               images(first: 5) { edges { node { url(transform: { preferredContentType: JPG }) altText } } }
               variants(first: 10) {
