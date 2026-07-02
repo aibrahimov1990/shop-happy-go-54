@@ -155,8 +155,8 @@ function CollectionPage() {
               {products.map((p, i) => (
                 <React.Fragment key={p.node.id}>
                   <ProductCard product={p} />
-                  {handle === "new-drops" && (i + 1) % 40 === 0 && i < products.length - 1 && (
-                    <HermesBanner />
+                  {handle !== HERMES_HANDLE && (i + 1) % 20 === 0 && i < products.length - 1 && (
+                    <HermesBanner variant={((i + 1) / 20) % 2 === 1 ? 1 : 2} />
                   )}
                 </React.Fragment>
               ))}
