@@ -98,21 +98,25 @@ export const sendBroadcast = createServerFn({ method: "POST" })
       topicSubmitted = topicResult.ok;
       topicError = topicResult.error;
 
-      // The topic is the main delivery path because it reaches opted-in app installs
-      // even before their token has been claimed into our device table. If Firebase
-      // rejects the topic send, fall back to the tokens we do have saved.
-      if (!topicSubmitted && tokens.length > 0) {
-        console.error("[broadcast] FCM topic send failed; falling back to saved tokens", {
+      if (!topicSubmitted) {
+        console.error("[broadcast] FCM topic send failed", {
           topic: BROADCAST_TOPIC,
           error: topicError,
         });
+      }
+
+      // Always fan-out to saved tokens as well. Topic delivery only reaches
+      // devices that have successfully subscribed to the topic (requires the
+      // app to have opened after topic-subscribe shipped, and the FCM
+      // subscribe call to have succeeded). Per-token sends guarantee every
+      // registered device gets the push.
+      if (tokens.length > 0) {
         const results = await sendFcmToTokens(tokens, payload);
         for (const r of results) {
           if (r.ok) successCount++;
           else {
             failureCount++;
             const err = r.error ?? "unknown";
-            // Bucket by short signature (status code + FCM error code if present)
             const status = err.match(/^(\d{3})/)?.[1] ?? "?";
             const code = err.match(/"status"\s*:\s*"([A-Z_]+)"/)?.[1]
               ?? err.match(/(UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND|SENDER_ID_MISMATCH|THIRD_PARTY_AUTH_ERROR|QUOTA_EXCEEDED|UNAVAILABLE|INTERNAL)/)?.[1]
@@ -120,7 +124,6 @@ export const sendBroadcast = createServerFn({ method: "POST" })
             const key = `${status} ${code}`;
             errorCounts[key] = (errorCounts[key] ?? 0) + 1;
             if (errorSamples.length < 3) errorSamples.push(err.slice(0, 300));
-            // Drop tokens FCM has invalidated
             if (/UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND|registration token is not|Requested entity was not found/i.test(err)) {
               invalidTokens.push(r.token);
             }
@@ -134,6 +137,7 @@ export const sendBroadcast = createServerFn({ method: "POST" })
           invalidTokens.push(...authFailedTokens);
         }
       }
+
       if (failureCount > 0) {
         console.error("[broadcast] FCM failures", {
           totalTokens: tokens.length,
