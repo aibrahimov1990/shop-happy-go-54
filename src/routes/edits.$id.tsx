@@ -1,12 +1,14 @@
 import { useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { MobileLayout } from "@/components/MobileLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { EditItemCard } from "@/components/EditItemCard";
 import { ChatThread } from "@/components/ChatThread";
+import { getAccessibleEdit, type AccessibleEdit } from "@/lib/edits.functions";
 
 export const Route = createFileRoute("/edits/$id")({
   head: () => ({
@@ -18,29 +20,11 @@ export const Route = createFileRoute("/edits/$id")({
   component: EditDetail,
 });
 
-interface EditItem {
-  id: string;
-  shopify_handle: string;
-  title: string;
-  image_url: string | null;
-  price_amount: number | null;
-  price_currency: string | null;
-}
-
-interface EditFull {
-  id: string;
-  title: string;
-  note: string | null;
-  status: "draft" | "sent" | "viewed";
-  sent_at: string | null;
-  shopper_id: string;
-  edit_items: EditItem[];
-}
-
 function EditDetail() {
   const { id } = Route.useParams();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const fetchEdit = useServerFn(getAccessibleEdit);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -49,19 +33,9 @@ function EditDetail() {
   }, [loading, user, navigate, id]);
 
   const { data: edit, isLoading } = useQuery({
-    queryKey: ["edit", id],
+    queryKey: ["edit", id, user?.id],
     enabled: !!user,
-    queryFn: async (): Promise<EditFull | null> => {
-      const { data, error } = await supabase
-        .from("edits")
-        .select(
-          "id, title, note, status, sent_at, shopper_id, edit_items(id, shopify_handle, title, image_url, price_amount, price_currency)",
-        )
-        .eq("id", id)
-        .maybeSingle();
-      if (error) throw error;
-      return data as EditFull | null;
-    },
+    queryFn: async (): Promise<AccessibleEdit | null> => fetchEdit({ data: { id } }),
   });
 
   useEffect(() => {
@@ -88,7 +62,7 @@ function EditDetail() {
       <MobileLayout>
         <div className="px-6 py-20 text-center">
           <h2 className="font-serif text-xl mb-2">Edit not found</h2>
-          <p className="text-sm text-muted-foreground">It may have been removed.</p>
+          <p className="text-sm text-muted-foreground">Sign in with the email address this edit was sent to.</p>
           <Link to="/edits" className="inline-block mt-6 text-[11px] uppercase tracking-[0.25em] underline">
             Back to my edits
           </Link>
