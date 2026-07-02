@@ -136,15 +136,9 @@ function Home() {
 
       {/* Footer */}
       <footer className="bg-[#f5f1ea] px-6 pt-10 pb-8 text-center -mb-[calc(5rem+env(safe-area-inset-bottom))] pb-[calc(2rem+5rem+env(safe-area-inset-bottom))]">
-        <img src={sellierLogo} alt="Sellier" className="h-4 w-auto mx-auto mb-2 opacity-80" />
-        <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-8">
-          Preloved Luxury
-        </p>
+        <img src={sellierLogo} alt="Sellier" className="h-4 w-auto mx-auto mb-6 opacity-80" />
 
         <div>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3">
-            Stay in the know
-          </p>
           <form onSubmit={(e) => e.preventDefault()} className="flex items-center border-b border-foreground/30">
             <input
               type="email"
