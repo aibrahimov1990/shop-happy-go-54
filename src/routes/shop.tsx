@@ -280,7 +280,9 @@ function Shop() {
   });
 
 
-  const products: ShopifyProduct[] = data?.pages.flatMap((p) => p.edges) ?? [];
+  const products: ShopifyProduct[] = (data?.pages.flatMap((p) => p.edges) ?? []).filter(
+    (p) => !isKidsProduct(p),
+  );
 
   // When any refine filter is active, auto-fetch all remaining pages so the
   // user sees the full catalogue for that filter — not just the first page.
