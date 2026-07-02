@@ -135,47 +135,52 @@ function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#f5f1ea] px-6 py-12 space-y-10">
-        <div>
-          <h2 className="font-serif text-3xl tracking-wide mb-6">SELLIER</h2>
-          <h4 className="font-semibold text-sm">Knightsbridge Consignment Store</h4>
-        </div>
+      <footer className="bg-[#f5f1ea] px-6 pt-10 pb-8 text-center">
+        <img src={sellierLogo} alt="Sellier" className="h-4 w-auto mx-auto mb-2 opacity-80" />
+        <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-8">
+          Knightsbridge Consignment
+        </p>
 
         <div>
-          <ul className="space-y-3 text-sm">
-            <li><Link to="/terms">Terms &amp; Conditions</Link></li>
-            <li><Link to="/refund-policy">Refund policy</Link></li>
-            <li><Link to="/sell-with-us">Sell With Us</Link></li>
-          </ul>
-        </div>
-
-
-        <div>
-          <h4 className="font-semibold text-base mb-4">Newsletter</h4>
-          <p className="text-sm text-foreground/80 mb-5">
-            Subscribe to receive updates, access to exclusive deals and more.
+          <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3">
+            Stay in the know
           </p>
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="space-y-3"
-          >
+          <form onSubmit={(e) => e.preventDefault()} className="flex items-center border-b border-foreground/30">
             <input
               type="email"
-              placeholder="Enter your email address"
-              className="w-full bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none"
+              placeholder="Email address"
+              className="flex-1 bg-transparent py-3 text-sm placeholder:text-muted-foreground focus:outline-none text-center"
             />
             <button
               type="submit"
-              className="w-full bg-foreground text-background py-4 text-[11px] uppercase tracking-[0.3em]"
+              aria-label="Subscribe"
+              className="text-[10px] uppercase tracking-[0.25em] pl-3 pb-3 pt-3"
             >
-              Subscribe
+              Join →
             </button>
           </form>
-          <div className="mt-8 text-sm text-foreground/80 space-y-1">
-            <p>020 7581 2380</p>
-            <p>6 Cheval Place, London, England, United Kingdom</p>
-          </div>
         </div>
+
+        <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-10 text-[11px] uppercase tracking-[0.2em]">
+          <li><Link to="/terms">Terms</Link></li>
+          <li aria-hidden className="text-foreground/30">·</li>
+          <li><Link to="/refund-policy">Refunds</Link></li>
+          <li aria-hidden className="text-foreground/30">·</li>
+          <li><Link to="/sell-with-us">Sell With Us</Link></li>
+        </ul>
+
+        <div className="mt-8 space-y-1 text-xs text-foreground/70">
+          <p>
+            <a href="tel:+442075812380" className="underline-offset-4 hover:underline">
+              020 7581 2380
+            </a>
+          </p>
+          <p>6 Cheval Place, London SW7 1EW</p>
+        </div>
+
+        <p className="mt-8 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+          © {new Date().getFullYear()} Sellier Knightsbridge
+        </p>
       </footer>
 
     </MobileLayout>
