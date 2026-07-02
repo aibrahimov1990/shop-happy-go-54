@@ -592,8 +592,13 @@ function Shop() {
         ) : (
           <>
             <div className="grid grid-cols-2 gap-x-3 gap-y-6">
-              {products.map((p) => (
-                <ProductCard key={p.node.id} product={p} />
+              {products.map((p, i) => (
+                <>
+                  <ProductCard key={p.node.id} product={p} />
+                  {newIn && (i + 1) % 40 === 0 && i < products.length - 1 && (
+                    <HermesBanner key={`banner-${i}`} />
+                  )}
+                </>
               ))}
             </div>
             <div ref={sentinelRef} className="h-10" />
