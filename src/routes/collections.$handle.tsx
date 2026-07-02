@@ -90,14 +90,18 @@ function CollectionPage() {
     });
 
   const first = data?.pages[0];
-  const allProducts: ShopifyProduct[] = data?.pages.flatMap((p) => p.edges) ?? [];
+  const rawProducts: ShopifyProduct[] = data?.pages.flatMap((p) => p.edges) ?? [];
+  // Never show KIDS-tagged products in general collections. If someone opens a
+  // kids-specific collection directly (handle contains "kids"), keep them.
+  const isKidsCollection = handle.toLowerCase().includes("kids");
+  const withoutKids = isKidsCollection ? rawProducts : rawProducts.filter((p) => !isKidsProduct(p));
   // Hide sold-out products for selected collections
   const HIDE_SOLD_OUT_HANDLES = new Set(["bags-under-2-500"]);
   const products: ShopifyProduct[] = HIDE_SOLD_OUT_HANDLES.has(handle)
-    ? allProducts.filter((p) =>
+    ? withoutKids.filter((p) =>
         p.node.variants.edges.some((v) => v.node.availableForSale),
       )
-    : allProducts;
+    : withoutKids;
   const title = first?.title ?? handle.replace(/-/g, " ");
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
