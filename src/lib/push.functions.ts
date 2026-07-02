@@ -84,6 +84,7 @@ export const sendBroadcast = createServerFn({ method: "POST" })
     const invalidTokens: string[] = [];
     const errorSamples: string[] = [];
     const errorCounts: Record<string, number> = {};
+    let apnsCredentialIssue = false;
 
     {
       const { BROADCAST_TOPIC, sendFcmToTokens, sendFcmToTopic } = await import("./fcm.server");
@@ -117,13 +118,17 @@ export const sendBroadcast = createServerFn({ method: "POST" })
             failureCount++;
             const err = r.error ?? "unknown";
             const status = err.match(/^(\d{3})/)?.[1] ?? "?";
-            const code = err.match(/"status"\s*:\s*"([A-Z_]+)"/)?.[1]
-              ?? err.match(/"errorCode"\s*:\s*"([A-Z_]+)"/)?.[1]
-              ?? err.match(/(UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND|SENDER_ID_MISMATCH|THIRD_PARTY_AUTH_ERROR|QUOTA_EXCEEDED|UNAVAILABLE|INTERNAL)/)?.[1]
+            const code = err.match(/"errorCode"\s*:\s*"([A-Z_]+)"/)?.[1]
+              ?? err.match(/"reason"\s*:\s*"([A-Za-z_]+)"/)?.[1]
+              ?? err.match(/"status"\s*:\s*"([A-Z_]+)"/)?.[1]
+              ?? err.match(/(UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND|SENDER_ID_MISMATCH|THIRD_PARTY_AUTH_ERROR|InvalidProviderToken|QUOTA_EXCEEDED|UNAVAILABLE|INTERNAL)/)?.[1]
               ?? "OTHER";
             const key = `${status} ${code}`;
             errorCounts[key] = (errorCounts[key] ?? 0) + 1;
             if (errorSamples.length < 3) errorSamples.push(err.slice(0, 1200));
+            if (/THIRD_PARTY_AUTH_ERROR|InvalidProviderToken|ApnsError/i.test(err)) {
+              apnsCredentialIssue = true;
+            }
             if (/UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND|registration token is not|Requested entity was not found/i.test(err)) {
               invalidTokens.push(r.token);
             }
@@ -136,6 +141,7 @@ export const sendBroadcast = createServerFn({ method: "POST" })
           totalTokens: tokens.length,
           successCount,
           failureCount,
+          apnsCredentialIssue,
           errorCounts,
           errorSamples,
         });
@@ -168,6 +174,7 @@ export const sendBroadcast = createServerFn({ method: "POST" })
       prunedTokens: invalidTokens.length,
       errorCounts,
       errorSamples,
+      apnsCredentialIssue,
       topicSubmitted,
       topicError,
     };
