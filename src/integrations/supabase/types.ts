@@ -47,6 +47,27 @@ export type Database = {
         }
         Relationships: []
       }
+      app_first_order_discounts: {
+        Row: {
+          code: string
+          created_at: string
+          shopify_discount_id: string | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          shopify_discount_id?: string | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          shopify_discount_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       broadcasts: {
         Row: {
           body: string
