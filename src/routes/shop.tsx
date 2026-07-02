@@ -598,7 +598,7 @@ function Shop() {
                 <React.Fragment key={p.node.id}>
                   <ProductCard product={p} />
                   {!searchActive && (i + 1) % 20 === 0 && i < products.length - 1 && (
-                    <HermesBanner />
+                    <HermesBanner variant={((i + 1) / 20) % 2 === 1 ? 1 : 2} />
                   )}
                 </React.Fragment>
               ))}
