@@ -1,17 +1,21 @@
+import { Link } from "@tanstack/react-router";
 import hermesBanner from "@/assets/hermes-banner.jpg";
+import hermesBanner2 from "@/assets/hermes-banner-2.jpg";
 
-export function HermesBanner() {
+const HERMES_HANDLE = "hermes-bags-birkin-kelly-london";
+
+export function HermesBanner({ variant = 1 }: { variant?: 1 | 2 }) {
+  const src = variant === 2 ? hermesBanner2 : hermesBanner;
   return (
-    <a
-      href="https://www.sellierknightsbridge.com/collections/hermes-bags-birkin-kelly-london"
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      to="/collections/$handle"
+      params={{ handle: HERMES_HANDLE }}
       className="col-span-2 block my-4 group"
       aria-label="Shop Hermès at Sellier Knightsbridge"
     >
       <div className="relative overflow-hidden bg-muted">
         <img
-          src={hermesBanner}
+          src={src}
           alt="Shop Hermès at Sellier Knightsbridge"
           className="w-full h-auto object-cover"
           loading="lazy"
@@ -26,6 +30,6 @@ export function HermesBanner() {
           Shop Hermès →
         </span>
       </div>
-    </a>
+    </Link>
   );
 }
