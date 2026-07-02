@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Copy, Loader2, Check } from "lucide-react";
+import { Copy, Loader2, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { getOrCreateFirstOrderDiscount } from "@/lib/discount.functions";
@@ -43,10 +43,7 @@ export function FirstOrderDiscountCard() {
   if (!user) {
     return (
       <div className="mx-4 my-6 border border-foreground/20 bg-background p-5 text-center">
-        <div className="flex justify-center">
-          <Sparkles className="h-4 w-4 text-foreground" />
-        </div>
-        <p className="mt-2 font-serif text-lg text-foreground">
+        <p className="font-serif text-lg text-foreground">
           15% off your first order
         </p>
         <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
@@ -87,10 +84,7 @@ export function FirstOrderDiscountCard() {
 
   return (
     <div className="mx-4 my-6 border border-foreground/20 bg-background p-5 text-center">
-      <div className="flex justify-center">
-        <Sparkles className="h-4 w-4 text-foreground" />
-      </div>
-      <p className="mt-2 font-serif text-lg text-foreground">
+      <p className="font-serif text-lg text-foreground">
         {percentOff}% off your first order
       </p>
       <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
