@@ -100,6 +100,9 @@ function Home() {
         <h2 className="font-serif text-2xl">Buy now or cry later</h2>
       </div>
 
+      {/* First-order discount (app exclusive) */}
+      <FirstOrderDiscountCard />
+
 
       {/* Featured grid */}
       <section className="px-4 py-8">
