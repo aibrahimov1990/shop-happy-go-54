@@ -82,7 +82,6 @@ export const sendBroadcast = createServerFn({ method: "POST" })
     let topicSubmitted = false;
     let topicError: string | undefined;
     const invalidTokens: string[] = [];
-    const authFailedTokens: string[] = [];
     const errorSamples: string[] = [];
     const errorCounts: Record<string, number> = {};
 
@@ -119,22 +118,16 @@ export const sendBroadcast = createServerFn({ method: "POST" })
             const err = r.error ?? "unknown";
             const status = err.match(/^(\d{3})/)?.[1] ?? "?";
             const code = err.match(/"status"\s*:\s*"([A-Z_]+)"/)?.[1]
+              ?? err.match(/"errorCode"\s*:\s*"([A-Z_]+)"/)?.[1]
               ?? err.match(/(UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND|SENDER_ID_MISMATCH|THIRD_PARTY_AUTH_ERROR|QUOTA_EXCEEDED|UNAVAILABLE|INTERNAL)/)?.[1]
               ?? "OTHER";
             const key = `${status} ${code}`;
             errorCounts[key] = (errorCounts[key] ?? 0) + 1;
-            if (errorSamples.length < 3) errorSamples.push(err.slice(0, 300));
+            if (errorSamples.length < 3) errorSamples.push(err.slice(0, 1200));
             if (/UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND|registration token is not|Requested entity was not found/i.test(err)) {
               invalidTokens.push(r.token);
             }
-            if (/^401:/.test(err) && /UNAUTHENTICATED|THIRD_PARTY_AUTH_ERROR/i.test(err)) {
-              authFailedTokens.push(r.token);
-            }
           }
-        }
-
-        if (successCount > 0 && authFailedTokens.length > 0) {
-          invalidTokens.push(...authFailedTokens);
         }
       }
 
