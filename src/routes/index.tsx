@@ -138,7 +138,7 @@ function Home() {
       <footer className="bg-[#f5f1ea] px-6 pt-10 pb-8 text-center">
         <img src={sellierLogo} alt="Sellier" className="h-4 w-auto mx-auto mb-2 opacity-80" />
         <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-8">
-          Knightsbridge Consignment
+          Preloved Luxury
         </p>
 
         <div>
