@@ -2,8 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
+import { HermesBanner } from "@/components/HermesBanner";
 import { storefrontApiRequest, type ShopifyProduct } from "@/lib/shopify";
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
 
 const COLLECTION_QUERY = `
@@ -151,8 +152,13 @@ function CollectionPage() {
         ) : (
           <>
             <div className="grid grid-cols-2 gap-x-3 gap-y-6">
-              {products.map((p) => (
-                <ProductCard key={p.node.id} product={p} />
+              {products.map((p, i) => (
+                <React.Fragment key={p.node.id}>
+                  <ProductCard product={p} />
+                  {handle === "new-drops" && (i + 1) % 40 === 0 && i < products.length - 1 && (
+                    <HermesBanner />
+                  )}
+                </React.Fragment>
               ))}
             </div>
             <div ref={sentinelRef} className="h-10" />

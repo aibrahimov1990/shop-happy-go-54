@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SlidersHorizontal, X, Loader2, ChevronDown, Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { HermesBanner } from "@/components/HermesBanner";
+import React from "react";
 
 const PRODUCT_TYPES = [
   "Accessories", "Bag", "Blazer", "Blouse", "Cardigan", "Coat", "Dress", "Gilet",
@@ -592,8 +594,13 @@ function Shop() {
         ) : (
           <>
             <div className="grid grid-cols-2 gap-x-3 gap-y-6">
-              {products.map((p) => (
-                <ProductCard key={p.node.id} product={p} />
+              {products.map((p, i) => (
+                <React.Fragment key={p.node.id}>
+                  <ProductCard product={p} />
+                  {newIn && (i + 1) % 40 === 0 && i < products.length - 1 && (
+                    <HermesBanner />
+                  )}
+                </React.Fragment>
               ))}
             </div>
             <div ref={sentinelRef} className="h-10" />
