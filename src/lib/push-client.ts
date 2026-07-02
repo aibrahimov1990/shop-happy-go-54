@@ -73,7 +73,11 @@ async function refreshNativeTokenIfNeeded(
   const { value } = await Preferences.get({ key: PUSH_TOKEN_REFRESH_PREF });
   if (value === PUSH_TOKEN_REFRESH_VERSION) return;
 
-  await FirebaseMessaging.deleteToken();
+  try {
+    await FirebaseMessaging.deleteToken();
+  } catch (err) {
+    console.warn("Could not delete old FCM token before refresh", err);
+  }
   lastRegisteredToken = null;
   currentFcmToken = null;
   broadcastTopicSubscribed = false;
