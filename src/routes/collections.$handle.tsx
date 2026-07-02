@@ -152,8 +152,13 @@ function CollectionPage() {
         ) : (
           <>
             <div className="grid grid-cols-2 gap-x-3 gap-y-6">
-              {products.map((p) => (
-                <ProductCard key={p.node.id} product={p} />
+              {products.map((p, i) => (
+                <React.Fragment key={p.node.id}>
+                  <ProductCard product={p} />
+                  {handle === "new-drops" && (i + 1) % 40 === 0 && i < products.length - 1 && (
+                    <HermesBanner />
+                  )}
+                </React.Fragment>
               ))}
             </div>
             <div ref={sentinelRef} className="h-10" />
