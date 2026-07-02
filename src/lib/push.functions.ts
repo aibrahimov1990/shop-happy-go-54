@@ -159,7 +159,7 @@ export const sendBroadcast = createServerFn({ method: "POST" })
         title: data.title,
         body: data.body,
         url: data.url ?? null,
-        success_count: topicSubmitted ? tokens.length : successCount,
+        success_count: successCount,
         failure_count: failureCount,
       })
       .select("id")
