@@ -3,7 +3,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
 import { HermesBanner } from "@/components/HermesBanner";
-import { storefrontApiRequest, type ShopifyProduct } from "@/lib/shopify";
+import { storefrontApiRequest, isKidsProduct, type ShopifyProduct } from "@/lib/shopify";
 import React, { useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -24,6 +24,7 @@ const COLLECTION_QUERY = `
             description
             handle
             vendor
+            tags
             priceRange { minVariantPrice { amount currencyCode } }
             images(first: 5) { edges { node { url(transform: { preferredContentType: JPG }) altText } } }
             variants(first: 10) {
@@ -89,14 +90,18 @@ function CollectionPage() {
     });
 
   const first = data?.pages[0];
-  const allProducts: ShopifyProduct[] = data?.pages.flatMap((p) => p.edges) ?? [];
+  const rawProducts: ShopifyProduct[] = data?.pages.flatMap((p) => p.edges) ?? [];
+  // Never show KIDS-tagged products in general collections. If someone opens a
+  // kids-specific collection directly (handle contains "kids"), keep them.
+  const isKidsCollection = handle.toLowerCase().includes("kids");
+  const withoutKids = isKidsCollection ? rawProducts : rawProducts.filter((p) => !isKidsProduct(p));
   // Hide sold-out products for selected collections
   const HIDE_SOLD_OUT_HANDLES = new Set(["bags-under-2-500"]);
   const products: ShopifyProduct[] = HIDE_SOLD_OUT_HANDLES.has(handle)
-    ? allProducts.filter((p) =>
+    ? withoutKids.filter((p) =>
         p.node.variants.edges.some((v) => v.node.availableForSale),
       )
-    : allProducts;
+    : withoutKids;
   const title = first?.title ?? handle.replace(/-/g, " ");
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);

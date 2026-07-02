@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
-import { storefrontApiRequest, PRODUCTS_QUERY, type ShopifyProduct } from "@/lib/shopify";
+import { storefrontApiRequest, PRODUCTS_QUERY, isKidsProduct, type ShopifyProduct } from "@/lib/shopify";
 import { useEffect, useRef, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -205,11 +205,14 @@ function Shop() {
   const searchActive = search.length > 0;
   const sort = newIn && !searchActive ? SORTS[0] : SORTS[sortIdx];
   const filterQuery = buildQuery({ types, designers, conditions, colours, sizes, shoeSizes });
-  const query = searchActive
+  // Always exclude KIDS-tagged products from the main shop.
+  const EXCLUDE_KIDS = "-tag:KIDS";
+  const baseQuery = searchActive
     ? [filterQuery, `(title:*${search}* OR tag:*${search}* OR vendor:*${search}* OR product_type:*${search}*)`]
         .filter(Boolean)
         .join(" AND ")
     : filterQuery;
+  const query = baseQuery ? `${baseQuery} AND ${EXCLUDE_KIDS}` : EXCLUDE_KIDS;
   const activeCount =
     types.length + designers.length + conditions.length + colours.length + sizes.length + shoeSizes.length;
 
@@ -222,7 +225,7 @@ function Shop() {
           pageInfo { hasNextPage endCursor }
           edges {
             node {
-              id title description handle vendor
+              id title description handle vendor tags
               priceRange { minVariantPrice { amount currencyCode } }
               images(first: 5) { edges { node { url(transform: { preferredContentType: JPG }) altText } } }
               variants(first: 10) {
@@ -277,7 +280,9 @@ function Shop() {
   });
 
 
-  const products: ShopifyProduct[] = data?.pages.flatMap((p) => p.edges) ?? [];
+  const products: ShopifyProduct[] = (data?.pages.flatMap((p) => p.edges) ?? []).filter(
+    (p) => !isKidsProduct(p),
+  );
 
   // When any refine filter is active, auto-fetch all remaining pages so the
   // user sees the full catalogue for that filter — not just the first page.

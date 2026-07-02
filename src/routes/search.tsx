@@ -28,7 +28,7 @@ function SearchPage() {
       if (!query.trim()) return [];
       const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
         first: 40,
-        query: `title:*${query}* OR vendor:*${query}*`,
+        query: `(title:*${query}* OR vendor:*${query}*) AND -tag:KIDS`,
       });
       return res?.data?.products?.edges ?? [];
     },

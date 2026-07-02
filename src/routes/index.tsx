@@ -33,12 +33,13 @@ export const Route = createFileRoute("/")({
 
 async function fetchFeatured(): Promise<ShopifyProduct[]> {
   const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
-    first: 12,
-    query: null,
+    first: 16,
+    query: "-tag:KIDS",
     sortKey: "CREATED_AT",
     reverse: true,
   });
-  return res?.data?.products?.edges ?? [];
+  const edges: ShopifyProduct[] = res?.data?.products?.edges ?? [];
+  return edges.slice(0, 12);
 }
 
 function Home() {
