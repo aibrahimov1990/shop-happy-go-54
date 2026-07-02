@@ -16,7 +16,7 @@ let topicSubscriptionInFlight = false;
 let broadcastTopicSubscribed = false;
 
 const PUSH_TOKEN_REFRESH_PREF = "sellier.pushTokenRefreshVersion";
-const PUSH_TOKEN_REFRESH_VERSION = "2026-07-01-production-apns";
+const PUSH_TOKEN_REFRESH_VERSION = "2026-07-02-fcm-broadcast-repair";
 
 type PushData = Record<string, unknown> | string | null | undefined;
 
