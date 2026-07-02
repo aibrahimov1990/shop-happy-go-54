@@ -135,15 +135,15 @@ function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#f5f1ea] px-6 pt-10 pb-8 text-center -mb-[calc(5rem+env(safe-area-inset-bottom))] pb-[calc(2rem+5rem+env(safe-area-inset-bottom))]">
-        <img src={sellierLogo} alt="Sellier" className="h-4 w-auto mx-auto mb-6 opacity-80" />
+      <footer className="bg-[#f5f1ea] px-6 pt-10 pb-8 text-left -mb-[calc(5rem+env(safe-area-inset-bottom))] pb-[calc(2rem+5rem+env(safe-area-inset-bottom))]">
+        <img src={sellierLogo} alt="Sellier" className="h-4 w-auto mb-6 opacity-80" />
 
         <div>
           <form onSubmit={(e) => e.preventDefault()} className="flex items-center border-b border-foreground/30">
             <input
               type="email"
               placeholder="Email address"
-              className="flex-1 bg-transparent py-3 text-sm placeholder:text-muted-foreground focus:outline-none text-center"
+              className="flex-1 bg-transparent py-3 text-sm placeholder:text-muted-foreground focus:outline-none text-left"
             />
             <button
               type="submit"
@@ -155,7 +155,7 @@ function Home() {
           </form>
         </div>
 
-        <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-10 text-[11px] uppercase tracking-[0.2em]">
+        <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-10 text-[11px] uppercase tracking-[0.2em]">
           <li><Link to="/terms">Terms</Link></li>
           <li aria-hidden className="text-foreground/30">·</li>
           <li><Link to="/refund-policy">Refunds</Link></li>
