@@ -70,7 +70,7 @@ export function FirstOrderDiscountCard() {
     );
   }
 
-  if (state.status === "error") return null;
+  if (state.status !== "ready") return null;
 
   const { code, percentOff, scope } = state.data;
 
