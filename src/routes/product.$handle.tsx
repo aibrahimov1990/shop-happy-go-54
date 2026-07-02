@@ -83,7 +83,7 @@ function ProductPage() {
       const tryFetch = async (q: string) => {
         const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
           first: 12,
-          query: q,
+          query: `${q} AND -tag:KIDS`,
           sortKey: "BEST_SELLING",
           reverse: false,
         });
