@@ -205,11 +205,14 @@ function Shop() {
   const searchActive = search.length > 0;
   const sort = newIn && !searchActive ? SORTS[0] : SORTS[sortIdx];
   const filterQuery = buildQuery({ types, designers, conditions, colours, sizes, shoeSizes });
-  const query = searchActive
+  // Always exclude KIDS-tagged products from the main shop.
+  const EXCLUDE_KIDS = "-tag:KIDS";
+  const baseQuery = searchActive
     ? [filterQuery, `(title:*${search}* OR tag:*${search}* OR vendor:*${search}* OR product_type:*${search}*)`]
         .filter(Boolean)
         .join(" AND ")
     : filterQuery;
+  const query = baseQuery ? `${baseQuery} AND ${EXCLUDE_KIDS}` : EXCLUDE_KIDS;
   const activeCount =
     types.length + designers.length + conditions.length + colours.length + sizes.length + shoeSizes.length;
 
