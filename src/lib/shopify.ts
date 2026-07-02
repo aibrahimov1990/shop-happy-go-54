@@ -25,11 +25,19 @@ export interface ShopifyProduct {
     description: string;
     handle: string;
     vendor?: string;
+    tags?: string[];
     priceRange: { minVariantPrice: { amount: string; currencyCode: string } };
     images: { edges: Array<{ node: ShopifyImage }> };
     variants: { edges: Array<{ node: ShopifyVariant }> };
     options: Array<{ name: string; values: string[] }>;
   };
+}
+
+// Products tagged KIDS must never appear in the main shop/collections views.
+export const KIDS_TAG = "KIDS";
+export function isKidsProduct(p: ShopifyProduct): boolean {
+  const tags = p.node.tags ?? [];
+  return tags.some((t) => t.trim().toLowerCase() === "kids");
 }
 
 export async function storefrontApiRequest<T = any>(
