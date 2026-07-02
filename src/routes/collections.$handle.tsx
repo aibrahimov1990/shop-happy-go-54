@@ -7,6 +7,8 @@ import { storefrontApiRequest, type ShopifyProduct } from "@/lib/shopify";
 import React, { useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
 
+const HERMES_HANDLE = "hermes-bags-birkin-kelly-london";
+
 const COLLECTION_QUERY = `
   query GetCollection($handle: String!, $first: Int!, $after: String) {
     collection(handle: $handle) {
