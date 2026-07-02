@@ -3,7 +3,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
 import { HermesBanner } from "@/components/HermesBanner";
-import { storefrontApiRequest, type ShopifyProduct } from "@/lib/shopify";
+import { storefrontApiRequest, isKidsProduct, type ShopifyProduct } from "@/lib/shopify";
 import React, { useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
 
