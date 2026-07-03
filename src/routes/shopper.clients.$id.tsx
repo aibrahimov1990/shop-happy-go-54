@@ -44,6 +44,13 @@ function ClientWishlistPage() {
     enabled: !!user && isShopper,
   });
 
+  const { data: ordersData, isLoading: ordersLoading } = useQuery({
+    queryKey: ["shopper-client-orders", id],
+    queryFn: () => fetchOrders({ data: { clientUserId: id } }),
+    enabled: !!user && isShopper,
+    staleTime: 60_000,
+  });
+
   const productIds = data?.productIds ?? [];
 
   const { data: products = [], isLoading: productsLoading } = useQuery({
