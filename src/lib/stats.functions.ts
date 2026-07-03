@@ -157,7 +157,7 @@ export const getAdminStats = createServerFn({ method: "GET" })
         const domain = "sellier-knightsbridge.myshopify.com";
         const version = "2025-07";
         let url: string | null =
-          `https://${domain}/admin/api/${version}/orders.json?status=any&financial_status=paid&limit=250&fields=id,total_price,currency,created_at,cancelled_at`;
+          `https://${domain}/admin/api/${version}/orders.json?status=any&financial_status=paid&limit=250&fields=id,total_price,currency,created_at,cancelled_at,note_attributes,source_name`;
         const now = Date.now();
         while (url) {
           const res: Response = await fetch(url, {
@@ -167,6 +167,14 @@ export const getAdminStats = createServerFn({ method: "GET" })
           const json: any = await res.json();
           for (const o of json.orders ?? []) {
             if (o.cancelled_at) continue;
+            // Only count orders placed via the Sellier app (cart attribution sets these)
+            const attrs: Array<{ name?: string; value?: string }> = o.note_attributes ?? [];
+            const isAppOrder = attrs.some(
+              (a) =>
+                (a.name === "channel" && a.value === "mobile_app") ||
+                (a.name === "source" && (a.value === "ios_app" || a.value === "android_app")),
+            );
+            if (!isAppOrder) continue;
             const amt = parseFloat(o.total_price ?? "0") || 0;
             sales.total += amt;
             sales.orderCount++;
