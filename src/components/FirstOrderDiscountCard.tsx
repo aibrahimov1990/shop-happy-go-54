@@ -10,6 +10,7 @@ interface DiscountResult {
   code: string;
   percentOff: number;
   scope: string;
+  used: boolean;
 }
 
 export function FirstOrderDiscountCard() {
