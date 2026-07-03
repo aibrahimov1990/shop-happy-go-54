@@ -47,7 +47,7 @@ function ClientWishlistPage() {
     queryKey: ["shopper-client-wishlist-products", id, productIds.join(",")],
     enabled: productIds.length > 0,
     queryFn: async (): Promise<ShopifyProduct[]> => {
-      const q = productIds.map((pid) => `id:${pid.split("/").pop()}`).join(" OR ");
+      const q = productIds.map((pid: string) => `id:${pid.split("/").pop()}`).join(" OR ");
       const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, { first: 100, query: q });
       return res?.data?.products?.edges ?? [];
     },
