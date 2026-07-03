@@ -5,7 +5,7 @@ import { MobileLayout } from "@/components/MobileLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus, Loader2, Crown } from "lucide-react";
+import { Plus, Loader2, Crown, Heart } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 
@@ -156,6 +156,26 @@ function ShopperEditsList({ isAdmin }: { isAdmin: boolean }) {
           </Button>
         </Link>
       </div>
+
+      <Link
+        to="/shopper/clients"
+        className="flex items-center justify-between px-6 py-4 border-b border-border/60 active:bg-muted/40"
+      >
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 flex items-center justify-center border border-border/60">
+            <Heart className="h-4 w-4" strokeWidth={1.5} />
+          </div>
+          <div>
+            <p className="text-sm font-serif leading-tight">Client wishlists</p>
+            <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mt-0.5">
+              See what clients have saved
+            </p>
+          </div>
+        </div>
+        <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">View</span>
+      </Link>
+
+
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
