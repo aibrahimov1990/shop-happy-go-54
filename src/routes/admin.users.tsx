@@ -49,12 +49,13 @@ function UsersPage() {
     enabled: !!user && isAdmin,
   });
 
-  const filtered = useMemo(() => {
+  type UserRow = NonNullable<typeof data>["users"][number];
+  const filtered: UserRow[] = useMemo(() => {
     if (!data) return [];
     const q = search.trim().toLowerCase();
     if (!q) return data.users;
     return data.users.filter(
-      (u) =>
+      (u: UserRow) =>
         u.email.toLowerCase().includes(q) ||
         (u.fullName ?? "").toLowerCase().includes(q),
     );

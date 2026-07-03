@@ -29,6 +29,7 @@ import { Route as ProductHandleRouteImport } from './routes/product.$handle'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as EditsIdRouteImport } from './routes/edits.$id'
 import { Route as CollectionsHandleRouteImport } from './routes/collections.$handle'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminStatsRouteImport } from './routes/admin.stats'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
@@ -142,6 +143,11 @@ const CollectionsHandleRoute = CollectionsHandleRouteImport.update({
   path: '/collections/$handle',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminStatsRoute = AdminStatsRouteImport.update({
   id: '/admin/stats',
   path: '/admin/stats',
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/collections/$handle': typeof CollectionsHandleRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/collections/$handle': typeof CollectionsHandleRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -289,6 +297,7 @@ export interface FileRoutesById {
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/collections/$handle': typeof CollectionsHandleRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -325,6 +334,7 @@ export interface FileRouteTypes {
     | '/admin/broadcast'
     | '/admin/emails'
     | '/admin/stats'
+    | '/admin/users'
     | '/collections/$handle'
     | '/edits/$id'
     | '/email/unsubscribe'
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/admin/broadcast'
     | '/admin/emails'
     | '/admin/stats'
+    | '/admin/users'
     | '/collections/$handle'
     | '/edits/$id'
     | '/email/unsubscribe'
@@ -391,6 +402,7 @@ export interface FileRouteTypes {
     | '/admin/broadcast'
     | '/admin/emails'
     | '/admin/stats'
+    | '/admin/users'
     | '/collections/$handle'
     | '/edits/$id'
     | '/email/unsubscribe'
@@ -426,6 +438,7 @@ export interface RootRouteChildren {
   AdminBroadcastRoute: typeof AdminBroadcastRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminStatsRoute: typeof AdminStatsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   CollectionsHandleRoute: typeof CollectionsHandleRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ProductHandleRoute: typeof ProductHandleRoute
@@ -580,6 +593,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CollectionsHandleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/stats': {
       id: '/admin/stats'
       path: '/admin/stats'
@@ -724,6 +744,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminBroadcastRoute: AdminBroadcastRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   AdminStatsRoute: AdminStatsRoute,
+  AdminUsersRoute: AdminUsersRoute,
   CollectionsHandleRoute: CollectionsHandleRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ProductHandleRoute: ProductHandleRoute,
