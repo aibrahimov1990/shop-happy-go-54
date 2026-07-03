@@ -47,9 +47,37 @@ function ClientWishlistPage() {
     queryKey: ["shopper-client-wishlist-products", id, productIds.join(",")],
     enabled: productIds.length > 0,
     queryFn: async (): Promise<ShopifyProduct[]> => {
-      const q = productIds.map((pid: string) => `id:${pid.split("/").pop()}`).join(" OR ");
-      const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, { first: 100, query: q });
-      return res?.data?.products?.edges ?? [];
+      const NODES_QUERY = `
+        query GetProductsByIds($ids: [ID!]!) {
+          nodes(ids: $ids) {
+            ... on Product {
+              id
+              title
+              description
+              handle
+              vendor
+              tags
+              priceRange { minVariantPrice { amount currencyCode } }
+              images(first: 5) { edges { node { url altText } } }
+              variants(first: 10) {
+                edges {
+                  node {
+                    id
+                    title
+                    price { amount currencyCode }
+                    availableForSale
+                    selectedOptions { name value }
+                  }
+                }
+              }
+              options { name values }
+            }
+          }
+        }
+      `;
+      const res = await storefrontApiRequest<any>(NODES_QUERY, { ids: productIds });
+      const nodes = (res?.data?.nodes ?? []).filter(Boolean);
+      return nodes.map((node: any) => ({ node }));
     },
   });
 
