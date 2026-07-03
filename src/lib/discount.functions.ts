@@ -69,6 +69,26 @@ async function createShopifyDiscount(code: string): Promise<string> {
   return data.discountCodeBasicCreate.codeDiscountNode.id as string;
 }
 
+const DISCOUNT_USAGE_QUERY = `
+query DiscountUsage($id: ID!) {
+  codeDiscountNode(id: $id) {
+    codeDiscount {
+      ... on DiscountCodeBasic {
+        asyncUsageCount
+      }
+    }
+  }
+}`;
+
+async function getDiscountUsageCount(id: string): Promise<number> {
+  try {
+    const data = await shopifyGraphQL(DISCOUNT_USAGE_QUERY, { id });
+    return data?.codeDiscountNode?.codeDiscount?.asyncUsageCount ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 export const getOrCreateFirstOrderDiscount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -81,10 +101,14 @@ export const getOrCreateFirstOrderDiscount = createServerFn({ method: "POST" })
       .maybeSingle();
     if (readErr) throw new Error(readErr.message);
     if (existing) {
+      const usage = existing.shopify_discount_id
+        ? await getDiscountUsageCount(existing.shopify_discount_id)
+        : 0;
       return {
         code: existing.code,
         percentOff: 15,
         scope: "Clothing & Shoes only",
+        used: usage > 0,
       };
     }
 
@@ -98,7 +122,7 @@ export const getOrCreateFirstOrderDiscount = createServerFn({ method: "POST" })
           .from("app_first_order_discounts")
           .insert({ user_id: context.userId, code, shopify_discount_id: shopifyId });
         if (insErr) throw new Error(insErr.message);
-        return { code, percentOff: 15, scope: "Clothing & Shoes only" };
+        return { code, percentOff: 15, scope: "Clothing & Shoes only", used: false };
       } catch (e) {
         lastErr = e;
       }
