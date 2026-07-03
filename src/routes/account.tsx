@@ -293,18 +293,7 @@ function Account() {
         </Dialog>
 
 
-        <a
-          href="https://www.sellierknightsbridge.com/pages/privacy-policy"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-between px-6 py-5 active:bg-muted/40"
-        >
-          <div className="flex items-center gap-3">
-            <Shield className="h-4 w-4" />
-            <span className="text-sm">Privacy policy</span>
-          </div>
-          <span className="text-muted-foreground">›</span>
-        </a>
+
 
         <button
           onClick={async () => {
