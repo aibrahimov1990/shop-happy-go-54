@@ -132,11 +132,14 @@ function ClientWishlistPage() {
         </p>
       </div>
 
-      <section className="px-4 py-6">
+      <section className="px-4 pt-6 pb-2">
+        <div className="flex items-center gap-2 px-2 mb-3">
+          <Heart className="h-3.5 w-3.5 text-muted-foreground" />
+          <h2 className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Wishlist</h2>
+        </div>
         {productIds.length === 0 ? (
-          <div className="text-center py-16">
-            <Heart className="h-8 w-8 mx-auto mb-4 text-muted-foreground" strokeWidth={1.5} />
-            <p className="text-sm text-muted-foreground">Nothing saved yet.</p>
+          <div className="text-center py-10">
+            <p className="text-xs text-muted-foreground">Nothing saved yet.</p>
           </div>
         ) : productsLoading ? (
           <div className="grid grid-cols-2 gap-x-3 gap-y-6">
@@ -153,6 +156,30 @@ function ClientWishlistPage() {
               <ProductCard key={p.node.id} product={p} />
             ))}
           </div>
+        )}
+      </section>
+
+      <section className="px-6 pt-8 pb-8 border-t border-border/60 mt-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Package className="h-3.5 w-3.5 text-muted-foreground" />
+          <h2 className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+            Order history
+            {ordersData?.orders?.length ? ` · ${ordersData.orders.length}` : ""}
+          </h2>
+        </div>
+        {ordersLoading ? (
+          <div className="flex items-center justify-center py-10">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          </div>
+        ) : !ordersData?.email ? (
+          <p className="text-xs text-muted-foreground text-center py-6">
+            No email on file for this client.
+          </p>
+        ) : (
+          <OrdersList
+            orders={ordersData.orders}
+            emptyLabel={`No Shopify orders found for ${ordersData.email}.`}
+          />
         )}
       </section>
     </MobileLayout>
