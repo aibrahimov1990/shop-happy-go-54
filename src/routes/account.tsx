@@ -214,6 +214,14 @@ function Account() {
           <span className="text-muted-foreground">›</span>
         </Link>
 
+        <Link to="/orders" className="flex items-center justify-between px-6 py-5 active:bg-muted/40">
+          <div className="flex items-center gap-3">
+            <Package className="h-4 w-4" />
+            <span className="text-sm">My orders</span>
+          </div>
+          <span className="text-muted-foreground">›</span>
+        </Link>
+
         {isShopper && (
           <Link to="/shopper" className="flex items-center justify-between px-6 py-5 active:bg-muted/40">
             <div className="flex items-center gap-3">
