@@ -17,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2, Lock, Megaphone, Copy } from "lucide-react";
+import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2, Lock, Megaphone, Users } from "lucide-react";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { getPushDiagnostics, initPushNotifications } from "@/lib/push-client";
 import { supabase } from "@/integrations/supabase/client";
@@ -245,56 +245,15 @@ function Account() {
         )}
 
         {isAdmin && (
-          <button
-            onClick={handleCopyFcmToken}
-            className="flex items-center justify-between px-6 py-5 active:bg-muted/40 w-full text-left"
-          >
+          <Link to="/admin/users" className="flex items-center justify-between px-6 py-5 active:bg-muted/40">
             <div className="flex items-center gap-3">
-              <Copy className="h-4 w-4" />
-              <span className="text-sm">Copy my FCM token</span>
+              <Users className="h-4 w-4" />
+              <span className="text-sm">All users</span>
             </div>
             <span className="text-muted-foreground">›</span>
-          </button>
+          </Link>
         )}
 
-        {isAdmin && fcmOpen && (
-          <div className="mx-6 my-4 rounded-md border border-border bg-card p-4 text-left">
-            <div className="mb-2 flex items-center gap-2 text-sm font-medium">
-              {checkingFcm && <Loader2 className="h-4 w-4 animate-spin" />}
-              Notification token test
-            </div>
-            <p className="text-sm text-muted-foreground">{fcmStatus}</p>
-            {apnsToken && (
-              <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">APNs: {apnsToken}</p>
-            )}
-            {fcmToken && (
-              <textarea
-                readOnly
-                value={fcmToken}
-                onFocus={(e) => e.currentTarget.select()}
-                className="mt-3 h-40 w-full rounded border border-border bg-background p-2 font-mono text-xs"
-              />
-            )}
-            <div className="mt-3 flex gap-2">
-              {fcmToken && (
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={async () => {
-                    await navigator.clipboard.writeText(fcmToken);
-                    toast.success("FCM token copied");
-                  }}
-                  className="text-[10px] uppercase tracking-[0.18em]"
-                >
-                  Copy token
-                </Button>
-              )}
-              <Button type="button" variant="outline" size="sm" onClick={() => setFcmOpen(false)}>
-                Close
-              </Button>
-            </div>
-          </div>
-        )}
 
         <Dialog open={pwOpen} onOpenChange={setPwOpen}>
           <DialogTrigger asChild>
@@ -334,18 +293,7 @@ function Account() {
         </Dialog>
 
 
-        <a
-          href="https://www.sellierknightsbridge.com/pages/privacy-policy"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-between px-6 py-5 active:bg-muted/40"
-        >
-          <div className="flex items-center gap-3">
-            <Shield className="h-4 w-4" />
-            <span className="text-sm">Privacy policy</span>
-          </div>
-          <span className="text-muted-foreground">›</span>
-        </a>
+
 
         <button
           onClick={async () => {
