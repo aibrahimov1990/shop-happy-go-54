@@ -69,6 +69,7 @@ export function FirstOrderDiscountCard() {
   }
 
   if (state.status !== "ready") return null;
+  if (state.data.used) return null;
 
   const { code, percentOff, scope } = state.data;
 
