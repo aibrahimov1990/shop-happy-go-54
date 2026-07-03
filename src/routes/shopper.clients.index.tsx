@@ -8,7 +8,7 @@ import { listClientsWithWishlists } from "@/lib/wishlists.functions";
 import { Heart, Loader2, ChevronLeft } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
-export const Route = createFileRoute("/shopper/clients")({
+export const Route = createFileRoute("/shopper/clients/")({
   head: () => ({
     meta: [
       { title: "Client Wishlists — Sellier Shopper" },
