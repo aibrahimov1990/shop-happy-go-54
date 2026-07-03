@@ -149,6 +149,41 @@ export const getAdminStats = createServerFn({ method: "GET" })
     const totalSessionMs = Array.from(sessionDur.values()).reduce((s, v) => s + v.duration, 0);
     const avgSessionMs = sessionDur.size ? Math.round(totalSessionMs / sessionDur.size) : 0;
 
+    // Shopify sales — paginate orders (any status) and sum totals
+    const sales = { total: 0, last30d: 0, last24h: 0, orderCount: 0, currency: "GBP" };
+    try {
+      const token = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
+      if (token) {
+        const domain = "sellier-knightsbridge.myshopify.com";
+        const version = "2025-07";
+        let url: string | null =
+          `https://${domain}/admin/api/${version}/orders.json?status=any&financial_status=paid&limit=250&fields=id,total_price,currency,created_at,cancelled_at`;
+        const now = Date.now();
+        while (url) {
+          const res: Response = await fetch(url, {
+            headers: { "X-Shopify-Access-Token": token, "Content-Type": "application/json" },
+          });
+          if (!res.ok) break;
+          const json: any = await res.json();
+          for (const o of json.orders ?? []) {
+            if (o.cancelled_at) continue;
+            const amt = parseFloat(o.total_price ?? "0") || 0;
+            sales.total += amt;
+            sales.orderCount++;
+            if (o.currency) sales.currency = o.currency;
+            const created = new Date(o.created_at).getTime();
+            if (now - created <= 30 * 24 * 3600_000) sales.last30d += amt;
+            if (now - created <= 24 * 3600_000) sales.last24h += amt;
+          }
+          const link = res.headers.get("link") ?? "";
+          const next = /<([^>]+)>;\s*rel="next"/.exec(link);
+          url = next ? next[1] : null;
+        }
+      }
+    } catch {
+      // ignore — sales stays zeroed
+    }
+
     return {
       users: {
         total: totalUsers ?? 0,
