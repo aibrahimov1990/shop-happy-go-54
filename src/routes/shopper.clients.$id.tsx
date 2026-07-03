@@ -4,10 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
+import { OrdersList } from "@/components/OrdersList";
 import { useAuth } from "@/hooks/useAuth";
 import { getClientWishlist } from "@/lib/wishlists.functions";
+import { getClientOrders } from "@/lib/orders.functions";
 import { storefrontApiRequest, type ShopifyProduct } from "@/lib/shopify";
-import { Loader2, ChevronLeft, Heart } from "lucide-react";
+import { Loader2, ChevronLeft, Heart, Package } from "lucide-react";
 
 export const Route = createFileRoute("/shopper/clients/$id")({
   head: () => ({
