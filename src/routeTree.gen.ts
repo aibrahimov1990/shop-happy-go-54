@@ -24,6 +24,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopperIndexRouteImport } from './routes/shopper.index'
 import { Route as EditsIndexRouteImport } from './routes/edits.index'
 import { Route as ShopperNewRouteImport } from './routes/shopper.new'
+import { Route as ShopperClientsRouteImport } from './routes/shopper.clients'
 import { Route as ProductHandleRouteImport } from './routes/product.$handle'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as EditsIdRouteImport } from './routes/edits.$id'
@@ -32,6 +33,7 @@ import { Route as AdminStatsRouteImport } from './routes/admin.stats'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
 import { Route as ShopperEditsIdRouteImport } from './routes/shopper.edits.$id'
+import { Route as ShopperClientsIdRouteImport } from './routes/shopper.clients.$id'
 import { Route as OpenEditsIdRouteImport } from './routes/open.edits.$id'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -115,6 +117,11 @@ const ShopperNewRoute = ShopperNewRouteImport.update({
   path: '/new',
   getParentRoute: () => ShopperRoute,
 } as any)
+const ShopperClientsRoute = ShopperClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => ShopperRoute,
+} as any)
 const ProductHandleRoute = ProductHandleRouteImport.update({
   id: '/product/$handle',
   path: '/product/$handle',
@@ -154,6 +161,11 @@ const ShopperEditsIdRoute = ShopperEditsIdRouteImport.update({
   id: '/edits/$id',
   path: '/edits/$id',
   getParentRoute: () => ShopperRoute,
+} as any)
+const ShopperClientsIdRoute = ShopperClientsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ShopperClientsRoute,
 } as any)
 const OpenEditsIdRoute = OpenEditsIdRouteImport.update({
   id: '/open/edits/$id',
@@ -214,11 +226,13 @@ export interface FileRoutesByFullPath {
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$handle': typeof ProductHandleRoute
+  '/shopper/clients': typeof ShopperClientsRouteWithChildren
   '/shopper/new': typeof ShopperNewRoute
   '/edits/': typeof EditsIndexRoute
   '/shopper/': typeof ShopperIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/open/edits/$id': typeof OpenEditsIdRoute
+  '/shopper/clients/$id': typeof ShopperClientsIdRoute
   '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -244,11 +258,13 @@ export interface FileRoutesByTo {
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$handle': typeof ProductHandleRoute
+  '/shopper/clients': typeof ShopperClientsRouteWithChildren
   '/shopper/new': typeof ShopperNewRoute
   '/edits': typeof EditsIndexRoute
   '/shopper': typeof ShopperIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/open/edits/$id': typeof OpenEditsIdRoute
+  '/shopper/clients/$id': typeof ShopperClientsIdRoute
   '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -277,11 +293,13 @@ export interface FileRoutesById {
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$handle': typeof ProductHandleRoute
+  '/shopper/clients': typeof ShopperClientsRouteWithChildren
   '/shopper/new': typeof ShopperNewRoute
   '/edits/': typeof EditsIndexRoute
   '/shopper/': typeof ShopperIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/open/edits/$id': typeof OpenEditsIdRoute
+  '/shopper/clients/$id': typeof ShopperClientsIdRoute
   '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -311,11 +329,13 @@ export interface FileRouteTypes {
     | '/edits/$id'
     | '/email/unsubscribe'
     | '/product/$handle'
+    | '/shopper/clients'
     | '/shopper/new'
     | '/edits/'
     | '/shopper/'
     | '/lovable/email/suppression'
     | '/open/edits/$id'
+    | '/shopper/clients/$id'
     | '/shopper/edits/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -341,11 +361,13 @@ export interface FileRouteTypes {
     | '/edits/$id'
     | '/email/unsubscribe'
     | '/product/$handle'
+    | '/shopper/clients'
     | '/shopper/new'
     | '/edits'
     | '/shopper'
     | '/lovable/email/suppression'
     | '/open/edits/$id'
+    | '/shopper/clients/$id'
     | '/shopper/edits/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -373,11 +395,13 @@ export interface FileRouteTypes {
     | '/edits/$id'
     | '/email/unsubscribe'
     | '/product/$handle'
+    | '/shopper/clients'
     | '/shopper/new'
     | '/edits/'
     | '/shopper/'
     | '/lovable/email/suppression'
     | '/open/edits/$id'
+    | '/shopper/clients/$id'
     | '/shopper/edits/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -521,6 +545,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopperNewRouteImport
       parentRoute: typeof ShopperRoute
     }
+    '/shopper/clients': {
+      id: '/shopper/clients'
+      path: '/clients'
+      fullPath: '/shopper/clients'
+      preLoaderRoute: typeof ShopperClientsRouteImport
+      parentRoute: typeof ShopperRoute
+    }
     '/product/$handle': {
       id: '/product/$handle'
       path: '/product/$handle'
@@ -576,6 +607,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/shopper/edits/$id'
       preLoaderRoute: typeof ShopperEditsIdRouteImport
       parentRoute: typeof ShopperRoute
+    }
+    '/shopper/clients/$id': {
+      id: '/shopper/clients/$id'
+      path: '/$id'
+      fullPath: '/shopper/clients/$id'
+      preLoaderRoute: typeof ShopperClientsIdRouteImport
+      parentRoute: typeof ShopperClientsRoute
     }
     '/open/edits/$id': {
       id: '/open/edits/$id'
@@ -641,13 +679,27 @@ const EditsRouteChildren: EditsRouteChildren = {
 
 const EditsRouteWithChildren = EditsRoute._addFileChildren(EditsRouteChildren)
 
+interface ShopperClientsRouteChildren {
+  ShopperClientsIdRoute: typeof ShopperClientsIdRoute
+}
+
+const ShopperClientsRouteChildren: ShopperClientsRouteChildren = {
+  ShopperClientsIdRoute: ShopperClientsIdRoute,
+}
+
+const ShopperClientsRouteWithChildren = ShopperClientsRoute._addFileChildren(
+  ShopperClientsRouteChildren,
+)
+
 interface ShopperRouteChildren {
+  ShopperClientsRoute: typeof ShopperClientsRouteWithChildren
   ShopperNewRoute: typeof ShopperNewRoute
   ShopperIndexRoute: typeof ShopperIndexRoute
   ShopperEditsIdRoute: typeof ShopperEditsIdRoute
 }
 
 const ShopperRouteChildren: ShopperRouteChildren = {
+  ShopperClientsRoute: ShopperClientsRouteWithChildren,
   ShopperNewRoute: ShopperNewRoute,
   ShopperIndexRoute: ShopperIndexRoute,
   ShopperEditsIdRoute: ShopperEditsIdRoute,
@@ -686,13 +738,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
