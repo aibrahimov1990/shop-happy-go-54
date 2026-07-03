@@ -32,6 +32,7 @@ function ClientWishlistPage() {
   const navigate = useNavigate();
   const { id } = Route.useParams();
   const fetchClient = useServerFn(getClientWishlist);
+  const fetchOrders = useServerFn(getClientOrders);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", search: { next: `/shopper/clients/${id}` } });
