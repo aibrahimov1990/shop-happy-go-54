@@ -41,6 +41,19 @@ function formatDuration(ms: number) {
   return `${h}h ${m % 60}m`;
 }
 
+function formatMoney(amount: number, currency = "GBP") {
+  try {
+    return new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `${currency} ${Math.round(amount)}`;
+  }
+}
+
+
 function StatsPage() {
   const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -95,6 +108,15 @@ function StatsPage() {
         <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-1">Admin</p>
         <h1 className="font-serif text-3xl">Statistics</h1>
       </div>
+
+      <Section title="Sales">
+        <StatGrid>
+          <Stat label="Total sales" value={formatMoney(data.sales.total, data.sales.currency)} />
+          <Stat label="Orders" value={data.sales.orderCount.toLocaleString()} />
+          <Stat label="Last 30 days" value={formatMoney(data.sales.last30d, data.sales.currency)} />
+          <Stat label="Last 24 hours" value={formatMoney(data.sales.last24h, data.sales.currency)} />
+        </StatGrid>
+      </Section>
 
       <Section title="Users">
         <StatGrid>
