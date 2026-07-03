@@ -51,6 +51,8 @@ function formatMoney(amount: number, currency = "GBP") {
   } catch {
     return `${currency} ${Math.round(amount)}`;
   }
+}
+
 
 function StatsPage() {
   const { user, loading, isAdmin } = useAuth();
