@@ -6,7 +6,7 @@ import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
 import { useAuth } from "@/hooks/useAuth";
 import { getClientWishlist } from "@/lib/wishlists.functions";
-import { storefrontApiRequest, PRODUCTS_QUERY, type ShopifyProduct } from "@/lib/shopify";
+import { storefrontApiRequest, type ShopifyProduct } from "@/lib/shopify";
 import { Loader2, ChevronLeft, Heart } from "lucide-react";
 
 export const Route = createFileRoute("/shopper/clients/$id")({
