@@ -18,6 +18,7 @@ import { Route as SellWithUsRouteImport } from './routes/sell-with-us'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
 import { Route as OrdersRouteImport } from './routes/orders'
+import { Route as NewArrivalsRouteImport } from './routes/new-arrivals'
 import { Route as EditsRouteImport } from './routes/edits'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AccountRouteImport } from './routes/account'
@@ -87,6 +88,11 @@ const RefundPolicyRoute = RefundPolicyRouteImport.update({
 const OrdersRoute = OrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewArrivalsRoute = NewArrivalsRouteImport.update({
+  id: '/new-arrivals',
+  path: '/new-arrivals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EditsRoute = EditsRouteImport.update({
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/edits': typeof EditsRouteWithChildren
+  '/new-arrivals': typeof NewArrivalsRoute
   '/orders': typeof OrdersRoute
   '/refund-policy': typeof RefundPolicyRoute
   '/search': typeof SearchRoute
@@ -258,6 +265,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
+  '/new-arrivals': typeof NewArrivalsRoute
   '/orders': typeof OrdersRoute
   '/refund-policy': typeof RefundPolicyRoute
   '/search': typeof SearchRoute
@@ -294,6 +302,7 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/edits': typeof EditsRouteWithChildren
+  '/new-arrivals': typeof NewArrivalsRoute
   '/orders': typeof OrdersRoute
   '/refund-policy': typeof RefundPolicyRoute
   '/search': typeof SearchRoute
@@ -332,6 +341,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/edits'
+    | '/new-arrivals'
     | '/orders'
     | '/refund-policy'
     | '/search'
@@ -367,6 +377,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/auth'
+    | '/new-arrivals'
     | '/orders'
     | '/refund-policy'
     | '/search'
@@ -402,6 +413,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/edits'
+    | '/new-arrivals'
     | '/orders'
     | '/refund-policy'
     | '/search'
@@ -439,6 +451,7 @@ export interface RootRouteChildren {
   AccountRoute: typeof AccountRoute
   AuthRoute: typeof AuthRoute
   EditsRoute: typeof EditsRouteWithChildren
+  NewArrivalsRoute: typeof NewArrivalsRoute
   OrdersRoute: typeof OrdersRoute
   RefundPolicyRoute: typeof RefundPolicyRoute
   SearchRoute: typeof SearchRoute
@@ -527,6 +540,13 @@ declare module '@tanstack/react-router' {
       path: '/orders'
       fullPath: '/orders'
       preLoaderRoute: typeof OrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new-arrivals': {
+      id: '/new-arrivals'
+      path: '/new-arrivals'
+      fullPath: '/new-arrivals'
+      preLoaderRoute: typeof NewArrivalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/edits': {
@@ -743,6 +763,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountRoute: AccountRoute,
   AuthRoute: AuthRoute,
   EditsRoute: EditsRouteWithChildren,
+  NewArrivalsRoute: NewArrivalsRoute,
   OrdersRoute: OrdersRoute,
   RefundPolicyRoute: RefundPolicyRoute,
   SearchRoute: SearchRoute,
