@@ -1,59 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type ShopifyOrderAttribute = { name?: string; key?: string; value?: string | number | null };
-type ShopifyDiscountCode = { code?: string | null };
-type ShopifyStatsOrder = {
-  total_price?: string | null;
-  currency?: string | null;
-  created_at?: string | null;
-  cancelled_at?: string | null;
-  note_attributes?: ShopifyOrderAttribute[] | null;
-  source_name?: string | null;
-  landing_site?: string | null;
-  referring_site?: string | null;
-  discount_codes?: ShopifyDiscountCode[] | null;
-};
-
-function normaliseOrderAttributes(attrs: ShopifyOrderAttribute[] | null | undefined) {
-  const values = new Map<string, string>();
-  for (const attr of attrs ?? []) {
-    const key = String(attr.name ?? attr.key ?? "").trim().toLowerCase();
-    if (!key) continue;
-    values.set(key, String(attr.value ?? "").trim().toLowerCase());
-  }
-  return values;
-}
-
-function hasAppDiscountCode(order: ShopifyStatsOrder) {
-  return (order.discount_codes ?? []).some((discount) =>
-    String(discount.code ?? "").trim().toUpperCase().startsWith("APP15-"),
-  );
-}
-
-function hasLovableSalesAttribution(order: ShopifyStatsOrder) {
-  const attrs = normaliseOrderAttributes(order.note_attributes);
-  const source = attrs.get("source") ?? "";
-  const channel = attrs.get("channel") ?? "";
-  const campaign = attrs.get("utm_campaign") ?? "";
-  const sourceName = String(order.source_name ?? "").toLowerCase();
-  const landing = String(order.landing_site ?? "").toLowerCase();
-  const referring = String(order.referring_site ?? "").toLowerCase();
-  const urlAttribution = `${landing} ${referring}`;
-
-  if (source === "ios_app" || source === "android_app" || source === "lovable_web") return true;
-  if (channel === "mobile_app" || channel === "lovable_storefront") return true;
-  if (source === "web" && channel === "web") return true; // Legacy Lovable storefront carts.
-  if (campaign === "sellier_app") return true;
-  if (hasAppDiscountCode(order)) return true;
-  if (sourceName.includes("lovable") || sourceName.includes("sellier app")) return true;
-  return (
-    urlAttribution.includes("utm_campaign=sellier_app") ||
-    urlAttribution.includes("utm_source=ios_app") ||
-    urlAttribution.includes("utm_source=android_app") ||
-    urlAttribution.includes("utm_source=lovable_web")
-  );
-}
 
 export const getAdminStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
