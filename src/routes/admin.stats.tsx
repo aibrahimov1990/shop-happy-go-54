@@ -41,17 +41,6 @@ function formatDuration(ms: number) {
   return `${h}h ${m % 60}m`;
 }
 
-function formatMoney(amount: number, currency = "GBP") {
-  try {
-    return new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  } catch {
-    return `${currency} ${Math.round(amount)}`;
-  }
-}
 
 
 function StatsPage() {
