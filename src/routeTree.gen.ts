@@ -44,6 +44,7 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiPublicHooksWeeklyNewArrivalsRouteImport } from './routes/api/public/hooks/weekly-new-arrivals'
 
 const WishlistRoute = WishlistRouteImport.update({
   id: '/wishlist',
@@ -223,6 +224,12 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksWeeklyNewArrivalsRoute =
+  ApiPublicHooksWeeklyNewArrivalsRouteImport.update({
+    id: '/api/public/hooks/weekly-new-arrivals',
+    path: '/api/public/hooks/weekly-new-arrivals',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByFullPath {
   '/shopper/clients/$id': typeof ShopperClientsIdRoute
   '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/shopper/clients/': typeof ShopperClientsIndexRoute
+  '/api/public/hooks/weekly-new-arrivals': typeof ApiPublicHooksWeeklyNewArrivalsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -290,6 +298,7 @@ export interface FileRoutesByTo {
   '/shopper/clients/$id': typeof ShopperClientsIdRoute
   '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/shopper/clients': typeof ShopperClientsIndexRoute
+  '/api/public/hooks/weekly-new-arrivals': typeof ApiPublicHooksWeeklyNewArrivalsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -328,6 +337,7 @@ export interface FileRoutesById {
   '/shopper/clients/$id': typeof ShopperClientsIdRoute
   '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/shopper/clients/': typeof ShopperClientsIndexRoute
+  '/api/public/hooks/weekly-new-arrivals': typeof ApiPublicHooksWeeklyNewArrivalsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -367,6 +377,7 @@ export interface FileRouteTypes {
     | '/shopper/clients/$id'
     | '/shopper/edits/$id'
     | '/shopper/clients/'
+    | '/api/public/hooks/weekly-new-arrivals'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -402,6 +413,7 @@ export interface FileRouteTypes {
     | '/shopper/clients/$id'
     | '/shopper/edits/$id'
     | '/shopper/clients'
+    | '/api/public/hooks/weekly-new-arrivals'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -439,6 +451,7 @@ export interface FileRouteTypes {
     | '/shopper/clients/$id'
     | '/shopper/edits/$id'
     | '/shopper/clients/'
+    | '/api/public/hooks/weekly-new-arrivals'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -470,6 +483,7 @@ export interface RootRouteChildren {
   ProductHandleRoute: typeof ProductHandleRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   OpenEditsIdRoute: typeof OpenEditsIdRoute
+  ApiPublicHooksWeeklyNewArrivalsRoute: typeof ApiPublicHooksWeeklyNewArrivalsRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -724,6 +738,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/weekly-new-arrivals': {
+      id: '/api/public/hooks/weekly-new-arrivals'
+      path: '/api/public/hooks/weekly-new-arrivals'
+      fullPath: '/api/public/hooks/weekly-new-arrivals'
+      preLoaderRoute: typeof ApiPublicHooksWeeklyNewArrivalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -782,6 +803,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductHandleRoute: ProductHandleRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   OpenEditsIdRoute: OpenEditsIdRoute,
+  ApiPublicHooksWeeklyNewArrivalsRoute: ApiPublicHooksWeeklyNewArrivalsRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
