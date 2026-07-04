@@ -213,7 +213,12 @@ export const getAdminStats = createServerFn({ method: "GET" })
       unavailableReason: null as string | null,
     };
     try {
-      const token = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || process.env.SHOPIFY_ACCESS_TOKEN;
+      // Prefer the caller's per-user online access token (inherits their Shopify
+      // role — includes read_orders when the admin has it). Fall back to the
+      // app-level admin token, which may not have the orders scope granted.
+      const onlineToken = process.env[`SHOPIFY_ONLINE_ACCESS_TOKEN:user:${userId}`];
+      const token =
+        onlineToken || process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || process.env.SHOPIFY_ACCESS_TOKEN;
       if (token) {
         const domain = "sellier-knightsbridge.myshopify.com";
         const version = "2025-07";
@@ -239,7 +244,7 @@ export const getAdminStats = createServerFn({ method: "GET" })
           if (!res.ok) {
             sales.unavailableReason =
               res.status === 401 || res.status === 403
-                ? "Store order access is not available to the app token yet."
+                ? "Shopify hasn't granted order-read access to this app yet. Reconnect the Shopify account (or ask the store owner to) and approve the read_orders scope, then reload."
                 : `Store orders could not be loaded (${res.status}).`;
             break;
           }
