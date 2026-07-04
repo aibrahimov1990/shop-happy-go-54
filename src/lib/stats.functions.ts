@@ -228,6 +228,6 @@ export const getAdminStats = createServerFn({ method: "GET" })
         topUsers,
         topScreens,
       },
-      sales,
+      
     };
   });
