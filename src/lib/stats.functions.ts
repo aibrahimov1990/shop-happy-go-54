@@ -244,7 +244,7 @@ export const getAdminStats = createServerFn({ method: "GET" })
           if (!res.ok) {
             sales.unavailableReason =
               res.status === 401 || res.status === 403
-                ? "Store order access is not available to the app token yet."
+                ? "Shopify hasn't granted order-read access to this app yet. Reconnect the Shopify account (or ask the store owner to) and approve the read_orders scope, then reload."
                 : `Store orders could not be loaded (${res.status}).`;
             break;
           }
