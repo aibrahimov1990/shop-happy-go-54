@@ -204,7 +204,14 @@ export const getAdminStats = createServerFn({ method: "GET" })
     const avgSessionMs = sessionDur.size ? Math.round(totalSessionMs / sessionDur.size) : 0;
 
     // Shopify sales — paginate paid orders and sum only Lovable/app-attributed totals.
-    const sales = { total: 0, last30d: 0, last24h: 0, orderCount: 0, currency: "GBP" };
+    const sales = {
+      total: 0,
+      last30d: 0,
+      last24h: 0,
+      orderCount: 0,
+      currency: "GBP",
+      unavailableReason: null as string | null,
+    };
     try {
       const token = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || process.env.SHOPIFY_ACCESS_TOKEN;
       if (token) {
@@ -229,7 +236,13 @@ export const getAdminStats = createServerFn({ method: "GET" })
           const res: Response = await fetch(url, {
             headers: { "X-Shopify-Access-Token": token, "Content-Type": "application/json" },
           });
-          if (!res.ok) break;
+          if (!res.ok) {
+            sales.unavailableReason =
+              res.status === 401 || res.status === 403
+                ? "Store order access is not available to the app token yet."
+                : `Store orders could not be loaded (${res.status}).`;
+            break;
+          }
           const json: any = await res.json();
           for (const o of (json.orders ?? []) as ShopifyStatsOrder[]) {
             if (o.cancelled_at) continue;
@@ -248,7 +261,7 @@ export const getAdminStats = createServerFn({ method: "GET" })
         }
       }
     } catch {
-      // ignore — sales stays zeroed
+      sales.unavailableReason = "Store orders could not be loaded right now.";
     }
 
     return {

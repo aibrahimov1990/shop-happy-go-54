@@ -110,6 +110,11 @@ function StatsPage() {
       </div>
 
       <Section title="Sales">
+        {data.sales.unavailableReason && (
+          <p className="mb-3 border border-border/60 bg-muted/40 p-3 text-xs text-muted-foreground">
+            {data.sales.unavailableReason}
+          </p>
+        )}
         <StatGrid>
           <Stat label="Total sales" value={formatMoney(data.sales.total, data.sales.currency)} />
           <Stat label="Orders" value={data.sales.orderCount.toLocaleString()} />
