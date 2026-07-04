@@ -1,59 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type ShopifyOrderAttribute = { name?: string; key?: string; value?: string | number | null };
-type ShopifyDiscountCode = { code?: string | null };
-type ShopifyStatsOrder = {
-  total_price?: string | null;
-  currency?: string | null;
-  created_at?: string | null;
-  cancelled_at?: string | null;
-  note_attributes?: ShopifyOrderAttribute[] | null;
-  source_name?: string | null;
-  landing_site?: string | null;
-  referring_site?: string | null;
-  discount_codes?: ShopifyDiscountCode[] | null;
-};
-
-function normaliseOrderAttributes(attrs: ShopifyOrderAttribute[] | null | undefined) {
-  const values = new Map<string, string>();
-  for (const attr of attrs ?? []) {
-    const key = String(attr.name ?? attr.key ?? "").trim().toLowerCase();
-    if (!key) continue;
-    values.set(key, String(attr.value ?? "").trim().toLowerCase());
-  }
-  return values;
-}
-
-function hasAppDiscountCode(order: ShopifyStatsOrder) {
-  return (order.discount_codes ?? []).some((discount) =>
-    String(discount.code ?? "").trim().toUpperCase().startsWith("APP15-"),
-  );
-}
-
-function hasLovableSalesAttribution(order: ShopifyStatsOrder) {
-  const attrs = normaliseOrderAttributes(order.note_attributes);
-  const source = attrs.get("source") ?? "";
-  const channel = attrs.get("channel") ?? "";
-  const campaign = attrs.get("utm_campaign") ?? "";
-  const sourceName = String(order.source_name ?? "").toLowerCase();
-  const landing = String(order.landing_site ?? "").toLowerCase();
-  const referring = String(order.referring_site ?? "").toLowerCase();
-  const urlAttribution = `${landing} ${referring}`;
-
-  if (source === "ios_app" || source === "android_app" || source === "lovable_web") return true;
-  if (channel === "mobile_app" || channel === "lovable_storefront") return true;
-  if (source === "web" && channel === "web") return true; // Legacy Lovable storefront carts.
-  if (campaign === "sellier_app") return true;
-  if (hasAppDiscountCode(order)) return true;
-  if (sourceName.includes("lovable") || sourceName.includes("sellier app")) return true;
-  return (
-    urlAttribution.includes("utm_campaign=sellier_app") ||
-    urlAttribution.includes("utm_source=ios_app") ||
-    urlAttribution.includes("utm_source=android_app") ||
-    urlAttribution.includes("utm_source=lovable_web")
-  );
-}
 
 export const getAdminStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -203,71 +150,6 @@ export const getAdminStats = createServerFn({ method: "GET" })
     const totalSessionMs = Array.from(sessionDur.values()).reduce((s, v) => s + v.duration, 0);
     const avgSessionMs = sessionDur.size ? Math.round(totalSessionMs / sessionDur.size) : 0;
 
-    // Shopify sales — paginate paid orders and sum only Lovable/app-attributed totals.
-    const sales = {
-      total: 0,
-      last30d: 0,
-      last24h: 0,
-      orderCount: 0,
-      currency: "GBP",
-      unavailableReason: null as string | null,
-    };
-    try {
-      // Prefer the caller's per-user online access token (inherits their Shopify
-      // role — includes read_orders when the admin has it). Fall back to the
-      // app-level admin token, which may not have the orders scope granted.
-      const onlineToken = process.env[`SHOPIFY_ONLINE_ACCESS_TOKEN:user:${userId}`];
-      const token =
-        onlineToken || process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || process.env.SHOPIFY_ACCESS_TOKEN;
-      if (token) {
-        const domain = "sellier-knightsbridge.myshopify.com";
-        const version = "2025-07";
-        const fields = [
-          "id",
-          "total_price",
-          "currency",
-          "created_at",
-          "cancelled_at",
-          "note_attributes",
-          "source_name",
-          "landing_site",
-          "referring_site",
-          "discount_codes",
-        ].join(",");
-        let url: string | null =
-          `https://${domain}/admin/api/${version}/orders.json?status=any&financial_status=paid&limit=250&fields=${encodeURIComponent(fields)}`;
-        const now = Date.now();
-        while (url) {
-          const res: Response = await fetch(url, {
-            headers: { "X-Shopify-Access-Token": token, "Content-Type": "application/json" },
-          });
-          if (!res.ok) {
-            sales.unavailableReason =
-              res.status === 401 || res.status === 403
-                ? "Shopify hasn't granted order-read access to this app yet. Reconnect the Shopify account (or ask the store owner to) and approve the read_orders scope, then reload."
-                : `Store orders could not be loaded (${res.status}).`;
-            break;
-          }
-          const json: any = await res.json();
-          for (const o of (json.orders ?? []) as ShopifyStatsOrder[]) {
-            if (o.cancelled_at) continue;
-            if (!hasLovableSalesAttribution(o)) continue;
-            const amt = parseFloat(o.total_price ?? "0") || 0;
-            sales.total += amt;
-            sales.orderCount++;
-            if (o.currency) sales.currency = o.currency;
-            const created = o.created_at ? new Date(o.created_at).getTime() : 0;
-            if (now - created <= 30 * 24 * 3600_000) sales.last30d += amt;
-            if (now - created <= 24 * 3600_000) sales.last24h += amt;
-          }
-          const link = res.headers.get("link") ?? "";
-          const next = /<([^>]+)>;\s*rel="next"/.exec(link);
-          url = next ? next[1] : null;
-        }
-      }
-    } catch {
-      sales.unavailableReason = "Store orders could not be loaded right now.";
-    }
 
     return {
       users: {
@@ -293,6 +175,6 @@ export const getAdminStats = createServerFn({ method: "GET" })
         topUsers,
         topScreens,
       },
-      sales,
+      
     };
   });
