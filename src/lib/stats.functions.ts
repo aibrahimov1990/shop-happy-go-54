@@ -238,7 +238,7 @@ export const getAdminStats = createServerFn({ method: "GET" })
             sales.total += amt;
             sales.orderCount++;
             if (o.currency) sales.currency = o.currency;
-            const created = new Date(o.created_at).getTime();
+            const created = o.created_at ? new Date(o.created_at).getTime() : 0;
             if (now - created <= 30 * 24 * 3600_000) sales.last30d += amt;
             if (now - created <= 24 * 3600_000) sales.last24h += amt;
           }
