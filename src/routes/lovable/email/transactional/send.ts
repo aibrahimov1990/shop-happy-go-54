@@ -59,6 +59,20 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           return Response.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
+        // Only shoppers/admins may send branded transactional emails.
+        const { data: roleRows, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .in('role', ['shopper', 'admin'])
+        if (roleError) {
+          console.error('Role check failed', { error: roleError })
+          return Response.json({ error: 'Authorization check failed' }, { status: 500 })
+        }
+        if (!roleRows || roleRows.length === 0) {
+          return Response.json({ error: 'Forbidden' }, { status: 403 })
+        }
+
         // Parse request body
         let templateName: string
         let recipientEmail: string
@@ -79,6 +93,28 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
             { error: 'Invalid JSON in request body' },
             { status: 400 }
           )
+        }
+
+        // Validate any URL fields in templateData to prevent phishing links
+        // being embedded in Sellier-branded emails.
+        const ALLOWED_URL_PREFIXES = [
+          'https://sellierknightsbridge.com',
+          'https://www.sellierknightsbridge.com',
+          'https://shop-happy-go-54.lovable.app',
+          'https://project--e2ab1990-2f2e-4313-b043-6c2ed5b688d0.lovable.app',
+        ]
+        const urlFields = ['viewUrl', 'actionUrl', 'ctaUrl', 'url', 'link']
+        for (const field of urlFields) {
+          const value = (templateData as Record<string, unknown>)[field]
+          if (typeof value === 'string' && value.length > 0) {
+            const ok = ALLOWED_URL_PREFIXES.some((p) => value.startsWith(p + '/') || value === p)
+            if (!ok) {
+              return Response.json(
+                { error: `templateData.${field} must be a same-origin Sellier URL` },
+                { status: 400 }
+              )
+            }
+          }
         }
 
         if (!templateName) {
