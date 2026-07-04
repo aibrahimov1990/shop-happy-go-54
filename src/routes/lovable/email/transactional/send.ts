@@ -95,6 +95,28 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           )
         }
 
+        // Validate any URL fields in templateData to prevent phishing links
+        // being embedded in Sellier-branded emails.
+        const ALLOWED_URL_PREFIXES = [
+          'https://sellierknightsbridge.com',
+          'https://www.sellierknightsbridge.com',
+          'https://shop-happy-go-54.lovable.app',
+          'https://project--e2ab1990-2f2e-4313-b043-6c2ed5b688d0.lovable.app',
+        ]
+        const urlFields = ['viewUrl', 'actionUrl', 'ctaUrl', 'url', 'link']
+        for (const field of urlFields) {
+          const value = (templateData as Record<string, unknown>)[field]
+          if (typeof value === 'string' && value.length > 0) {
+            const ok = ALLOWED_URL_PREFIXES.some((p) => value.startsWith(p + '/') || value === p)
+            if (!ok) {
+              return Response.json(
+                { error: `templateData.${field} must be a same-origin Sellier URL` },
+                { status: 400 }
+              )
+            }
+          }
+        }
+
         if (!templateName) {
           return Response.json(
             { error: 'templateName is required' },
