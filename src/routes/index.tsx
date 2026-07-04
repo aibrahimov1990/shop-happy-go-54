@@ -109,12 +109,13 @@ function Home() {
         <div className="flex items-baseline justify-between mb-5">
           <h2 className="font-serif text-2xl">The Edit</h2>
           <Link
-            to="/shop"
+            to="/new-arrivals"
             className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground"
           >
-            View all
+            New Arrivals →
           </Link>
         </div>
+
 
         {isLoading ? (
           <div className="grid grid-cols-2 gap-x-3 gap-y-6">

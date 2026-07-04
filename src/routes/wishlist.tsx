@@ -41,6 +41,23 @@ function WishlistPage() {
         </p>
       </div>
 
+      {ids.length > 0 && (
+        <div className="mx-4 mb-2 border border-border/70 bg-[#f5f1ea] px-4 py-4 flex items-center justify-between">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">For you</p>
+            <p className="font-serif text-lg leading-tight mt-1">New arrivals from your brands</p>
+          </div>
+          <Link
+            to="/new-arrivals"
+            className="text-[10px] uppercase tracking-[0.25em] bg-foreground text-background px-4 py-2 shrink-0"
+          >
+            View
+          </Link>
+        </div>
+      )}
+
+
+
       <section className="px-4 py-6">
         {ids.length === 0 ? (
           <div className="text-center py-16">
