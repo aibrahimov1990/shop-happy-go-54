@@ -55,22 +55,26 @@ function getAppSource(): "ios_app" | "android_app" | "web" {
 
 function buildCartAttribution() {
   const source = getAppSource();
+  const isNative = source !== "web";
+  const storefrontSource = isNative ? source : "lovable_web";
   return {
-    note: source === "web" ? undefined : `Order placed via Sellier ${source === "ios_app" ? "iOS" : "Android"} app`,
+    note: isNative
+      ? `Order placed via Sellier ${source === "ios_app" ? "iOS" : "Android"} app`
+      : "Order placed via Sellier Lovable storefront",
     attributes: [
-      { key: "source", value: source },
-      { key: "channel", value: source === "web" ? "web" : "mobile_app" },
+      { key: "source", value: storefrontSource },
+      { key: "channel", value: isNative ? "mobile_app" : "lovable_storefront" },
+      { key: "utm_campaign", value: "sellier_app" },
     ],
   };
 }
 
 function appendUtm(checkoutUrl: string): string {
   const source = getAppSource();
-  if (source === "web") return checkoutUrl;
   try {
     const url = new URL(checkoutUrl);
-    url.searchParams.set("utm_source", source);
-    url.searchParams.set("utm_medium", "app");
+    url.searchParams.set("utm_source", source === "web" ? "lovable_web" : source);
+    url.searchParams.set("utm_medium", source === "web" ? "storefront" : "app");
     url.searchParams.set("utm_campaign", "sellier_app");
     return url.toString();
   } catch {
