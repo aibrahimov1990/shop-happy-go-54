@@ -59,6 +59,20 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           return Response.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
+        // Only shoppers/admins may send branded transactional emails.
+        const { data: roleRows, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .in('role', ['shopper', 'admin'])
+        if (roleError) {
+          console.error('Role check failed', { error: roleError })
+          return Response.json({ error: 'Authorization check failed' }, { status: 500 })
+        }
+        if (!roleRows || roleRows.length === 0) {
+          return Response.json({ error: 'Forbidden' }, { status: 403 })
+        }
+
         // Parse request body
         let templateName: string
         let recipientEmail: string
