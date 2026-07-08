@@ -150,6 +150,8 @@ function BroadcastPage() {
     }
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+    setProductImageUrl(null);
+    setSelectedProductId(null);
   }
 
 
