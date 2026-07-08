@@ -323,46 +323,58 @@ function BroadcastPage() {
           </p>
           {newArrivalsQuery.isLoading ? (
             <p className="mt-3 text-xs text-muted-foreground">Loading new arrivals…</p>
-          ) : (newArrivalsQuery.data?.length ?? 0) === 0 ? (
+          ) : newArrivals.length === 0 ? (
             <p className="mt-3 text-xs text-muted-foreground">No new arrivals available.</p>
           ) : (
-            <div className="mt-3 grid max-h-72 grid-cols-4 gap-2 overflow-y-auto rounded border border-border p-2 sm:grid-cols-6">
-              {newArrivalsQuery.data!.map((p) => {
-                const img = p.node.images?.edges?.[0]?.node?.url;
-                const selected = selectedProductId === p.node.id;
-                return (
-                  <button
-                    type="button"
-                    key={p.node.id}
-                    onClick={() => {
-                      if (!img) {
-                        toast.error("This product has no image");
-                        return;
-                      }
-                      setProductImageUrl(img);
-                      setSelectedProductId(p.node.id);
-                      setImagePreview(img);
-                      setImageFile(null);
-                      if (!url.trim()) setUrl(`/product/${p.node.handle}`);
-                    }}
-                    className={`aspect-square overflow-hidden rounded border transition ${
-                      selected
-                        ? "border-foreground ring-2 ring-foreground"
-                        : "border-border hover:border-foreground/60"
-                    }`}
-                    title={p.node.title}
-                  >
-                    {img ? (
-                      <img src={img} alt={p.node.title} className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-[9px] text-muted-foreground">
-                        No image
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            <>
+              <div className="mt-3 grid max-h-96 grid-cols-4 gap-2 overflow-y-auto rounded border border-border p-2 sm:grid-cols-6">
+                {newArrivals.map((p) => {
+                  const img = p.node.images?.edges?.[0]?.node?.url;
+                  const selected = selectedProductId === p.node.id;
+                  return (
+                    <button
+                      type="button"
+                      key={p.node.id}
+                      onClick={() => {
+                        if (!img) {
+                          toast.error("This product has no image");
+                          return;
+                        }
+                        setProductImageUrl(img);
+                        setSelectedProductId(p.node.id);
+                        setImagePreview(img);
+                        setImageFile(null);
+                        if (!url.trim()) setUrl(`/product/${p.node.handle}`);
+                      }}
+                      className={`aspect-square overflow-hidden rounded border transition ${
+                        selected
+                          ? "border-foreground ring-2 ring-foreground"
+                          : "border-border hover:border-foreground/60"
+                      }`}
+                      title={p.node.title}
+                    >
+                      {img ? (
+                        <img src={img} alt={p.node.title} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[9px] text-muted-foreground">
+                          No image
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              {newArrivalsQuery.hasNextPage && (
+                <button
+                  type="button"
+                  onClick={() => newArrivalsQuery.fetchNextPage()}
+                  disabled={newArrivalsQuery.isFetchingNextPage}
+                  className="mt-2 w-full border border-border py-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:border-foreground/60 disabled:opacity-50"
+                >
+                  {newArrivalsQuery.isFetchingNextPage ? "Loading…" : "Load more products"}
+                </button>
+              )}
+            </>
           )}
           {selectedProductId && (
             <p className="mt-2 text-[11px] text-muted-foreground">
