@@ -337,3 +337,93 @@ function BroadcastPage() {
     </div>
   );
 }
+
+function NotificationPreview({
+  title,
+  body,
+  imagePreview,
+}: {
+  title: string;
+  body: string;
+  imagePreview: string | null;
+}) {
+  return (
+    <div className="mx-auto max-w-sm rounded-2xl bg-white/90 p-3 shadow-xl backdrop-blur">
+      <div className="flex items-start gap-3">
+        <img
+          src={sellierLogo}
+          alt=""
+          className="h-10 w-10 shrink-0 rounded-lg border border-black/10 bg-white object-contain p-1"
+        />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline justify-between gap-2">
+            <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-black/70">
+              Sellier
+            </p>
+            <span className="shrink-0 text-[10px] text-black/50">now</span>
+          </div>
+          <p className="mt-0.5 line-clamp-2 text-[13px] font-semibold text-black">{title}</p>
+          <p className="mt-0.5 line-clamp-3 text-[13px] text-black/80">{body}</p>
+        </div>
+        {imagePreview && (
+          <img
+            src={imagePreview}
+            alt=""
+            className="h-11 w-11 shrink-0 rounded-md object-cover"
+          />
+        )}
+      </div>
+      {imagePreview && (
+        <img
+          src={imagePreview}
+          alt=""
+          className="mt-3 max-h-64 w-full rounded-lg object-cover"
+        />
+      )}
+    </div>
+  );
+}
+
+function AndroidNotificationPreview({
+  title,
+  body,
+  imagePreview,
+}: {
+  title: string;
+  body: string;
+  imagePreview: string | null;
+}) {
+  return (
+    <div className="mx-auto max-w-sm rounded-lg bg-neutral-100 p-3 shadow-xl">
+      <div className="flex items-start gap-2">
+        <img
+          src={sellierLogo}
+          alt=""
+          className="mt-0.5 h-4 w-4 shrink-0 object-contain"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] text-black/60">
+            Sellier <span className="text-black/40">· now</span>
+          </p>
+          <p className="mt-0.5 line-clamp-1 text-[13px] font-medium text-black">{title}</p>
+          <p className="line-clamp-2 text-[13px] text-black/70">{body}</p>
+        </div>
+        {imagePreview && (
+          <img
+            src={imagePreview}
+            alt=""
+            className="h-11 w-11 shrink-0 rounded object-cover"
+          />
+        )}
+      </div>
+      {imagePreview && (
+        <img
+          src={imagePreview}
+          alt=""
+          className="mt-2 aspect-[2/1] w-full rounded object-cover"
+        />
+      )}
+    </div>
+  );
+}
+
