@@ -282,10 +282,34 @@ function BroadcastPage() {
             Use an in-app path like <code>/shop</code>, <code>/wishlist</code>, or <code>/edits/&lt;id&gt;</code> so the tap opens the app screen. A full https link will open the website instead.
           </p>
         </div>
+
+        <div>
+          <Label>Preview</Label>
+          <div className="mt-2 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 p-4">
+            <p className="mb-2 text-center text-[10px] uppercase tracking-[0.2em] text-white/60">
+              iOS lock screen
+            </p>
+            <NotificationPreview
+              title={title || "Title preview"}
+              body={body || "Your message will appear here."}
+              imagePreview={imagePreview}
+            />
+            <p className="mb-2 mt-6 text-center text-[10px] uppercase tracking-[0.2em] text-white/60">
+              Android
+            </p>
+            <AndroidNotificationPreview
+              title={title || "Title preview"}
+              body={body || "Your message will appear here."}
+              imagePreview={imagePreview}
+            />
+          </div>
+        </div>
+
         <Button type="submit" disabled={mutation.isPending || uploading} className="w-full">
           {uploading ? "Uploading image…" : mutation.isPending ? "Sending…" : "Send broadcast"}
         </Button>
       </form>
+
 
 
       <div className="mt-12">
