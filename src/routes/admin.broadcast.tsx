@@ -126,6 +126,8 @@ function BroadcastPage() {
       setUrl("");
       setImageFile(null);
       setImagePreview(null);
+      setProductImageUrl(null);
+      setSelectedProductId(null);
       qc.invalidateQueries({ queryKey: ["broadcasts"] });
     },
     onError: (err: Error) => toast.error(err.message),
