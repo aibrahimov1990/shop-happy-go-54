@@ -73,20 +73,40 @@ function BroadcastPage() {
   const [productImageUrl, setProductImageUrl] = useState<string | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
-  const newArrivalsQuery = useQuery({
+  const newArrivalsQuery = useInfiniteQuery({
     queryKey: ["broadcast-new-arrivals"],
     enabled: adminQuery.data === true,
-    queryFn: async () => {
+    initialPageParam: null as string | null,
+    queryFn: async ({ pageParam }) => {
       const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
         first: 24,
+        after: pageParam,
         query: "-tag:KIDS",
         sortKey: "CREATED_AT",
         reverse: true,
       });
       const edges: ShopifyProduct[] = res?.data?.products?.edges ?? [];
-      return edges.filter((e) => !isKidsProduct(e));
+      const pageInfo = res?.data?.products?.pageInfo ?? { hasNextPage: false, endCursor: null };
+      return { edges: edges.filter((e) => !isKidsProduct(e)), pageInfo };
+    },
+    getNextPageParam: (last) => (last.pageInfo.hasNextPage ? last.pageInfo.endCursor : undefined),
+  });
+  const newArrivals: ShopifyProduct[] =
+    newArrivalsQuery.data?.pages.flatMap((p) => p.edges) ?? [];
+
+  const collectionsQuery = useQuery({
+    queryKey: ["broadcast-collections"],
+    enabled: adminQuery.data === true,
+    queryFn: async () => {
+      const res = await storefrontApiRequest<any>(COLLECTIONS_QUERY, { first: 100 });
+      const edges: Array<{ node: { id: string; handle: string; title: string } }> =
+        res?.data?.collections?.edges ?? [];
+      return edges
+        .map((e) => e.node)
+        .filter((c) => c.handle && !/kids/i.test(c.handle) && !/kids/i.test(c.title));
     },
   });
+
 
 
   const mutation = useMutation({
