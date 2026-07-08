@@ -326,50 +326,32 @@ function BroadcastPage() {
           ) : newArrivals.length === 0 ? (
             <p className="mt-3 text-xs text-muted-foreground">No new arrivals available.</p>
           ) : (
-            <div className="mt-3 space-y-2">
-              <select
-                className="h-10 w-full border border-input bg-background px-3 text-sm"
-                value={selectedProductId ?? ""}
-                onChange={(e) => {
-                  const id = e.target.value;
-                  if (!id) {
+            <div className="mt-3">
+              <ProductPickerDropdown
+                products={newArrivals}
+                selectedId={selectedProductId}
+                hasNextPage={!!newArrivalsQuery.hasNextPage}
+                isFetchingNextPage={newArrivalsQuery.isFetchingNextPage}
+                onLoadMore={() => newArrivalsQuery.fetchNextPage()}
+                onSelect={(p) => {
+                  if (!p) {
                     setProductImageUrl(null);
                     setSelectedProductId(null);
                     setImagePreview(null);
                     return;
                   }
-                  const p = newArrivals.find((x) => x.node.id === id);
-                  const img = p?.node.images?.edges?.[0]?.node?.url;
+                  const img = p.node.images?.edges?.[0]?.node?.url;
                   if (!img) {
                     toast.error("This product has no image");
                     return;
                   }
                   setProductImageUrl(img);
-                  setSelectedProductId(id);
+                  setSelectedProductId(p.node.id);
                   setImagePreview(img);
                   setImageFile(null);
-                  if (!url.trim() && p) setUrl(`/product/${p.node.handle}`);
+                  if (!url.trim()) setUrl(`/product/${p.node.handle}`);
                 }}
-              >
-                <option value="">— Select a product —</option>
-                {newArrivals.map((p) => (
-                  <option key={p.node.id} value={p.node.id}>
-                    {p.node.title}
-                  </option>
-                ))}
-              </select>
-              {newArrivalsQuery.hasNextPage && (
-                <button
-                  type="button"
-                  onClick={() => newArrivalsQuery.fetchNextPage()}
-                  disabled={newArrivalsQuery.isFetchingNextPage}
-                  className="w-full border border-border py-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:border-foreground/60 disabled:opacity-50"
-                >
-                  {newArrivalsQuery.isFetchingNextPage
-                    ? "Loading…"
-                    : `Load more products (${newArrivals.length} loaded)`}
-                </button>
-              )}
+              />
             </div>
           )}
           {selectedProductId && (
