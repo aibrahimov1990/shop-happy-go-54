@@ -112,9 +112,10 @@ export const sendBroadcast = createServerFn({ method: "POST" })
     const errorCounts: Record<string, number> = {};
     let apnsCredentialIssue = false;
 
-    // Sign the image path into a long-lived https URL for FCM (bucket is private).
-    let imageUrl: string | undefined;
-    if (data.imagePath) {
+    // Resolve the image URL: either a direct https URL (Shopify CDN etc.)
+    // or a signed URL for an uploaded image in the private bucket.
+    let imageUrl: string | undefined = data.imageUrl;
+    if (!imageUrl && data.imagePath) {
       const { data: signed, error: signErr } = await supabaseAdmin
         .storage
         .from("broadcast-images")
