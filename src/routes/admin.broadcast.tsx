@@ -155,7 +155,11 @@ function BroadcastPage() {
   }
 
 
-  if (!loading && !user) {
+  if (loading || (user && (adminQuery.isLoading || adminQuery.isFetching))) {
+    return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
+  }
+
+  if (!user) {
     return (
       <div className="mx-auto max-w-md p-8 text-center">
         <h1 className="font-serif text-2xl">Sign in required</h1>
@@ -170,10 +174,6 @@ function BroadcastPage() {
         </Button>
       </div>
     );
-  }
-
-  if (loading || adminQuery.isLoading || adminQuery.isFetching) {
-    return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
   }
 
   if (adminQuery.isError || adminQuery.data !== true) {
