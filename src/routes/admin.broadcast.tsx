@@ -405,7 +405,36 @@ function BroadcastPage() {
           <p className="mt-1 text-[11px] text-muted-foreground">
             Use an in-app path like <code>/shop</code>, <code>/wishlist</code>, or <code>/edits/&lt;id&gt;</code> so the tap opens the app screen. A full https link will open the website instead.
           </p>
+          <div className="mt-3">
+            <Label htmlFor="collection-select" className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              Or open a collection
+            </Label>
+            <select
+              id="collection-select"
+              className="mt-1 h-10 w-full border border-input bg-background px-3 text-sm"
+              value={
+                url.startsWith("/collections/")
+                  ? url.replace("/collections/", "").split(/[?#]/)[0]
+                  : ""
+              }
+              onChange={(e) => {
+                const handle = e.target.value;
+                setUrl(handle ? `/collections/${handle}` : "");
+              }}
+              disabled={collectionsQuery.isLoading}
+            >
+              <option value="">
+                {collectionsQuery.isLoading ? "Loading collections…" : "— None —"}
+              </option>
+              {collectionsQuery.data?.map((c) => (
+                <option key={c.id} value={c.handle}>
+                  {c.title}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+
 
         <div>
           <Label>Preview</Label>
