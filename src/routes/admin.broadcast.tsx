@@ -90,13 +90,14 @@ function BroadcastPage() {
 
 
   const mutation = useMutation({
-    mutationFn: (input: { title: string; body: string; url: string; imagePath?: string }) =>
+    mutationFn: (input: { title: string; body: string; url: string; imagePath?: string; imageUrl?: string }) =>
       send({
         data: {
           title: input.title,
           body: input.body,
           url: input.url || undefined,
           imagePath: input.imagePath,
+          imageUrl: input.imageUrl,
         },
       }),
     onSuccess: (res) => {
