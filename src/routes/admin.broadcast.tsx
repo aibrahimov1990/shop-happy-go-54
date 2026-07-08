@@ -326,55 +326,51 @@ function BroadcastPage() {
           ) : newArrivals.length === 0 ? (
             <p className="mt-3 text-xs text-muted-foreground">No new arrivals available.</p>
           ) : (
-            <>
-              <div className="mt-3 grid max-h-96 grid-cols-4 gap-2 overflow-y-auto rounded border border-border p-2 sm:grid-cols-6">
-                {newArrivals.map((p) => {
-                  const img = p.node.images?.edges?.[0]?.node?.url;
-                  const selected = selectedProductId === p.node.id;
-                  return (
-                    <button
-                      type="button"
-                      key={p.node.id}
-                      onClick={() => {
-                        if (!img) {
-                          toast.error("This product has no image");
-                          return;
-                        }
-                        setProductImageUrl(img);
-                        setSelectedProductId(p.node.id);
-                        setImagePreview(img);
-                        setImageFile(null);
-                        if (!url.trim()) setUrl(`/product/${p.node.handle}`);
-                      }}
-                      className={`aspect-square overflow-hidden rounded border transition ${
-                        selected
-                          ? "border-foreground ring-2 ring-foreground"
-                          : "border-border hover:border-foreground/60"
-                      }`}
-                      title={p.node.title}
-                    >
-                      {img ? (
-                        <img src={img} alt={p.node.title} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[9px] text-muted-foreground">
-                          No image
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+            <div className="mt-3 space-y-2">
+              <select
+                className="h-10 w-full border border-input bg-background px-3 text-sm"
+                value={selectedProductId ?? ""}
+                onChange={(e) => {
+                  const id = e.target.value;
+                  if (!id) {
+                    setProductImageUrl(null);
+                    setSelectedProductId(null);
+                    setImagePreview(null);
+                    return;
+                  }
+                  const p = newArrivals.find((x) => x.node.id === id);
+                  const img = p?.node.images?.edges?.[0]?.node?.url;
+                  if (!img) {
+                    toast.error("This product has no image");
+                    return;
+                  }
+                  setProductImageUrl(img);
+                  setSelectedProductId(id);
+                  setImagePreview(img);
+                  setImageFile(null);
+                  if (!url.trim() && p) setUrl(`/product/${p.node.handle}`);
+                }}
+              >
+                <option value="">— Select a product —</option>
+                {newArrivals.map((p) => (
+                  <option key={p.node.id} value={p.node.id}>
+                    {p.node.title}
+                  </option>
+                ))}
+              </select>
               {newArrivalsQuery.hasNextPage && (
                 <button
                   type="button"
                   onClick={() => newArrivalsQuery.fetchNextPage()}
                   disabled={newArrivalsQuery.isFetchingNextPage}
-                  className="mt-2 w-full border border-border py-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:border-foreground/60 disabled:opacity-50"
+                  className="w-full border border-border py-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:border-foreground/60 disabled:opacity-50"
                 >
-                  {newArrivalsQuery.isFetchingNextPage ? "Loading…" : "Load more products"}
+                  {newArrivalsQuery.isFetchingNextPage
+                    ? "Loading…"
+                    : `Load more products (${newArrivals.length} loaded)`}
                 </button>
               )}
-            </>
+            </div>
           )}
           {selectedProductId && (
             <p className="mt-2 text-[11px] text-muted-foreground">
