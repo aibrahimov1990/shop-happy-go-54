@@ -235,6 +235,7 @@ function BroadcastPage() {
             body: body.trim(),
             url: url.trim(),
             imagePath,
+            imageUrl: !imagePath && productImageUrl ? productImageUrl : undefined,
           });
         }}
       >
