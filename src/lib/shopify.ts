@@ -97,6 +97,21 @@ export const PRODUCTS_QUERY = `
   }
 `;
 
+export const COLLECTIONS_QUERY = `
+  query GetCollections($first: Int!) {
+    collections(first: $first, sortKey: TITLE) {
+      edges {
+        node {
+          id
+          handle
+          title
+          image { url(transform: { preferredContentType: JPG }) altText }
+        }
+      }
+    }
+  }
+`;
+
 export const PRODUCT_BY_HANDLE_QUERY = `
   query GetProductByHandle($handle: String!) {
     product(handle: $handle) {
