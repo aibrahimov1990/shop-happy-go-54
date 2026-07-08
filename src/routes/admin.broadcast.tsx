@@ -558,3 +558,110 @@ function AndroidNotificationPreview({
   );
 }
 
+function ProductPickerDropdown({
+  products,
+  selectedId,
+  hasNextPage,
+  isFetchingNextPage,
+  onLoadMore,
+  onSelect,
+}: {
+  products: ShopifyProduct[];
+  selectedId: string | null;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  onLoadMore: () => void;
+  onSelect: (p: ShopifyProduct | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = products.find((p) => p.node.id === selectedId) ?? null;
+  const selectedImg = selected?.node.images?.edges?.[0]?.node?.url;
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex h-12 w-full items-center gap-2 border border-input bg-background px-2 text-left text-sm"
+      >
+        {selected ? (
+          <>
+            {selectedImg ? (
+              <img
+                src={selectedImg}
+                alt=""
+                className="h-8 w-8 shrink-0 rounded border border-border object-cover"
+              />
+            ) : (
+              <div className="h-8 w-8 shrink-0 rounded border border-border bg-muted" />
+            )}
+            <span className="min-w-0 flex-1 truncate">{selected.node.title}</span>
+          </>
+        ) : (
+          <span className="text-muted-foreground">— Select a product —</span>
+        )}
+        <span className="shrink-0 text-muted-foreground">▾</span>
+      </button>
+
+      {open && (
+        <div className="absolute z-20 mt-1 max-h-80 w-full overflow-y-auto border border-border bg-background shadow-lg">
+          <button
+            type="button"
+            onClick={() => {
+              onSelect(null);
+              setOpen(false);
+            }}
+            className="flex w-full items-center px-3 py-2 text-left text-xs text-muted-foreground hover:bg-muted"
+          >
+            — None —
+          </button>
+          {products.map((p) => {
+            const img = p.node.images?.edges?.[0]?.node?.url;
+            const isSelected = p.node.id === selectedId;
+            return (
+              <button
+                type="button"
+                key={p.node.id}
+                onClick={() => {
+                  onSelect(p);
+                  setOpen(false);
+                }}
+                className={`flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm hover:bg-muted ${
+                  isSelected ? "bg-muted" : ""
+                }`}
+              >
+                {img ? (
+                  <img
+                    src={img}
+                    alt=""
+                    className="h-8 w-8 shrink-0 rounded border border-border object-cover"
+                  />
+                ) : (
+                  <div className="h-8 w-8 shrink-0 rounded border border-border bg-muted" />
+                )}
+                <span className="min-w-0 flex-1 truncate">{p.node.title}</span>
+              </button>
+            );
+          })}
+          {hasNextPage && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onLoadMore();
+              }}
+              disabled={isFetchingNextPage}
+              className="w-full border-t border-border py-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:bg-muted disabled:opacity-50"
+            >
+              {isFetchingNextPage
+                ? "Loading…"
+                : `Load more (${products.length} loaded)`}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
