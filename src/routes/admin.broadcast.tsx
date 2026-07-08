@@ -64,10 +64,21 @@ function BroadcastPage() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [url, setUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
 
   const mutation = useMutation({
-    mutationFn: (input: { title: string; body: string; url: string }) =>
-      send({ data: { title: input.title, body: input.body, url: input.url || undefined } }),
+    mutationFn: (input: { title: string; body: string; url: string; imagePath?: string }) =>
+      send({
+        data: {
+          title: input.title,
+          body: input.body,
+          url: input.url || undefined,
+          imagePath: input.imagePath,
+        },
+      }),
     onSuccess: (res) => {
       const errBreakdown = Object.entries(res.errorCounts ?? {})
         .map(([k, n]) => `${n}× ${k}`)
@@ -92,10 +103,32 @@ function BroadcastPage() {
       setTitle("");
       setBody("");
       setUrl("");
+      setImageFile(null);
+      setImagePreview(null);
       qc.invalidateQueries({ queryKey: ["broadcasts"] });
     },
     onError: (err: Error) => toast.error(err.message),
   });
+
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    if (!file) {
+      setImageFile(null);
+      setImagePreview(null);
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please pick an image file");
+      return;
+    }
+    if (file.size > 1024 * 1024) {
+      toast.error("Image must be under 1 MB (FCM limit ≈300 KB works best)");
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
 
   if (!loading && !user) {
     return (
@@ -144,14 +177,40 @@ function BroadcastPage() {
 
       <form
         className="mt-8 space-y-4"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           if (!title.trim() || !body.trim()) {
             toast.error("Title and message are required");
             return;
           }
           if (!confirm(`Send "${title}" to all devices?`)) return;
-          mutation.mutate({ title: title.trim(), body: body.trim(), url: url.trim() });
+
+          let imagePath: string | undefined;
+          if (imageFile) {
+            setUploading(true);
+            const ext = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
+            const path = `${user!.id}/${Date.now()}.${ext}`;
+            const { error: upErr } = await supabase.storage
+              .from("broadcast-images")
+              .upload(path, imageFile, {
+                contentType: imageFile.type,
+                cacheControl: "31536000",
+                upsert: false,
+              });
+            setUploading(false);
+            if (upErr) {
+              toast.error(`Image upload failed: ${upErr.message}`);
+              return;
+            }
+            imagePath = path;
+          }
+
+          mutation.mutate({
+            title: title.trim(),
+            body: body.trim(),
+            url: url.trim(),
+            imagePath,
+          });
         }}
       >
         <div>
@@ -178,6 +237,37 @@ function BroadcastPage() {
           />
         </div>
         <div>
+          <Label htmlFor="image">Image (optional)</Label>
+          <Input
+            id="image"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleImageChange}
+          />
+          {imagePreview && (
+            <div className="mt-2 flex items-start gap-3">
+              <img
+                src={imagePreview}
+                alt="preview"
+                className="h-24 w-24 rounded border border-border object-cover"
+              />
+              <button
+                type="button"
+                className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground underline"
+                onClick={() => {
+                  setImageFile(null);
+                  setImagePreview(null);
+                }}
+              >
+                Remove
+              </button>
+            </div>
+          )}
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Shown as a banner in the notification. JPG/PNG/WebP, under 1 MB (≈300 KB works best). 2:1 landscape looks best on Android.
+          </p>
+        </div>
+        <div>
           <Label htmlFor="url">Open in app (optional)</Label>
           <Input
             id="url"
@@ -190,10 +280,11 @@ function BroadcastPage() {
             Use an in-app path like <code>/shop</code>, <code>/wishlist</code>, or <code>/edits/&lt;id&gt;</code> so the tap opens the app screen. A full https link will open the website instead.
           </p>
         </div>
-        <Button type="submit" disabled={mutation.isPending} className="w-full">
-          {mutation.isPending ? "Sending…" : "Send broadcast"}
+        <Button type="submit" disabled={mutation.isPending || uploading} className="w-full">
+          {uploading ? "Uploading image…" : mutation.isPending ? "Sending…" : "Send broadcast"}
         </Button>
       </form>
+
 
       <div className="mt-12">
         <h2 className="font-serif text-xl">Recent broadcasts</h2>

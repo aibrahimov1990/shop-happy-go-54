@@ -99,29 +99,48 @@ export interface FcmSendOutcome {
 
 function buildVisibleMessageTarget(
   target: { token: string } | { topic: string },
-  payload: { title: string; body: string; url?: string },
+  payload: { title: string; body: string; url?: string; imageUrl?: string },
 ): Record<string, unknown> {
+  const notification: Record<string, unknown> = { title: payload.title, body: payload.body };
+  if (payload.imageUrl) notification.image = payload.imageUrl;
+
+  const apsPayload: Record<string, unknown> = {
+    alert: { title: payload.title, body: payload.body },
+    badge: 1,
+    sound: "default",
+    "interruption-level": "active",
+  };
+  if (payload.imageUrl) apsPayload["mutable-content"] = 1;
+
+  const apns: Record<string, unknown> = {
+    headers: {
+      "apns-priority": "10",
+      "apns-push-type": "alert",
+    },
+    payload: { aps: apsPayload },
+  };
+  if (payload.imageUrl) {
+    apns.fcm_options = { image: payload.imageUrl };
+  }
+
   const message: Record<string, unknown> = {
     ...target,
-    notification: { title: payload.title, body: payload.body },
-    apns: {
-      headers: {
-        "apns-priority": "10",
-        "apns-push-type": "alert",
-      },
-      payload: {
-        aps: {
-          alert: { title: payload.title, body: payload.body },
-          badge: 1,
-          sound: "default",
-          "interruption-level": "active",
-        },
-      },
-    },
+    notification,
+    apns,
   };
+
+  // Android rich image is covered by notification.image above; also set android.notification.image
+  // for older client SDKs that read it there.
+  if (payload.imageUrl) {
+    message.android = {
+      notification: { image: payload.imageUrl },
+    };
+  }
+
   if (payload.url) message.data = { url: payload.url };
   return message;
 }
+
 
 function parseServiceAccount(rawJson: string): ServiceAccount {
   let sa: ServiceAccount;
@@ -176,7 +195,7 @@ async function sendFcmMessage(
 
 export async function sendFcmToTopic(
   topic: string,
-  payload: { title: string; body: string; url?: string },
+  payload: { title: string; body: string; url?: string; imageUrl?: string },
 ): Promise<FcmSendOutcome> {
   const message = buildVisibleMessageTarget({ topic }, payload);
   return sendFcmMessage(message);
@@ -184,8 +203,9 @@ export async function sendFcmToTopic(
 
 export async function sendFcmToTokens(
   tokens: string[],
-  payload: { title: string; body: string; url?: string },
+  payload: { title: string; body: string; url?: string; imageUrl?: string },
 ): Promise<SendResult[]> {
+
   const rawJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
   const projectId = process.env.FIREBASE_PROJECT_ID;
   if (!rawJson) throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON is not set");

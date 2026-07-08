@@ -59,7 +59,15 @@ const broadcastSchema = z.object({
       (v) => !v || v.startsWith("/") || /^https?:\/\//i.test(v),
       { message: "URL must start with / (in-app path) or https://" },
     ),
+  // Storage path inside the "broadcast-images" bucket. The server signs it
+  // into a long-lived https URL before sending to FCM. Optional.
+  imagePath: z
+    .string()
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v ? v.trim() : undefined)),
 });
+
 
 /**
  * Send a push notification to every registered device. Admins only.
@@ -96,13 +104,26 @@ export const sendBroadcast = createServerFn({ method: "POST" })
     const errorCounts: Record<string, number> = {};
     let apnsCredentialIssue = false;
 
+    // Sign the image path into a long-lived https URL for FCM (bucket is private).
+    let imageUrl: string | undefined;
+    if (data.imagePath) {
+      const { data: signed, error: signErr } = await supabaseAdmin
+        .storage
+        .from("broadcast-images")
+        .createSignedUrl(data.imagePath, 60 * 60 * 24 * 30); // 30 days
+      if (signErr) throw new Error(`Image URL sign failed: ${signErr.message}`);
+      imageUrl = signed?.signedUrl;
+    }
+
     {
       const { BROADCAST_TOPIC, sendFcmToTokens, sendFcmToTopic } = await import("./fcm.server");
       const payload = {
         title: data.title,
         body: data.body,
         url: data.url,
+        imageUrl,
       };
+
 
       const topicResult = await sendFcmToTopic(BROADCAST_TOPIC, payload);
       topicSubmitted = topicResult.ok;
