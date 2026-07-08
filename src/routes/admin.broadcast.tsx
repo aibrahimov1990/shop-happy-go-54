@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import sellierLogo from "@/assets/sellier-logo.svg";
-import { storefrontApiRequest, PRODUCTS_QUERY, isKidsProduct, type ShopifyProduct } from "@/lib/shopify";
+import { storefrontApiRequest, PRODUCTS_QUERY, COLLECTIONS_QUERY, isKidsProduct, type ShopifyProduct } from "@/lib/shopify";
 
 
 export const Route = createFileRoute("/admin/broadcast")({
@@ -73,20 +73,40 @@ function BroadcastPage() {
   const [productImageUrl, setProductImageUrl] = useState<string | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
-  const newArrivalsQuery = useQuery({
+  const newArrivalsQuery = useInfiniteQuery({
     queryKey: ["broadcast-new-arrivals"],
     enabled: adminQuery.data === true,
-    queryFn: async () => {
+    initialPageParam: null as string | null,
+    queryFn: async ({ pageParam }) => {
       const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
         first: 24,
+        after: pageParam,
         query: "-tag:KIDS",
         sortKey: "CREATED_AT",
         reverse: true,
       });
       const edges: ShopifyProduct[] = res?.data?.products?.edges ?? [];
-      return edges.filter((e) => !isKidsProduct(e));
+      const pageInfo = res?.data?.products?.pageInfo ?? { hasNextPage: false, endCursor: null };
+      return { edges: edges.filter((e) => !isKidsProduct(e)), pageInfo };
+    },
+    getNextPageParam: (last) => (last.pageInfo.hasNextPage ? last.pageInfo.endCursor : undefined),
+  });
+  const newArrivals: ShopifyProduct[] =
+    newArrivalsQuery.data?.pages.flatMap((p) => p.edges) ?? [];
+
+  const collectionsQuery = useQuery({
+    queryKey: ["broadcast-collections"],
+    enabled: adminQuery.data === true,
+    queryFn: async () => {
+      const res = await storefrontApiRequest<any>(COLLECTIONS_QUERY, { first: 100 });
+      const edges: Array<{ node: { id: string; handle: string; title: string } }> =
+        res?.data?.collections?.edges ?? [];
+      return edges
+        .map((e) => e.node)
+        .filter((c) => c.handle && !/kids/i.test(c.handle) && !/kids/i.test(c.title));
     },
   });
+
 
 
   const mutation = useMutation({
@@ -303,46 +323,58 @@ function BroadcastPage() {
           </p>
           {newArrivalsQuery.isLoading ? (
             <p className="mt-3 text-xs text-muted-foreground">Loading new arrivals…</p>
-          ) : (newArrivalsQuery.data?.length ?? 0) === 0 ? (
+          ) : newArrivals.length === 0 ? (
             <p className="mt-3 text-xs text-muted-foreground">No new arrivals available.</p>
           ) : (
-            <div className="mt-3 grid max-h-72 grid-cols-4 gap-2 overflow-y-auto rounded border border-border p-2 sm:grid-cols-6">
-              {newArrivalsQuery.data!.map((p) => {
-                const img = p.node.images?.edges?.[0]?.node?.url;
-                const selected = selectedProductId === p.node.id;
-                return (
-                  <button
-                    type="button"
-                    key={p.node.id}
-                    onClick={() => {
-                      if (!img) {
-                        toast.error("This product has no image");
-                        return;
-                      }
-                      setProductImageUrl(img);
-                      setSelectedProductId(p.node.id);
-                      setImagePreview(img);
-                      setImageFile(null);
-                      if (!url.trim()) setUrl(`/product/${p.node.handle}`);
-                    }}
-                    className={`aspect-square overflow-hidden rounded border transition ${
-                      selected
-                        ? "border-foreground ring-2 ring-foreground"
-                        : "border-border hover:border-foreground/60"
-                    }`}
-                    title={p.node.title}
-                  >
-                    {img ? (
-                      <img src={img} alt={p.node.title} className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-[9px] text-muted-foreground">
-                        No image
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            <>
+              <div className="mt-3 grid max-h-96 grid-cols-4 gap-2 overflow-y-auto rounded border border-border p-2 sm:grid-cols-6">
+                {newArrivals.map((p) => {
+                  const img = p.node.images?.edges?.[0]?.node?.url;
+                  const selected = selectedProductId === p.node.id;
+                  return (
+                    <button
+                      type="button"
+                      key={p.node.id}
+                      onClick={() => {
+                        if (!img) {
+                          toast.error("This product has no image");
+                          return;
+                        }
+                        setProductImageUrl(img);
+                        setSelectedProductId(p.node.id);
+                        setImagePreview(img);
+                        setImageFile(null);
+                        if (!url.trim()) setUrl(`/product/${p.node.handle}`);
+                      }}
+                      className={`aspect-square overflow-hidden rounded border transition ${
+                        selected
+                          ? "border-foreground ring-2 ring-foreground"
+                          : "border-border hover:border-foreground/60"
+                      }`}
+                      title={p.node.title}
+                    >
+                      {img ? (
+                        <img src={img} alt={p.node.title} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[9px] text-muted-foreground">
+                          No image
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              {newArrivalsQuery.hasNextPage && (
+                <button
+                  type="button"
+                  onClick={() => newArrivalsQuery.fetchNextPage()}
+                  disabled={newArrivalsQuery.isFetchingNextPage}
+                  className="mt-2 w-full border border-border py-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:border-foreground/60 disabled:opacity-50"
+                >
+                  {newArrivalsQuery.isFetchingNextPage ? "Loading…" : "Load more products"}
+                </button>
+              )}
+            </>
           )}
           {selectedProductId && (
             <p className="mt-2 text-[11px] text-muted-foreground">
@@ -373,7 +405,36 @@ function BroadcastPage() {
           <p className="mt-1 text-[11px] text-muted-foreground">
             Use an in-app path like <code>/shop</code>, <code>/wishlist</code>, or <code>/edits/&lt;id&gt;</code> so the tap opens the app screen. A full https link will open the website instead.
           </p>
+          <div className="mt-3">
+            <Label htmlFor="collection-select" className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              Or open a collection
+            </Label>
+            <select
+              id="collection-select"
+              className="mt-1 h-10 w-full border border-input bg-background px-3 text-sm"
+              value={
+                url.startsWith("/collections/")
+                  ? url.replace("/collections/", "").split(/[?#]/)[0]
+                  : ""
+              }
+              onChange={(e) => {
+                const handle = e.target.value;
+                setUrl(handle ? `/collections/${handle}` : "");
+              }}
+              disabled={collectionsQuery.isLoading}
+            >
+              <option value="">
+                {collectionsQuery.isLoading ? "Loading collections…" : "— None —"}
+              </option>
+              {collectionsQuery.data?.map((c) => (
+                <option key={c.id} value={c.handle}>
+                  {c.title}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+
 
         <div>
           <Label>Preview</Label>
