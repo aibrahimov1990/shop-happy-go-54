@@ -59,7 +59,15 @@ const broadcastSchema = z.object({
       (v) => !v || v.startsWith("/") || /^https?:\/\//i.test(v),
       { message: "URL must start with / (in-app path) or https://" },
     ),
+  // Storage path inside the "broadcast-images" bucket. The server signs it
+  // into a long-lived https URL before sending to FCM. Optional.
+  imagePath: z
+    .string()
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v ? v.trim() : undefined)),
 });
+
 
 /**
  * Send a push notification to every registered device. Admins only.
