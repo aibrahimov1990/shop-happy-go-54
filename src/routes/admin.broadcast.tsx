@@ -70,8 +70,15 @@ function BroadcastPage() {
 
 
   const mutation = useMutation({
-    mutationFn: (input: { title: string; body: string; url: string }) =>
-      send({ data: { title: input.title, body: input.body, url: input.url || undefined } }),
+    mutationFn: (input: { title: string; body: string; url: string; imagePath?: string }) =>
+      send({
+        data: {
+          title: input.title,
+          body: input.body,
+          url: input.url || undefined,
+          imagePath: input.imagePath,
+        },
+      }),
     onSuccess: (res) => {
       const errBreakdown = Object.entries(res.errorCounts ?? {})
         .map(([k, n]) => `${n}× ${k}`)
@@ -96,10 +103,32 @@ function BroadcastPage() {
       setTitle("");
       setBody("");
       setUrl("");
+      setImageFile(null);
+      setImagePreview(null);
       qc.invalidateQueries({ queryKey: ["broadcasts"] });
     },
     onError: (err: Error) => toast.error(err.message),
   });
+
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    if (!file) {
+      setImageFile(null);
+      setImagePreview(null);
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please pick an image file");
+      return;
+    }
+    if (file.size > 1024 * 1024) {
+      toast.error("Image must be under 1 MB (FCM limit ≈300 KB works best)");
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
 
   if (!loading && !user) {
     return (
