@@ -64,6 +64,10 @@ function BroadcastPage() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [url, setUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
 
   const mutation = useMutation({
     mutationFn: (input: { title: string; body: string; url: string }) =>
