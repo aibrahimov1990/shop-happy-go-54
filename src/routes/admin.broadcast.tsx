@@ -70,6 +70,23 @@ function BroadcastPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [productImageUrl, setProductImageUrl] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+  const newArrivalsQuery = useQuery({
+    queryKey: ["broadcast-new-arrivals"],
+    enabled: adminQuery.data === true,
+    queryFn: async () => {
+      const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
+        first: 24,
+        query: "-tag:KIDS",
+        sortKey: "CREATED_AT",
+        reverse: true,
+      });
+      const edges: ShopifyProduct[] = res?.data?.products?.edges ?? [];
+      return edges.filter((e) => !isKidsProduct(e));
+    },
+  });
 
 
   const mutation = useMutation({
