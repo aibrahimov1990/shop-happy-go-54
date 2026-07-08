@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import sellierLogo from "@/assets/sellier-logo.svg";
+import { storefrontApiRequest, PRODUCTS_QUERY, isKidsProduct, type ShopifyProduct } from "@/lib/shopify";
 
 
 export const Route = createFileRoute("/admin/broadcast")({
@@ -69,16 +70,34 @@ function BroadcastPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [productImageUrl, setProductImageUrl] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+  const newArrivalsQuery = useQuery({
+    queryKey: ["broadcast-new-arrivals"],
+    enabled: adminQuery.data === true,
+    queryFn: async () => {
+      const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
+        first: 24,
+        query: "-tag:KIDS",
+        sortKey: "CREATED_AT",
+        reverse: true,
+      });
+      const edges: ShopifyProduct[] = res?.data?.products?.edges ?? [];
+      return edges.filter((e) => !isKidsProduct(e));
+    },
+  });
 
 
   const mutation = useMutation({
-    mutationFn: (input: { title: string; body: string; url: string; imagePath?: string }) =>
+    mutationFn: (input: { title: string; body: string; url: string; imagePath?: string; imageUrl?: string }) =>
       send({
         data: {
           title: input.title,
           body: input.body,
           url: input.url || undefined,
           imagePath: input.imagePath,
+          imageUrl: input.imageUrl,
         },
       }),
     onSuccess: (res) => {
@@ -107,6 +126,8 @@ function BroadcastPage() {
       setUrl("");
       setImageFile(null);
       setImagePreview(null);
+      setProductImageUrl(null);
+      setSelectedProductId(null);
       qc.invalidateQueries({ queryKey: ["broadcasts"] });
     },
     onError: (err: Error) => toast.error(err.message),
@@ -129,6 +150,8 @@ function BroadcastPage() {
     }
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+    setProductImageUrl(null);
+    setSelectedProductId(null);
   }
 
 
@@ -212,6 +235,7 @@ function BroadcastPage() {
             body: body.trim(),
             url: url.trim(),
             imagePath,
+            imageUrl: !imagePath && productImageUrl ? productImageUrl : undefined,
           });
         }}
       >
@@ -259,6 +283,8 @@ function BroadcastPage() {
                 onClick={() => {
                   setImageFile(null);
                   setImagePreview(null);
+                  setProductImageUrl(null);
+                  setSelectedProductId(null);
                 }}
               >
                 Remove
@@ -268,6 +294,72 @@ function BroadcastPage() {
           <p className="mt-1 text-[11px] text-muted-foreground">
             Shown as a banner in the notification. JPG/PNG/WebP, under 1 MB (≈300 KB works best). 2:1 landscape looks best on Android.
           </p>
+        </div>
+
+        <div>
+          <Label>Or pick a hero product from new arrivals</Label>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            The product's main image is used as the notification banner. Overrides any uploaded file.
+          </p>
+          {newArrivalsQuery.isLoading ? (
+            <p className="mt-3 text-xs text-muted-foreground">Loading new arrivals…</p>
+          ) : (newArrivalsQuery.data?.length ?? 0) === 0 ? (
+            <p className="mt-3 text-xs text-muted-foreground">No new arrivals available.</p>
+          ) : (
+            <div className="mt-3 grid max-h-72 grid-cols-4 gap-2 overflow-y-auto rounded border border-border p-2 sm:grid-cols-6">
+              {newArrivalsQuery.data!.map((p) => {
+                const img = p.node.images?.edges?.[0]?.node?.url;
+                const selected = selectedProductId === p.node.id;
+                return (
+                  <button
+                    type="button"
+                    key={p.node.id}
+                    onClick={() => {
+                      if (!img) {
+                        toast.error("This product has no image");
+                        return;
+                      }
+                      setProductImageUrl(img);
+                      setSelectedProductId(p.node.id);
+                      setImagePreview(img);
+                      setImageFile(null);
+                      if (!url.trim()) setUrl(`/product/${p.node.handle}`);
+                    }}
+                    className={`aspect-square overflow-hidden rounded border transition ${
+                      selected
+                        ? "border-foreground ring-2 ring-foreground"
+                        : "border-border hover:border-foreground/60"
+                    }`}
+                    title={p.node.title}
+                  >
+                    {img ? (
+                      <img src={img} alt={p.node.title} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-[9px] text-muted-foreground">
+                        No image
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {selectedProductId && (
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              Using product hero image.{" "}
+              <button
+                type="button"
+                className="underline"
+                onClick={() => {
+                  setProductImageUrl(null);
+                  setSelectedProductId(null);
+                  setImagePreview(null);
+                }}
+              >
+                Clear
+              </button>
+            </p>
+          )}
         </div>
         <div>
           <Label htmlFor="url">Open in app (optional)</Label>
