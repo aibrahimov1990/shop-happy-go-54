@@ -639,4 +639,234 @@ function ProductPickerDropdown({
   );
 }
 
+type DestKind =
+  | "none"
+  | "home"
+  | "shop"
+  | "new-arrivals"
+  | "wishlist"
+  | "account"
+  | "orders"
+  | "edits"
+  | "sell"
+  | "collection"
+  | "product"
+  | "edit"
+  | "custom";
+
+const SIMPLE_DESTINATIONS: Record<string, DestKind> = {
+  "": "none",
+  "/": "home",
+  "/shop": "shop",
+  "/new-arrivals": "new-arrivals",
+  "/wishlist": "wishlist",
+  "/account": "account",
+  "/orders": "orders",
+  "/edits": "edits",
+  "/sell-with-us": "sell",
+};
+
+function kindFromUrl(url: string): DestKind {
+  const trimmed = url.trim();
+  if (trimmed in SIMPLE_DESTINATIONS) return SIMPLE_DESTINATIONS[trimmed];
+  if (trimmed.startsWith("/collections/")) return "collection";
+  if (trimmed.startsWith("/product/")) return "product";
+  if (trimmed.startsWith("/edits/")) return "edit";
+  if (trimmed) return "custom";
+  return "none";
+}
+
+function DestinationPicker({
+  url,
+  onChange,
+  collections,
+  collectionsLoading,
+  products,
+  productsHasMore,
+  productsFetchingMore,
+  onLoadMoreProducts,
+}: {
+  url: string;
+  onChange: (next: string) => void;
+  collections: Array<{ id: string; handle: string; title: string }>;
+  collectionsLoading: boolean;
+  products: ShopifyProduct[];
+  productsHasMore: boolean;
+  productsFetchingMore: boolean;
+  onLoadMoreProducts: () => void;
+}) {
+  const kind = kindFromUrl(url);
+
+  const collectionHandle =
+    kind === "collection" ? url.replace("/collections/", "").split(/[?#]/)[0] : "";
+  const productHandle =
+    kind === "product" ? url.replace("/product/", "").split(/[?#]/)[0] : "";
+  const editId = kind === "edit" ? url.replace("/edits/", "").split(/[?#]/)[0] : "";
+  const selectedProductId =
+    kind === "product"
+      ? products.find((p) => p.node.handle === productHandle)?.node.id ?? null
+      : null;
+
+  function setKind(next: DestKind) {
+    switch (next) {
+      case "none":
+        onChange("");
+        return;
+      case "home":
+        onChange("/");
+        return;
+      case "shop":
+        onChange("/shop");
+        return;
+      case "new-arrivals":
+        onChange("/new-arrivals");
+        return;
+      case "wishlist":
+        onChange("/wishlist");
+        return;
+      case "account":
+        onChange("/account");
+        return;
+      case "orders":
+        onChange("/orders");
+        return;
+      case "edits":
+        onChange("/edits");
+        return;
+      case "sell":
+        onChange("/sell-with-us");
+        return;
+      case "collection":
+        onChange("/collections/");
+        return;
+      case "product":
+        onChange("/product/");
+        return;
+      case "edit":
+        onChange("/edits/");
+        return;
+      case "custom":
+        onChange(url && !["/", "/shop", "/new-arrivals", "/wishlist", "/account", "/orders", "/edits", "/sell-with-us"].includes(url) ? url : "/");
+        return;
+    }
+  }
+
+  return (
+    <div className="mt-2 space-y-3">
+      <select
+        className="h-10 w-full border border-input bg-background px-3 text-sm"
+        value={kind}
+        onChange={(e) => setKind(e.target.value as DestKind)}
+      >
+        <option value="none">— Nowhere (just show the notification) —</option>
+        <optgroup label="Main screens">
+          <option value="home">Home</option>
+          <option value="shop">Shop</option>
+          <option value="new-arrivals">New arrivals</option>
+          <option value="wishlist">Wishlist</option>
+          <option value="orders">Orders</option>
+          <option value="account">Account</option>
+          <option value="edits">My edits</option>
+          <option value="sell">Sell with us</option>
+        </optgroup>
+        <optgroup label="Specific content">
+          <option value="collection">A collection…</option>
+          <option value="product">A product…</option>
+          <option value="edit">A specific edit (by ID)…</option>
+        </optgroup>
+        <optgroup label="Advanced">
+          <option value="custom">Custom in-app path or https URL…</option>
+        </optgroup>
+      </select>
+
+      {kind === "collection" && (
+        <div>
+          <Label className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            Choose collection
+          </Label>
+          <select
+            className="mt-1 h-10 w-full border border-input bg-background px-3 text-sm"
+            value={collectionHandle}
+            onChange={(e) =>
+              onChange(e.target.value ? `/collections/${e.target.value}` : "/collections/")
+            }
+            disabled={collectionsLoading}
+          >
+            <option value="">
+              {collectionsLoading ? "Loading collections…" : "— Select a collection —"}
+            </option>
+            {collections.map((c) => (
+              <option key={c.id} value={c.handle}>
+                {c.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {kind === "product" && (
+        <div>
+          <Label className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            Choose product
+          </Label>
+          <div className="mt-1">
+            <ProductPickerDropdown
+              products={products}
+              selectedId={selectedProductId}
+              hasNextPage={productsHasMore}
+              isFetchingNextPage={productsFetchingMore}
+              onLoadMore={onLoadMoreProducts}
+              onSelect={(p) => {
+                if (!p) {
+                  onChange("/product/");
+                  return;
+                }
+                onChange(`/product/${p.node.handle}`);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {kind === "edit" && (
+        <div>
+          <Label className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            Edit ID
+          </Label>
+          <Input
+            className="mt-1"
+            value={editId}
+            onChange={(e) => onChange(`/edits/${e.target.value.trim()}`)}
+            placeholder="e.g. 8f3c…"
+          />
+        </div>
+      )}
+
+      {kind === "custom" && (
+        <div>
+          <Label className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            Custom path or URL
+          </Label>
+          <Input
+            className="mt-1"
+            value={url}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="/shop or https://…"
+          />
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Paths starting with <code>/</code> open inside the app. A full <code>https://</code> URL opens the website.
+          </p>
+        </div>
+      )}
+
+      {url && (
+        <p className="text-[11px] text-muted-foreground">
+          Opens: <code className="rounded bg-muted px-1 py-0.5">{url}</code>
+        </p>
+      )}
+    </div>
+  );
+}
+
+
 
