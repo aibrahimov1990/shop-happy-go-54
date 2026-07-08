@@ -66,6 +66,14 @@ const broadcastSchema = z.object({
     .optional()
     .or(z.literal(""))
     .transform((v) => (v ? v.trim() : undefined)),
+  // Direct https image URL (e.g. Shopify CDN). Used when picking a product
+  // hero image — no upload/signing required. Optional.
+  imageUrl: z
+    .string()
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v ? v.trim() : undefined))
+    .refine((v) => !v || /^https:\/\//i.test(v), { message: "imageUrl must be https://" }),
 });
 
 
