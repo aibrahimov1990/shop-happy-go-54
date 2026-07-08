@@ -340,14 +340,19 @@ function BroadcastPage() {
                     setImagePreview(null);
                     return;
                   }
-                  const img = p.node.images?.edges?.[0]?.node?.url;
-                  if (!img) {
+                  const raw = p.node.images?.edges?.[0]?.node?.url;
+                  if (!raw) {
                     toast.error("This product has no image");
                     return;
                   }
-                  setProductImageUrl(img);
+                  // Resize Shopify CDN image so it fits under FCM's payload
+                  // limit and renders reliably in the notification banner.
+                  const sized = /cdn\.shopify\.com/i.test(raw)
+                    ? `${raw}${raw.includes("?") ? "&" : "?"}width=1200`
+                    : raw;
+                  setProductImageUrl(sized);
                   setSelectedProductId(p.node.id);
-                  setImagePreview(img);
+                  setImagePreview(sized);
                   setImageFile(null);
                   if (!url.trim()) setUrl(`/product/${p.node.handle}`);
                 }}
