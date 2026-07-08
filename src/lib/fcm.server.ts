@@ -195,7 +195,7 @@ async function sendFcmMessage(
 
 export async function sendFcmToTopic(
   topic: string,
-  payload: { title: string; body: string; url?: string },
+  payload: { title: string; body: string; url?: string; imageUrl?: string },
 ): Promise<FcmSendOutcome> {
   const message = buildVisibleMessageTarget({ topic }, payload);
   return sendFcmMessage(message);
@@ -203,8 +203,9 @@ export async function sendFcmToTopic(
 
 export async function sendFcmToTokens(
   tokens: string[],
-  payload: { title: string; body: string; url?: string },
+  payload: { title: string; body: string; url?: string; imageUrl?: string },
 ): Promise<SendResult[]> {
+
   const rawJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
   const projectId = process.env.FIREBASE_PROJECT_ID;
   if (!rawJson) throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON is not set");
