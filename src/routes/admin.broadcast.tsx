@@ -283,6 +283,8 @@ function BroadcastPage() {
                 onClick={() => {
                   setImageFile(null);
                   setImagePreview(null);
+                  setProductImageUrl(null);
+                  setSelectedProductId(null);
                 }}
               >
                 Remove
@@ -292,6 +294,72 @@ function BroadcastPage() {
           <p className="mt-1 text-[11px] text-muted-foreground">
             Shown as a banner in the notification. JPG/PNG/WebP, under 1 MB (≈300 KB works best). 2:1 landscape looks best on Android.
           </p>
+        </div>
+
+        <div>
+          <Label>Or pick a hero product from new arrivals</Label>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            The product's main image is used as the notification banner. Overrides any uploaded file.
+          </p>
+          {newArrivalsQuery.isLoading ? (
+            <p className="mt-3 text-xs text-muted-foreground">Loading new arrivals…</p>
+          ) : (newArrivalsQuery.data?.length ?? 0) === 0 ? (
+            <p className="mt-3 text-xs text-muted-foreground">No new arrivals available.</p>
+          ) : (
+            <div className="mt-3 grid max-h-72 grid-cols-4 gap-2 overflow-y-auto rounded border border-border p-2 sm:grid-cols-6">
+              {newArrivalsQuery.data!.map((p) => {
+                const img = p.node.images?.edges?.[0]?.node?.url;
+                const selected = selectedProductId === p.node.id;
+                return (
+                  <button
+                    type="button"
+                    key={p.node.id}
+                    onClick={() => {
+                      if (!img) {
+                        toast.error("This product has no image");
+                        return;
+                      }
+                      setProductImageUrl(img);
+                      setSelectedProductId(p.node.id);
+                      setImagePreview(img);
+                      setImageFile(null);
+                      if (!url.trim()) setUrl(`/product/${p.node.handle}`);
+                    }}
+                    className={`aspect-square overflow-hidden rounded border transition ${
+                      selected
+                        ? "border-foreground ring-2 ring-foreground"
+                        : "border-border hover:border-foreground/60"
+                    }`}
+                    title={p.node.title}
+                  >
+                    {img ? (
+                      <img src={img} alt={p.node.title} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-[9px] text-muted-foreground">
+                        No image
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {selectedProductId && (
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              Using product hero image.{" "}
+              <button
+                type="button"
+                className="underline"
+                onClick={() => {
+                  setProductImageUrl(null);
+                  setSelectedProductId(null);
+                  setImagePreview(null);
+                }}
+              >
+                Clear
+              </button>
+            </p>
+          )}
         </div>
         <div>
           <Label htmlFor="url">Open in app (optional)</Label>
