@@ -23,6 +23,11 @@ type MirroredSession = {
 
 let initPromise: Promise<void> | null = null;
 let storageMirrorInstalled = false;
+// After an explicit sign-out we must ignore any late writes coming from
+// Supabase's auto-refresh timer or in-flight setItem calls. Otherwise a
+// stale session gets re-mirrored into Preferences/cookie and the next
+// `initNativeSessionPersistence` silently signs the user back in.
+let signedOutGate = false;
 
 function isNative(): boolean {
   return typeof window !== "undefined" && Capacitor.isNativePlatform();
@@ -175,16 +180,35 @@ function installLocalStorageMirror(Preferences?: PreferencesApi | null) {
     originalSetItem.call(this, key, value);
 
     if (this === window.localStorage && isAuthStorageKey(key)) {
+      // After sign-out, drop late writes from a racing token refresh so we
+      // don't re-persist the stale session and silently re-authenticate.
+      if (signedOutGate) return;
       writeSessionCookie(getSessionTokensFromStorageValue(value));
       void writeNativeSessionCopy(Preferences, { storageKey: key, storageValue: value }).catch((err) => {
         console.warn("Failed to mirror auth storage", err);
       });
     }
   };
+
+  const originalRemoveItem = Storage.prototype.removeItem;
+  Storage.prototype.removeItem = function removeItem(key: string) {
+    originalRemoveItem.call(this, key);
+    if (this === window.localStorage && isAuthStorageKey(key)) {
+      clearSessionCookie();
+      if (Preferences) {
+        void Preferences.remove({ key: PREFS_STORAGE_KEY }).catch(() => undefined);
+        void Preferences.remove({ key: LEGACY_PREFS_KEY }).catch(() => undefined);
+      }
+    }
+  };
 }
 
 export async function persistNativeSession(session?: Session | MirroredSession | null) {
   if (!isNative()) return;
+
+  // An explicit persist call means the user just signed in; reopen the gate
+  // so future writes are mirrored again.
+  if (session) signedOutGate = false;
 
   const currentAuthStorage = readCurrentAuthStorage();
   const currentSession = session ?? getSessionTokensFromStorageValue(currentAuthStorage?.storageValue ?? null);
@@ -200,6 +224,10 @@ export async function persistNativeSession(session?: Session | MirroredSession |
 
 export async function clearNativeSessionPersistence() {
   if (!isNative()) return;
+
+  // Latch closed BEFORE clearing so any racing setItem from an in-flight
+  // Supabase auto-refresh cannot re-write the session we're about to nuke.
+  signedOutGate = true;
 
   clearSessionCookie();
 
@@ -273,7 +301,12 @@ export async function initNativeSessionPersistence() {
       // 2. Mirror future auth changes into Preferences. Do not delete the native
       // copy on INITIAL_SESSION null; only an explicit sign-out should clear it.
       supabase.auth.onAuthStateChange((event, session) => {
+        if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED" || event === "INITIAL_SESSION")) {
+          // A genuine authenticated event — reopen the gate so we mirror.
+          signedOutGate = false;
+        }
         if (session) {
+          if (signedOutGate) return;
           void writeNativeSessionCopy(Preferences, readCurrentAuthStorage(), session).catch((err) => {
             console.warn("Failed to mirror session to Preferences", err);
           });
@@ -281,6 +314,7 @@ export async function initNativeSessionPersistence() {
         }
 
         if (event === "SIGNED_OUT") {
+          signedOutGate = true;
           clearSessionCookie();
           if (Preferences) {
             void Preferences.remove({ key: PREFS_STORAGE_KEY });
