@@ -23,6 +23,11 @@ type MirroredSession = {
 
 let initPromise: Promise<void> | null = null;
 let storageMirrorInstalled = false;
+// After an explicit sign-out we must ignore any late writes coming from
+// Supabase's auto-refresh timer or in-flight setItem calls. Otherwise a
+// stale session gets re-mirrored into Preferences/cookie and the next
+// `initNativeSessionPersistence` silently signs the user back in.
+let signedOutGate = false;
 
 function isNative(): boolean {
   return typeof window !== "undefined" && Capacitor.isNativePlatform();
