@@ -206,6 +206,10 @@ function installLocalStorageMirror(Preferences?: PreferencesApi | null) {
 export async function persistNativeSession(session?: Session | MirroredSession | null) {
   if (!isNative()) return;
 
+  // An explicit persist call means the user just signed in; reopen the gate
+  // so future writes are mirrored again.
+  if (session) signedOutGate = false;
+
   const currentAuthStorage = readCurrentAuthStorage();
   const currentSession = session ?? getSessionTokensFromStorageValue(currentAuthStorage?.storageValue ?? null);
   writeSessionCookie(currentSession);
@@ -220,6 +224,10 @@ export async function persistNativeSession(session?: Session | MirroredSession |
 
 export async function clearNativeSessionPersistence() {
   if (!isNative()) return;
+
+  // Latch closed BEFORE clearing so any racing setItem from an in-flight
+  // Supabase auto-refresh cannot re-write the session we're about to nuke.
+  signedOutGate = true;
 
   clearSessionCookie();
 
