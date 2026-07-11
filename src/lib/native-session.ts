@@ -180,10 +180,25 @@ function installLocalStorageMirror(Preferences?: PreferencesApi | null) {
     originalSetItem.call(this, key, value);
 
     if (this === window.localStorage && isAuthStorageKey(key)) {
+      // After sign-out, drop late writes from a racing token refresh so we
+      // don't re-persist the stale session and silently re-authenticate.
+      if (signedOutGate) return;
       writeSessionCookie(getSessionTokensFromStorageValue(value));
       void writeNativeSessionCopy(Preferences, { storageKey: key, storageValue: value }).catch((err) => {
         console.warn("Failed to mirror auth storage", err);
       });
+    }
+  };
+
+  const originalRemoveItem = Storage.prototype.removeItem;
+  Storage.prototype.removeItem = function removeItem(key: string) {
+    originalRemoveItem.call(this, key);
+    if (this === window.localStorage && isAuthStorageKey(key)) {
+      clearSessionCookie();
+      if (Preferences) {
+        void Preferences.remove({ key: PREFS_STORAGE_KEY }).catch(() => undefined);
+        void Preferences.remove({ key: LEGACY_PREFS_KEY }).catch(() => undefined);
+      }
     }
   };
 }
