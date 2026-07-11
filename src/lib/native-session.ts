@@ -301,7 +301,12 @@ export async function initNativeSessionPersistence() {
       // 2. Mirror future auth changes into Preferences. Do not delete the native
       // copy on INITIAL_SESSION null; only an explicit sign-out should clear it.
       supabase.auth.onAuthStateChange((event, session) => {
+        if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED" || event === "INITIAL_SESSION")) {
+          // A genuine authenticated event — reopen the gate so we mirror.
+          signedOutGate = false;
+        }
         if (session) {
+          if (signedOutGate) return;
           void writeNativeSessionCopy(Preferences, readCurrentAuthStorage(), session).catch((err) => {
             console.warn("Failed to mirror session to Preferences", err);
           });
@@ -309,6 +314,7 @@ export async function initNativeSessionPersistence() {
         }
 
         if (event === "SIGNED_OUT") {
+          signedOutGate = true;
           clearSessionCookie();
           if (Preferences) {
             void Preferences.remove({ key: PREFS_STORAGE_KEY });
