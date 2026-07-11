@@ -69,8 +69,12 @@ export function useAuth(): AuthState & {
     isShopper: roles.includes("shopper") || roles.includes("admin"),
     isAdmin: roles.includes("admin"),
     signOut: async () => {
-      await supabase.auth.signOut();
+      // Clear native storage FIRST so any late token-refresh setItem that
+      // fires during signOut() is dropped by the mirror's signed-out gate,
+      // then clear again to remove anything Supabase just wrote.
       const { clearNativeSessionPersistence } = await import("@/lib/native-session");
+      await clearNativeSessionPersistence();
+      await supabase.auth.signOut();
       await clearNativeSessionPersistence();
     },
   };
