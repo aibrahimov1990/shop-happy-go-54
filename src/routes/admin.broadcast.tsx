@@ -786,7 +786,11 @@ function DestinationPicker({
         <option value="none">— Nowhere (just show the notification) —</option>
         <optgroup label="Main screens">
           <option value="home">Home</option>
-          <option value="shop">Shop</option>
+          <option value="shop">Shop (all)</option>
+          <option value="clothing">Shop — All Clothing</option>
+          <option value="bags">Shop — Bags</option>
+          <option value="shoes">Shop — Shoes</option>
+          <option value="accessories">Shop — Accessories</option>
           <option value="new-arrivals">New arrivals</option>
           <option value="wishlist">Wishlist</option>
           <option value="orders">Orders</option>
