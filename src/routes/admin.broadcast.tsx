@@ -648,6 +648,10 @@ type DestKind =
   | "none"
   | "home"
   | "shop"
+  | "clothing"
+  | "bags"
+  | "shoes"
+  | "accessories"
   | "new-arrivals"
   | "wishlist"
   | "account"
@@ -663,6 +667,10 @@ const SIMPLE_DESTINATIONS: Record<string, DestKind> = {
   "": "none",
   "/": "home",
   "/shop": "shop",
+  "/shop?category=clothing": "clothing",
+  "/shop?category=bags": "bags",
+  "/shop?category=shoes": "shoes",
+  "/shop?category=accessories": "accessories",
   "/new-arrivals": "new-arrivals",
   "/wishlist": "wishlist",
   "/account": "account",
@@ -723,6 +731,18 @@ function DestinationPicker({
       case "shop":
         onChange("/shop");
         return;
+      case "clothing":
+        onChange("/shop?category=clothing");
+        return;
+      case "bags":
+        onChange("/shop?category=bags");
+        return;
+      case "shoes":
+        onChange("/shop?category=shoes");
+        return;
+      case "accessories":
+        onChange("/shop?category=accessories");
+        return;
       case "new-arrivals":
         onChange("/new-arrivals");
         return;
@@ -766,7 +786,11 @@ function DestinationPicker({
         <option value="none">— Nowhere (just show the notification) —</option>
         <optgroup label="Main screens">
           <option value="home">Home</option>
-          <option value="shop">Shop</option>
+          <option value="shop">Shop (all)</option>
+          <option value="clothing">Shop — All Clothing</option>
+          <option value="bags">Shop — Bags</option>
+          <option value="shoes">Shop — Shoes</option>
+          <option value="accessories">Shop — Accessories</option>
           <option value="new-arrivals">New arrivals</option>
           <option value="wishlist">Wishlist</option>
           <option value="orders">Orders</option>

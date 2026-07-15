@@ -50,7 +50,16 @@ const SORTS = [
   { label: "Best Selling", sortKey: "BEST_SELLING", reverse: false },
 ] as const;
 
+type ShopSearch = { category?: "clothing" | "bags" | "shoes" | "accessories" };
+
 export const Route = createFileRoute("/shop")({
+  validateSearch: (search: Record<string, unknown>): ShopSearch => {
+    const c = search.category;
+    if (c === "clothing" || c === "bags" || c === "shoes" || c === "accessories") {
+      return { category: c };
+    }
+    return {};
+  },
   head: () => ({
     meta: [
       { title: "Shop — Sellier Knightsbridge" },
@@ -183,6 +192,7 @@ function FacetGroup({
 }
 
 function Shop() {
+  const search_ = Route.useSearch();
   const [sortIdx, setSortIdx] = useState(0);
   const [filterOpen, setFilterOpen] = useState(false);
   const [newIn, setNewIn] = useState(false);
@@ -338,6 +348,20 @@ function Shop() {
   const shoesActive = types.length === 1 && types[0] === "Shoes";
   const accessoriesActive = types.length === 1 && types[0] === "Accessories";
   const [clothingOpen, setClothingOpen] = useState(false);
+
+  // Apply category preset from URL search params (e.g. /shop?category=clothing).
+  // Runs once on first mount for a given category value.
+  const appliedCategoryRef = useRef<string | null>(null);
+  useEffect(() => {
+    const cat = search_.category;
+    if (!cat || appliedCategoryRef.current === cat) return;
+    appliedCategoryRef.current = cat;
+    if (cat === "clothing") setTypes(CLOTHING_TYPES);
+    else if (cat === "bags") setTypes(["Bag"]);
+    else if (cat === "shoes") setTypes(["Shoes"]);
+    else if (cat === "accessories") setTypes(["Accessories"]);
+  }, [search_.category]);
+
 
   // Reset size / shoe-size selections when the category no longer matches,
   // so stale filters don't silently constrain the query.
