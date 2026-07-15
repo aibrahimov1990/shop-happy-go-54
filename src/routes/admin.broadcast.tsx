@@ -731,6 +731,18 @@ function DestinationPicker({
       case "shop":
         onChange("/shop");
         return;
+      case "clothing":
+        onChange("/shop?category=clothing");
+        return;
+      case "bags":
+        onChange("/shop?category=bags");
+        return;
+      case "shoes":
+        onChange("/shop?category=shoes");
+        return;
+      case "accessories":
+        onChange("/shop?category=accessories");
+        return;
       case "new-arrivals":
         onChange("/new-arrivals");
         return;
