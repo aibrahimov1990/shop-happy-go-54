@@ -50,7 +50,16 @@ const SORTS = [
   { label: "Best Selling", sortKey: "BEST_SELLING", reverse: false },
 ] as const;
 
+type ShopSearch = { category?: "clothing" | "bags" | "shoes" | "accessories" };
+
 export const Route = createFileRoute("/shop")({
+  validateSearch: (search: Record<string, unknown>): ShopSearch => {
+    const c = search.category;
+    if (c === "clothing" || c === "bags" || c === "shoes" || c === "accessories") {
+      return { category: c };
+    }
+    return {};
+  },
   head: () => ({
     meta: [
       { title: "Shop — Sellier Knightsbridge" },
