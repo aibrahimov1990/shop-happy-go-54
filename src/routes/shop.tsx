@@ -192,6 +192,7 @@ function FacetGroup({
 }
 
 function Shop() {
+  const search_ = Route.useSearch();
   const [sortIdx, setSortIdx] = useState(0);
   const [filterOpen, setFilterOpen] = useState(false);
   const [newIn, setNewIn] = useState(false);
