@@ -134,7 +134,7 @@ function RootComponent() {
       .finally(() => {
         if (mounted) {
           setNativeSessionReady(true);
-          void import("../lib/native-splash").then((m) => m.hideNativeSplashWhenReady());
+          // Native splash handoff is triggered by <NativeWebSplash />.
           void import("../lib/native-oauth").then((m) =>
             m.installNativeAuthDeepLinkHandler((path) => {
               window.location.assign(path);
