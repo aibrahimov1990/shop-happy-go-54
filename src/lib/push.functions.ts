@@ -45,6 +45,28 @@ export const registerAnonymousDeviceToken = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const unlinkSchema = z.object({ token: z.string().min(10) });
+
+/**
+ * Release the caller's claim on a device token by setting user_id = NULL,
+ * but only if the row currently belongs to the caller. Called on sign-out so
+ * the phone stops receiving the previous user's personalised pushes while
+ * still receiving anonymous broadcasts.
+ */
+export const unlinkDeviceToken = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => unlinkSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { userId, supabase } = context;
+    const { error } = await supabase
+      .from("device_tokens")
+      .update({ user_id: null, updated_at: new Date().toISOString() })
+      .eq("token", data.token)
+      .eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 const broadcastSchema = z.object({
   title: z.string().min(1).max(120),
   body: z.string().min(1).max(500),
