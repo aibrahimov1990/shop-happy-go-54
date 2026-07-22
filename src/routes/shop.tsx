@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SlidersHorizontal, X, Loader2, ChevronDown, Search } from "lucide-react";
+import { SlidersHorizontal, X, Loader2, ChevronDown, Search, BellRing } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { HermesBanner } from "@/components/HermesBanner";
 import React from "react";
@@ -607,7 +607,22 @@ function Shop() {
         )}
       </div>
 
+      <Link
+        to="/alerts"
+        className="mx-4 mt-3 mb-1 flex items-center justify-between border border-border/70 bg-[#f5f1ea] px-4 py-3"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <BellRing className="h-4 w-4 shrink-0" />
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">Stock alerts</p>
+            <p className="text-sm truncate">Can't find it? Get alerted when it arrives.</p>
+          </div>
+        </div>
+        <span className="text-muted-foreground shrink-0">›</span>
+      </Link>
+
       <section className="px-4 py-6">
+
         {isLoading ? (
           <div className="grid grid-cols-2 gap-x-3 gap-y-6">
             {Array.from({ length: 8 }).map((_, i) => (

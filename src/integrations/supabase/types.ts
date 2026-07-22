@@ -355,6 +355,74 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_search_notifications: {
+        Row: {
+          id: string
+          notified_at: string
+          saved_search_id: string
+          shopify_product_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          notified_at?: string
+          saved_search_id: string
+          shopify_product_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          notified_at?: string
+          saved_search_id?: string
+          shopify_product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_search_notifications_saved_search_id_fkey"
+            columns: ["saved_search_id"]
+            isOneToOne: false
+            referencedRelation: "saved_searches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_searches: {
+        Row: {
+          active: boolean
+          brand: string | null
+          created_at: string
+          id: string
+          keyword: string | null
+          max_price: number | null
+          product_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          brand?: string | null
+          created_at?: string
+          id?: string
+          keyword?: string | null
+          max_price?: number | null
+          product_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          brand?: string | null
+          created_at?: string
+          id?: string
+          keyword?: string | null
+          max_price?: number | null
+          product_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string

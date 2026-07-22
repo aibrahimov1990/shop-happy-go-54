@@ -17,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2, Lock, Megaphone, Users, Package } from "lucide-react";
+import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2, Lock, Megaphone, Users, Package, BellRing } from "lucide-react";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { getPushDiagnostics, initPushNotifications } from "@/lib/push-client";
 import { supabase } from "@/integrations/supabase/client";
@@ -218,6 +218,14 @@ function Account() {
           <div className="flex items-center gap-3">
             <Package className="h-4 w-4" />
             <span className="text-sm">My orders</span>
+          </div>
+          <span className="text-muted-foreground">›</span>
+        </Link>
+
+        <Link to="/alerts" className="flex items-center justify-between px-6 py-5 active:bg-muted/40">
+          <div className="flex items-center gap-3">
+            <BellRing className="h-4 w-4" />
+            <span className="text-sm">Stock alerts</span>
           </div>
           <span className="text-muted-foreground">›</span>
         </Link>
