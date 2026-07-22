@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import sellierLogo from "@/assets/sellier-logo.svg";
+import { NativeWebSplash } from "@/components/NativeWebSplash";
 
 function NotFoundComponent() {
   return (
@@ -113,6 +114,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <NativeWebSplash />
         {children}
         <Scripts />
       </body>
@@ -132,7 +134,7 @@ function RootComponent() {
       .finally(() => {
         if (mounted) {
           setNativeSessionReady(true);
-          void import("../lib/native-splash").then((m) => m.hideNativeSplashWhenReady());
+          // Native splash handoff is triggered by <NativeWebSplash />.
           void import("../lib/native-oauth").then((m) =>
             m.installNativeAuthDeepLinkHandler((path) => {
               window.location.assign(path);
