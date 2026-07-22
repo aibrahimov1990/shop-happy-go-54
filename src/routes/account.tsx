@@ -17,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2, Lock, Megaphone, Users, Package } from "lucide-react";
+import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2, Lock, Megaphone, Users, Package, BellRing } from "lucide-react";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { getPushDiagnostics, initPushNotifications } from "@/lib/push-client";
 import { supabase } from "@/integrations/supabase/client";
