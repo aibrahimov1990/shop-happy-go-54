@@ -27,12 +27,21 @@ export const Route = createFileRoute("/api/public/hooks/weekly-new-arrivals")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey =
-          request.headers.get("apikey") ??
-          request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-        if (!apiKey || apiKey !== process.env.SUPABASE_PUBLISHABLE_KEY) {
-          return new Response("Unauthorized", { status: 401 });
+        const provided = request.headers.get("x-push-hook-secret") ?? "";
+        const expected = process.env.PUSH_HOOK_SECRET ?? "";
+        if (!expected) {
+          console.error("[weekly-new-arrivals] PUSH_HOOK_SECRET is not configured");
+          return new Response("Server misconfigured", { status: 500 });
         }
+        // Timing-safe comparison to avoid leaking the secret via response timing.
+        const a = new TextEncoder().encode(provided);
+        const b = new TextEncoder().encode(expected);
+        let equal = a.length === b.length;
+        const len = Math.max(a.length, b.length);
+        for (let i = 0; i < len; i++) {
+          if ((a[i] ?? 0) !== (b[i] ?? 0)) equal = false;
+        }
+        if (!equal) return new Response("Unauthorized", { status: 401 });
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const admin = supabaseAdmin as any;
