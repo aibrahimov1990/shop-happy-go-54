@@ -115,13 +115,13 @@ export const updateSavedSearch = createServerFn({ method: "POST" })
       }
     }
 
-    const patch: Record<string, unknown> = {
+    const patch = {
       brand: data.brand,
       keyword: data.keyword,
       product_type: data.product_type,
       max_price: data.max_price,
+      ...(typeof data.active === "boolean" ? { active: data.active } : {}),
     };
-    if (typeof data.active === "boolean") patch.active = data.active;
 
     const { data: row, error } = await supabase
       .from("saved_searches")
