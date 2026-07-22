@@ -20,6 +20,7 @@
     "@capacitor/core": "^8.4.1",
     "@capacitor/ios": "^8.4.1",
     "@capacitor/preferences": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.2",
     "@fontsource/cormorant-garamond": "^5.2.11",
     "@fontsource/inter": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",

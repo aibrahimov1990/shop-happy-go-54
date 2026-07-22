@@ -13,6 +13,16 @@ const config: CapacitorConfig = {
     FirebaseMessaging: {
       presentationOptions: ['alert', 'badge', 'sound'],
     },
+    // NOTE: the splash image itself (Sellier logo) lives in the iOS project's
+    // asset catalog under the "Splash" imageset and must be configured in
+    // Xcode. It is NOT part of this repo — this config only controls the
+    // splash behaviour (duration, background, spinner).
+    SplashScreen: {
+      launchShowDuration: 2000,
+      launchAutoHide: false,
+      backgroundColor: '#f7f4ec',
+      showSpinner: false,
+    },
   },
 };
 

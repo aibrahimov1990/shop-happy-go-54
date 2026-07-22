@@ -132,6 +132,7 @@ function RootComponent() {
       .finally(() => {
         if (mounted) {
           setNativeSessionReady(true);
+          void import("../lib/native-splash").then((m) => m.hideNativeSplashWhenReady());
           void import("../lib/native-oauth").then((m) =>
             m.installNativeAuthDeepLinkHandler((path) => {
               window.location.assign(path);
