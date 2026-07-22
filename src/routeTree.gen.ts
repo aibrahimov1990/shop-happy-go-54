@@ -45,7 +45,6 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicHooksWeeklyNewArrivalsRouteImport } from './routes/api/public/hooks/weekly-new-arrivals'
-import { Route as ApiPublicHooksTestPushRouteImport } from './routes/api/public/hooks/test-push'
 
 const WishlistRoute = WishlistRouteImport.update({
   id: '/wishlist',
@@ -231,11 +230,6 @@ const ApiPublicHooksWeeklyNewArrivalsRoute =
     path: '/api/public/hooks/weekly-new-arrivals',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksTestPushRoute = ApiPublicHooksTestPushRouteImport.update({
-  id: '/api/public/hooks/test-push',
-  path: '/api/public/hooks/test-push',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -268,7 +262,6 @@ export interface FileRoutesByFullPath {
   '/shopper/clients/$id': typeof ShopperClientsIdRoute
   '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/shopper/clients/': typeof ShopperClientsIndexRoute
-  '/api/public/hooks/test-push': typeof ApiPublicHooksTestPushRoute
   '/api/public/hooks/weekly-new-arrivals': typeof ApiPublicHooksWeeklyNewArrivalsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -305,7 +298,6 @@ export interface FileRoutesByTo {
   '/shopper/clients/$id': typeof ShopperClientsIdRoute
   '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/shopper/clients': typeof ShopperClientsIndexRoute
-  '/api/public/hooks/test-push': typeof ApiPublicHooksTestPushRoute
   '/api/public/hooks/weekly-new-arrivals': typeof ApiPublicHooksWeeklyNewArrivalsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -345,7 +337,6 @@ export interface FileRoutesById {
   '/shopper/clients/$id': typeof ShopperClientsIdRoute
   '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/shopper/clients/': typeof ShopperClientsIndexRoute
-  '/api/public/hooks/test-push': typeof ApiPublicHooksTestPushRoute
   '/api/public/hooks/weekly-new-arrivals': typeof ApiPublicHooksWeeklyNewArrivalsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -386,7 +377,6 @@ export interface FileRouteTypes {
     | '/shopper/clients/$id'
     | '/shopper/edits/$id'
     | '/shopper/clients/'
-    | '/api/public/hooks/test-push'
     | '/api/public/hooks/weekly-new-arrivals'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -423,7 +413,6 @@ export interface FileRouteTypes {
     | '/shopper/clients/$id'
     | '/shopper/edits/$id'
     | '/shopper/clients'
-    | '/api/public/hooks/test-push'
     | '/api/public/hooks/weekly-new-arrivals'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -462,7 +451,6 @@ export interface FileRouteTypes {
     | '/shopper/clients/$id'
     | '/shopper/edits/$id'
     | '/shopper/clients/'
-    | '/api/public/hooks/test-push'
     | '/api/public/hooks/weekly-new-arrivals'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -495,7 +483,6 @@ export interface RootRouteChildren {
   ProductHandleRoute: typeof ProductHandleRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   OpenEditsIdRoute: typeof OpenEditsIdRoute
-  ApiPublicHooksTestPushRoute: typeof ApiPublicHooksTestPushRoute
   ApiPublicHooksWeeklyNewArrivalsRoute: typeof ApiPublicHooksWeeklyNewArrivalsRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -758,13 +745,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksWeeklyNewArrivalsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/test-push': {
-      id: '/api/public/hooks/test-push'
-      path: '/api/public/hooks/test-push'
-      fullPath: '/api/public/hooks/test-push'
-      preLoaderRoute: typeof ApiPublicHooksTestPushRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -823,7 +803,6 @@ const rootRouteChildren: RootRouteChildren = {
   ProductHandleRoute: ProductHandleRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   OpenEditsIdRoute: OpenEditsIdRoute,
-  ApiPublicHooksTestPushRoute: ApiPublicHooksTestPushRoute,
   ApiPublicHooksWeeklyNewArrivalsRoute: ApiPublicHooksWeeklyNewArrivalsRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
@@ -834,13 +813,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
