@@ -57,14 +57,21 @@ export const unlinkDeviceToken = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => unlinkSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const { userId, supabase } = context;
-    const { error } = await supabase
+    const { userId } = context;
+    // The device_tokens UPDATE policy has WITH CHECK (auth.uid() = user_id),
+    // which rejects any update that sets user_id = NULL through the
+    // user-scoped client. Use the service-role client to perform the write,
+    // but keep BOTH ownership filters so this can only ever release a token
+    // that already belongs to the caller — never another user's row.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin
       .from("device_tokens")
       .update({ user_id: null, updated_at: new Date().toISOString() })
       .eq("token", data.token)
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .select("token");
     if (error) throw new Error(error.message);
-    return { ok: true };
+    return { ok: true, released: (rows?.length ?? 0) > 0 };
   });
 
 const broadcastSchema = z.object({
