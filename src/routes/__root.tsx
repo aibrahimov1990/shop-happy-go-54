@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import sellierLogo from "@/assets/sellier-logo.svg";
+import { NativeWebSplash } from "@/components/NativeWebSplash";
 
 function NotFoundComponent() {
   return (
