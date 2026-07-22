@@ -114,6 +114,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <NativeWebSplash />
         {children}
         <Scripts />
       </body>
