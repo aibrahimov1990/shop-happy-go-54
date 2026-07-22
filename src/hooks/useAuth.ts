@@ -69,6 +69,20 @@ export function useAuth(): AuthState & {
     isShopper: roles.includes("shopper") || roles.includes("admin"),
     isAdmin: roles.includes("admin"),
     signOut: async () => {
+      // Release this device's FCM token from the current user BEFORE signing
+      // out — the session is still valid here, so the authenticated server fn
+      // can verify the caller owns the row. Never let this block sign-out.
+      try {
+        const { getPushDiagnostics } = await import("@/lib/push-client");
+        const token = getPushDiagnostics().fcmToken;
+        if (token) {
+          const { unlinkDeviceToken } = await import("@/lib/push.functions");
+          await unlinkDeviceToken({ data: { token } });
+        }
+      } catch (err) {
+        console.warn("Failed to unlink device token on sign-out", err);
+      }
+
       // Clear native storage FIRST so any late token-refresh setItem that
       // fires during signOut() is dropped by the mirror's signed-out gate,
       // then clear again to remove anything Supabase just wrote.
