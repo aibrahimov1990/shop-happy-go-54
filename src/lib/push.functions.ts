@@ -318,6 +318,120 @@ export const sendBroadcast = createServerFn({ method: "POST" })
   });
 
 
+/**
+ * Admin action: silently probe every registered token and report which are
+ * dead. `confirm: false` (default) is a dry run — nothing is deleted; it
+ * exists so the admin sees the error breakdown before approving. With
+ * `confirm: true` the mass-deletion circuit breaker is bypassed for this one
+ * run, and only unambiguously permanent failures are archived and removed.
+ */
+export const cleanupDeadTokens = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ confirm: z.boolean().default(false) }).parse(input ?? {}))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdminRole, error: roleError } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
+    });
+    if (roleError) throw new Error(roleError.message);
+    if (!isAdminRole) throw new Error("Forbidden: admin role required");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error: tokenErr } = await supabaseAdmin
+      .from("device_tokens")
+      .select("token, user_id");
+    if (tokenErr) throw new Error(tokenErr.message);
+
+    const tokens = (rows ?? []).map((r) => r.token);
+    if (tokens.length === 0) {
+      return {
+        dryRun: !data.confirm,
+        attempted: 0,
+        aliveCount: 0,
+        permanentCount: 0,
+        suspectCount: 0,
+        transientCount: 0,
+        errorCounts: {} as Record<string, number>,
+        deletedCount: 0,
+        archivedCount: 0,
+        dominantErrorCode: null as string | null,
+        warning: null as string | null,
+      };
+    }
+
+    const { probeFcmTokens } = await import("./fcm.server");
+    const results = await probeFcmTokens(tokens);
+
+    const errorCounts: Record<string, number> = {};
+    const deadTokens: string[] = [];
+    let aliveCount = 0;
+    let permanentCount = 0;
+    let suspectCount = 0;
+    let transientCount = 0;
+
+    for (const r of results) {
+      if (r.ok) {
+        aliveCount++;
+        continue;
+      }
+      const kind = r.kind ?? "transient";
+      errorCounts[`${kind}:${r.code ?? "OTHER"}`] = (errorCounts[`${kind}:${r.code ?? "OTHER"}`] ?? 0) + 1;
+      if (kind === "permanent") {
+        permanentCount++;
+        deadTokens.push(r.token);
+      } else if (kind === "suspect") suspectCount++;
+      else transientCount++;
+    }
+
+    if (!data.confirm) {
+      // Dry run: show the breakdown, touch nothing.
+      const { MASS_DELETION_THRESHOLD } = await import("./token-retirement.server");
+      return {
+        dryRun: true,
+        attempted: tokens.length,
+        aliveCount,
+        permanentCount,
+        suspectCount,
+        transientCount,
+        errorCounts,
+        deletedCount: 0,
+        archivedCount: 0,
+        dominantErrorCode:
+          Object.entries(errorCounts).sort((a, b) => b[1] - a[1])[0]?.[0]?.split(":").pop() ?? null,
+        warning:
+          permanentCount / tokens.length > MASS_DELETION_THRESHOLD
+            ? `${permanentCount} of ${tokens.length} tokens are reported dead. Review the breakdown below — confirming will bypass the safety breaker for this run.`
+            : null,
+      };
+    }
+
+    const { retireDeadTokens } = await import("./token-retirement.server");
+    const retirement = await retireDeadTokens(supabaseAdmin as never, {
+      candidates: deadTokens,
+      attempted: tokens.length,
+      errorCounts,
+      suspectCount,
+      reason: "admin_cleanup_dead_tokens",
+      // Explicit, deliberate one-time override of the circuit breaker.
+      force: true,
+    });
+
+    return {
+      dryRun: false,
+      attempted: tokens.length,
+      aliveCount,
+      permanentCount,
+      suspectCount,
+      transientCount,
+      errorCounts,
+      deletedCount: retirement.deletedCount,
+      archivedCount: retirement.archivedCount,
+      dominantErrorCode: retirement.dominantErrorCode,
+      warning: retirement.warning,
+    };
+  });
+
 export const listBroadcasts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -325,7 +439,7 @@ export const listBroadcasts = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("broadcasts")
       .select(
-        "id, title, body, url, success_count, failure_count, total_tokens, permanent_failure_count, transient_failure_count, signed_in_recipients, anonymous_recipients, error_breakdown, created_at",
+        "id, title, body, url, success_count, failure_count, total_tokens, permanent_failure_count, transient_failure_count, suspect_failure_count, systemic_suspected, dominant_error_code, pruned_token_count, signed_in_recipients, anonymous_recipients, error_breakdown, created_at",
       )
 
       .order("created_at", { ascending: false })
@@ -333,6 +447,7 @@ export const listBroadcasts = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return { broadcasts: data ?? [] };
   });
+
 
 export const isAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
