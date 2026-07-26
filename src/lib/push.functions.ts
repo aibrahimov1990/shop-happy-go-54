@@ -127,13 +127,28 @@ export const sendBroadcast = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: tokenRows, error: tokenErr } = await supabaseAdmin
       .from("device_tokens")
-      .select("token");
+      .select("token, user_id");
     if (tokenErr) throw new Error(tokenErr.message);
 
-    const tokens = Array.from(new Set((tokenRows ?? []).map((r) => r.token)));
+    const rows = tokenRows ?? [];
+    const seen = new Set<string>();
+    const audience: Array<{ token: string; user_id: string | null }> = [];
+    for (const r of rows) {
+      if (seen.has(r.token)) continue;
+      seen.add(r.token);
+      audience.push({ token: r.token, user_id: r.user_id ?? null });
+    }
+    const tokens = audience.map((a) => a.token);
+    const ownerByToken = new Map(audience.map((a) => [a.token, a.user_id]));
+    const signedInAudience = audience.filter((a) => a.user_id !== null).length;
+    const anonymousAudience = audience.length - signedInAudience;
 
     let successCount = 0;
     let failureCount = 0;
+    let permanentFailureCount = 0;
+    let transientFailureCount = 0;
+    let signedInDelivered = 0;
+    let anonymousDelivered = 0;
     let topicSubmitted = false;
     let topicError: string | undefined;
     const invalidTokens: string[] = [];
@@ -182,25 +197,30 @@ export const sendBroadcast = createServerFn({ method: "POST" })
       if (tokens.length > 0) {
         const results = await sendFcmToTokens(tokens, payload);
         for (const r of results) {
-          if (r.ok) successCount++;
-          else {
-            failureCount++;
-            const err = r.error ?? "unknown";
-            const status = err.match(/^(\d{3})/)?.[1] ?? "?";
-            const code = err.match(/"errorCode"\s*:\s*"([A-Z_]+)"/)?.[1]
-              ?? err.match(/"reason"\s*:\s*"([A-Za-z_]+)"/)?.[1]
-              ?? err.match(/"status"\s*:\s*"([A-Z_]+)"/)?.[1]
-              ?? err.match(/(UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND|SENDER_ID_MISMATCH|THIRD_PARTY_AUTH_ERROR|InvalidProviderToken|QUOTA_EXCEEDED|UNAVAILABLE|INTERNAL)/)?.[1]
-              ?? "OTHER";
-            const key = `${status} ${code}`;
-            errorCounts[key] = (errorCounts[key] ?? 0) + 1;
-            if (errorSamples.length < 3) errorSamples.push(err.slice(0, 1200));
-            if (/THIRD_PARTY_AUTH_ERROR|InvalidProviderToken|ApnsError/i.test(err)) {
-              apnsCredentialIssue = true;
-            }
-            if (/UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND|registration token is not|Requested entity was not found/i.test(err)) {
-              invalidTokens.push(r.token);
-            }
+          if (r.ok) {
+            successCount++;
+            if (ownerByToken.get(r.token)) signedInDelivered++;
+            else anonymousDelivered++;
+            continue;
+          }
+
+          failureCount++;
+          const err = r.error ?? "unknown";
+          const kind = r.kind ?? "transient";
+          const key = `${kind}:${r.code ?? "OTHER"}`;
+          errorCounts[key] = (errorCounts[key] ?? 0) + 1;
+          if (errorSamples.length < 3) errorSamples.push(err.slice(0, 1200));
+          if (/THIRD_PARTY_AUTH_ERROR|InvalidProviderToken|ApnsError/i.test(err)) {
+            apnsCredentialIssue = true;
+          }
+
+          if (kind === "permanent") {
+            // Dead forever — remove the row so it is never retried.
+            permanentFailureCount++;
+            invalidTokens.push(r.token);
+          } else {
+            // Timeout / 5xx / throttling / credential issue — keep and retry next send.
+            transientFailureCount++;
           }
         }
       }
@@ -210,6 +230,8 @@ export const sendBroadcast = createServerFn({ method: "POST" })
           totalTokens: tokens.length,
           successCount,
           failureCount,
+          permanentFailureCount,
+          transientFailureCount,
           apnsCredentialIssue,
           errorCounts,
           errorSamples,
@@ -229,6 +251,13 @@ export const sendBroadcast = createServerFn({ method: "POST" })
         url: data.url ?? null,
         success_count: successCount,
         failure_count: failureCount,
+        total_tokens: tokens.length,
+        permanent_failure_count: permanentFailureCount,
+        transient_failure_count: transientFailureCount,
+        pruned_token_count: invalidTokens.length,
+        signed_in_recipients: signedInDelivered,
+        anonymous_recipients: anonymousDelivered,
+        error_breakdown: errorCounts,
       })
       .select("id")
       .single();
@@ -238,8 +267,14 @@ export const sendBroadcast = createServerFn({ method: "POST" })
       broadcastId: inserted.id,
       totalTokens: tokens.length,
       registeredTokenCount: tokens.length,
+      signedInAudience,
+      anonymousAudience,
+      signedInDelivered,
+      anonymousDelivered,
       successCount,
       failureCount,
+      permanentFailureCount,
+      transientFailureCount,
       prunedTokens: invalidTokens.length,
       errorCounts,
       errorSamples,
@@ -248,6 +283,7 @@ export const sendBroadcast = createServerFn({ method: "POST" })
       topicError,
     };
   });
+
 
 export const listBroadcasts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
