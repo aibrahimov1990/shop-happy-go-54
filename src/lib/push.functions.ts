@@ -366,7 +366,7 @@ export const notifyEditRecipient = createServerFn({ method: "POST" })
     let successCount = 0;
     for (const r of results) {
       if (r.ok) successCount++;
-      else if (r.error && /UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND/i.test(r.error)) {
+      else if (r.kind === "permanent") {
         invalidTokens.push(r.token);
       }
     }
