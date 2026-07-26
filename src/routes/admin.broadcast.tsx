@@ -135,13 +135,25 @@ function BroadcastPage() {
           (res.failureCount ? ` — ${res.failureCount} failed${errBreakdown ? ` (${errBreakdown})` : ""}` : "") +
           apnsCredentialMessage +
           (res.topicError && !res.topicSubmitted ? ` — channel error: ${res.topicError.slice(0, 120)}` : "") +
-          (res.prunedTokens ? `; removed ${res.prunedTokens} dead token${res.prunedTokens === 1 ? "" : "s"}` : ""),
+          (res.prunedTokens ? `; removed ${res.prunedTokens} dead token${res.prunedTokens === 1 ? "" : "s"} (archived)` : ""),
 
         { duration: res.apnsCredentialIssue ? 14000 : 8000 },
       );
+      if (res.systemicWarning) {
+        toast.error(res.systemicWarning, { duration: 20000 });
+      }
+      if (res.suspectFailureCount) {
+        toast.warning(
+          `${res.suspectFailureCount} send${res.suspectFailureCount === 1 ? "" : "s"} returned an ambiguous error` +
+            (res.dominantErrorCode ? ` (${res.dominantErrorCode})` : "") +
+            " — these may indicate a configuration problem. No tokens were removed for them.",
+          { duration: 14000 },
+        );
+      }
       if (res.errorSamples && res.errorSamples.length > 0) {
         console.warn("[broadcast] FCM error samples", res.errorSamples);
       }
+
       setTitle("");
       setBody("");
       setUrl("");
