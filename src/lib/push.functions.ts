@@ -291,7 +291,10 @@ export const listBroadcasts = createServerFn({ method: "GET" })
     const { supabase } = context;
     const { data, error } = await supabase
       .from("broadcasts")
-      .select("id, title, body, url, success_count, failure_count, created_at")
+      .select(
+        "id, title, body, url, success_count, failure_count, total_tokens, permanent_failure_count, transient_failure_count, signed_in_recipients, anonymous_recipients, error_breakdown, created_at",
+      )
+
       .order("created_at", { ascending: false })
       .limit(50);
     if (error) throw new Error(error.message);
