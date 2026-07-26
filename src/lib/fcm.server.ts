@@ -293,8 +293,16 @@ export async function sendFcmToTokens(
       const result = await sendFcmMessage(message, projectId);
       return { token, ...result };
     } catch (e) {
-      return { token, ok: false, error: e instanceof Error ? e.message : String(e) };
+      // Network/transport error — never treat as a dead token.
+      return {
+        token,
+        ok: false,
+        error: e instanceof Error ? e.message : String(e),
+        code: "NETWORK",
+        kind: "transient",
+      };
     }
+
   }
 
   const results: SendResult[] = [];
