@@ -329,3 +329,44 @@ export async function sendFcmToTokens(
   }
   return results;
 }
+
+/**
+ * Silent validation ping used by the admin "Clean up dead tokens" action.
+ * Sends a data-only, low-priority message that shows nothing to the user, so
+ * the resulting error codes tell us which tokens are genuinely dead without
+ * spamming every device with a visible notification.
+ */
+export async function probeFcmTokens(tokens: string[]): Promise<SendResult[]> {
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+    throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON is not set");
+  }
+  if (!projectId) throw new Error("FIREBASE_PROJECT_ID is not set");
+
+  const results: SendResult[] = [];
+  for (const token of tokens) {
+    const message: Record<string, unknown> = {
+      token,
+      data: { type: "token_validation" },
+      apns: {
+        headers: { "apns-priority": "5", "apns-push-type": "background" },
+        payload: { aps: { "content-available": 1 } },
+      },
+      android: { priority: "normal" },
+    };
+    try {
+      const result = await sendFcmMessage(message, projectId);
+      results.push({ token, ...result });
+    } catch (e) {
+      results.push({
+        token,
+        ok: false,
+        error: e instanceof Error ? e.message : String(e),
+        code: "NETWORK",
+        kind: "transient",
+      });
+    }
+  }
+  return results;
+}
+
