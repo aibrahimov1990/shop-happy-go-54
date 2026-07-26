@@ -70,33 +70,54 @@ export type Database = {
       }
       broadcasts: {
         Row: {
+          anonymous_recipients: number
           body: string
           created_at: string
+          error_breakdown: Json
           failure_count: number
           id: string
+          permanent_failure_count: number
+          pruned_token_count: number
           sent_by: string | null
+          signed_in_recipients: number
           success_count: number
           title: string
+          total_tokens: number
+          transient_failure_count: number
           url: string | null
         }
         Insert: {
+          anonymous_recipients?: number
           body: string
           created_at?: string
+          error_breakdown?: Json
           failure_count?: number
           id?: string
+          permanent_failure_count?: number
+          pruned_token_count?: number
           sent_by?: string | null
+          signed_in_recipients?: number
           success_count?: number
           title: string
+          total_tokens?: number
+          transient_failure_count?: number
           url?: string | null
         }
         Update: {
+          anonymous_recipients?: number
           body?: string
           created_at?: string
+          error_breakdown?: Json
           failure_count?: number
           id?: string
+          permanent_failure_count?: number
+          pruned_token_count?: number
           sent_by?: string | null
+          signed_in_recipients?: number
           success_count?: number
           title?: string
+          total_tokens?: number
+          transient_failure_count?: number
           url?: string | null
         }
         Relationships: []
@@ -517,6 +538,10 @@ export type Database = {
           payload: Json
           source_queue: string
         }
+        Returns: number
+      }
+      prune_stale_device_tokens: {
+        Args: { _older_than_days?: number }
         Returns: number
       }
       read_email_batch: {
