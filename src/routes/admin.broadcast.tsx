@@ -4,7 +4,7 @@ import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tansta
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
-import { listBroadcasts, sendBroadcast } from "@/lib/push.functions";
+import { listBroadcasts, sendBroadcast, cleanupDeadTokens } from "@/lib/push.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ function BroadcastPage() {
   const navigate = useNavigate();
   const fetchBroadcasts = useServerFn(listBroadcasts);
   const send = useServerFn(sendBroadcast);
+  const cleanup = useServerFn(cleanupDeadTokens);
   const qc = useQueryClient();
 
   const adminQuery = useQuery({
@@ -435,6 +436,8 @@ function BroadcastPage() {
       </form>
 
 
+
+      <DeadTokenCleanup cleanup={cleanup} onDone={() => qc.invalidateQueries({ queryKey: ["broadcasts"] })} />
 
       <div className="mt-12">
         <h2 className="font-serif text-xl">Recent broadcasts</h2>
@@ -934,5 +937,114 @@ function DestinationPicker({
   );
 }
 
+type CleanupResult = {
+  dryRun: boolean;
+  attempted: number;
+  aliveCount: number;
+  permanentCount: number;
+  suspectCount: number;
+  transientCount: number;
+  errorCounts: Record<string, number>;
+  deletedCount: number;
+  archivedCount: number;
+  dominantErrorCode: string | null;
+  warning: string | null;
+};
 
+/**
+ * One-time override for the mass-deletion circuit breaker. Runs a silent
+ * probe first and shows the error breakdown; deletion only happens after the
+ * admin confirms, and removed rows are archived for 90 days.
+ */
+function DeadTokenCleanup({
+  cleanup,
+  onDone,
+}: {
+  cleanup: (opts: { data: { confirm: boolean } }) => Promise<CleanupResult>;
+  onDone: () => void;
+}) {
+  const [report, setReport] = useState<CleanupResult | null>(null);
 
+  const probe = useMutation({
+    mutationFn: () => cleanup({ data: { confirm: false } }),
+    onSuccess: (res) => setReport(res),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const confirmRun = useMutation({
+    mutationFn: () => cleanup({ data: { confirm: true } }),
+    onSuccess: (res) => {
+      setReport(null);
+      toast.success(
+        `Removed ${res.deletedCount} dead token${res.deletedCount === 1 ? "" : "s"} (archived ${res.archivedCount}). ` +
+          `${res.aliveCount} devices still reachable.`,
+        { duration: 10000 },
+      );
+      onDone();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const busy = probe.isPending || confirmRun.isPending;
+
+  return (
+    <div className="mt-12 border border-border p-4">
+      <h2 className="font-serif text-xl">Clean up dead tokens</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Silently checks every registered device and removes only tokens that are permanently dead.
+        This bypasses the automatic safety breaker for a single run, so review the breakdown before
+        confirming. Removed rows are archived for 90 days.
+      </p>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button type="button" variant="outline" onClick={() => probe.mutate()} disabled={busy}>
+          {probe.isPending ? "Checking devices…" : "Check for dead tokens"}
+        </Button>
+      </div>
+
+      {report && (
+        <div className="mt-4 border border-border/70 bg-muted/30 p-3 text-[12px]">
+          <p>
+            {report.attempted} devices checked · {report.aliveCount} reachable ·{" "}
+            <strong>{report.permanentCount} permanently dead</strong> · {report.suspectCount} suspect ·{" "}
+            {report.transientCount} temporary
+          </p>
+          {Object.keys(report.errorCounts).length > 0 && (
+            <ul className="mt-2 space-y-0.5 text-muted-foreground">
+              {Object.entries(report.errorCounts)
+                .sort((a, b) => b[1] - a[1])
+                .map(([k, n]) => (
+                  <li key={k}>
+                    {n}× {k}
+                  </li>
+                ))}
+            </ul>
+          )}
+          {report.suspectCount > 0 && (
+            <p className="mt-2 text-destructive">
+              {report.suspectCount} suspect error{report.suspectCount === 1 ? "" : "s"}
+              {report.dominantErrorCode ? ` (${report.dominantErrorCode})` : ""} — these are never
+              deleted; they may point to a payload or bundle-ID problem.
+            </p>
+          )}
+          {report.warning && <p className="mt-2 text-destructive">{report.warning}</p>}
+          <div className="mt-3 flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => confirmRun.mutate()}
+              disabled={busy || report.permanentCount === 0}
+            >
+              {confirmRun.isPending
+                ? "Removing…"
+                : `Delete ${report.permanentCount} dead token${report.permanentCount === 1 ? "" : "s"}`}
+            </Button>
+            <Button type="button" size="sm" variant="ghost" onClick={() => setReport(null)} disabled={busy}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
