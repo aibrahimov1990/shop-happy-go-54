@@ -301,13 +301,20 @@ export const sendBroadcast = createServerFn({ method: "POST" })
       failureCount,
       permanentFailureCount,
       transientFailureCount,
-      prunedTokens: invalidTokens.length,
+      suspectFailureCount,
+      prunedTokens: retirement.deletedCount,
+      archivedTokens: retirement.archivedCount,
+      systemicSuspected: retirement.systemicSuspected,
+      breakerTripped: retirement.breakerTripped,
+      dominantErrorCode: retirement.dominantErrorCode,
+      systemicWarning: retirement.warning,
       errorCounts,
       errorSamples,
       apnsCredentialIssue,
       topicSubmitted,
       topicError,
     };
+
   });
 
 
