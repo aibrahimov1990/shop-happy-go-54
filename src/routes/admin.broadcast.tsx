@@ -455,7 +455,9 @@ function BroadcastPage() {
                 ✓ {b.success_count} delivered · ✕ {b.failure_count} failed
                 {b.total_tokens ? ` · ${b.total_tokens} devices in audience` : ""}
                 {b.failure_count
-                  ? ` (${b.permanent_failure_count} dead tokens removed, ${b.transient_failure_count} retryable)`
+                  ? ` (${b.pruned_token_count ?? 0} dead tokens removed, ${b.transient_failure_count} retryable${
+                      b.suspect_failure_count ? `, ${b.suspect_failure_count} suspect` : ""
+                    })`
                   : ""}
               </p>
               {(b.signed_in_recipients > 0 || b.anonymous_recipients > 0) && (
@@ -465,6 +467,16 @@ function BroadcastPage() {
                   device{b.anonymous_recipients === 1 ? "" : "s"}
                 </p>
               )}
+              {b.systemic_suspected && (
+                <p className="mt-2 border border-destructive/40 bg-destructive/5 p-2 text-[11px] text-destructive">
+                  Suspected configuration fault — {b.permanent_failure_count + (b.suspect_failure_count ?? 0)} of{" "}
+                  {b.total_tokens} sends failed
+                  {b.dominant_error_code ? ` with ${b.dominant_error_code}` : ""}. No tokens were deleted
+                  automatically.
+                </p>
+              )}
+
+
 
             </div>
           ))}
