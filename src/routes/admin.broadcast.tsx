@@ -439,8 +439,20 @@ function BroadcastPage() {
               </div>
               <p className="mt-1 text-sm text-muted-foreground">{b.body}</p>
               <p className="mt-2 text-[11px] text-muted-foreground">
-                ✓ submitted · {b.success_count} registered · ✕ {b.failure_count} failed
+                ✓ {b.success_count} delivered · ✕ {b.failure_count} failed
+                {b.total_tokens ? ` · ${b.total_tokens} devices in audience` : ""}
+                {b.failure_count
+                  ? ` (${b.permanent_failure_count} dead tokens removed, ${b.transient_failure_count} retryable)`
+                  : ""}
               </p>
+              {(b.signed_in_recipients > 0 || b.anonymous_recipients > 0) && (
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {b.signed_in_recipients} signed-in account
+                  {b.signed_in_recipients === 1 ? "" : "s"} · {b.anonymous_recipients} anonymous
+                  device{b.anonymous_recipients === 1 ? "" : "s"}
+                </p>
+              )}
+
             </div>
           ))}
         </div>
