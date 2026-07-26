@@ -250,10 +250,12 @@ async function sendFcmMessage(
       body: JSON.stringify({ message }),
     });
     if (!res.ok) {
-        const text = await res.text();
-        return { ok: false, error: `${res.status}: ${text.slice(0, 1200)}` };
+      const text = await res.text();
+      const { code, kind } = classifyFcmError(res.status, text);
+      return { ok: false, error: `${res.status}: ${text.slice(0, 1200)}`, code, kind };
     }
     return { ok: true };
+
   }
 
   let result = await attempt();
