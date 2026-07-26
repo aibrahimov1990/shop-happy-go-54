@@ -86,8 +86,14 @@ async function getAccessToken(sa: ServiceAccount, forceRefresh = false): Promise
   return json.access_token;
 }
 
-/** Whether a failure means the token is dead forever, or just failed this time. */
-export type FailureKind = "permanent" | "transient";
+/**
+ * Whether a failure means the token is dead forever ("permanent"), failed
+ * only this time ("transient"), or is ambiguous and may indicate a
+ * configuration fault rather than a dead device ("suspect").
+ *
+ * Only "permanent" is ever eligible for deletion.
+ */
+export type FailureKind = "permanent" | "transient" | "suspect";
 
 export interface SendResult {
   token: string;
@@ -108,13 +114,20 @@ export interface FcmSendOutcome {
 /**
  * Classify an FCM HTTP v1 error response.
  *
- * Permanent: the registration token is invalid/unknown and will never work
- * again — APNs `Unregistered` (410) / `BadDeviceToken` / `DeviceTokenNotForTopic`,
- * or FCM `UNREGISTERED` / `NotRegistered` / `InvalidRegistration` /
- * `INVALID_ARGUMENT` on the token. These rows must be deleted.
+ * Permanent (unambiguously a dead token — deletable):
+ *   APNs `Unregistered`, `BadDeviceToken`; FCM `UNREGISTERED`,
+ *   `NotRegistered`, `InvalidRegistration`; HTTP 410.
+ *   `NOT_FOUND` / 404 only when the response identifies the registration
+ *   token as the missing resource.
+ *
+ * Suspect (may be a per-send configuration fault, NEVER deleted):
+ *   FCM `INVALID_ARGUMENT` (malformed request payload — returned for every
+ *   token in a bad send), APNs `DeviceTokenNotForTopic` / `TopicDisallowed`
+ *   (bundle-ID or certificate mismatch — also returned for every token),
+ *   `SENDER_ID_MISMATCH`, and bare 404/`NOT_FOUND` that doesn't name a token.
  *
  * Transient: timeouts, 5xx, throttling, and auth/credential problems
- * (`THIRD_PARTY_AUTH_ERROR`, 401/403). These must be kept and retried.
+ * (`THIRD_PARTY_AUTH_ERROR`, 401/403). Kept and retried.
  */
 export function classifyFcmError(status: number | null, body: string): {
   code: string;
@@ -126,20 +139,15 @@ export function classifyFcmError(status: number | null, body: string): {
     null;
   const apnsReason = body.match(/"reason"\s*:\s*"([A-Za-z]+)"/)?.[1] ?? null;
 
-  const PERMANENT_APNS = new Set([
-    "Unregistered",
-    "BadDeviceToken",
-    "DeviceTokenNotForTopic",
-    "TopicDisallowed",
-  ]);
-  const PERMANENT_FCM = new Set([
-    "UNREGISTERED",
-    "NOT_FOUND",
-    "NotRegistered",
-    "InvalidRegistration",
-    "INVALID_ARGUMENT",
-    "SENDER_ID_MISMATCH",
-  ]);
+  // Unambiguously a dead registration token.
+  const PERMANENT_APNS = new Set(["Unregistered", "BadDeviceToken"]);
+  const PERMANENT_FCM = new Set(["UNREGISTERED", "NotRegistered", "InvalidRegistration"]);
+
+  // Ambiguous: request-level or configuration faults that FCM/APNs report
+  // per token. Recorded and surfaced, never deleted.
+  const SUSPECT_APNS = new Set(["DeviceTokenNotForTopic", "TopicDisallowed"]);
+  const SUSPECT_FCM = new Set(["INVALID_ARGUMENT", "SENDER_ID_MISMATCH"]);
+
   const TRANSIENT_FCM = new Set([
     "UNAVAILABLE",
     "INTERNAL",
@@ -152,13 +160,21 @@ export function classifyFcmError(status: number | null, body: string): {
     "APNS_AUTH_ERROR",
   ]);
 
+  /** True when the body names the registration token as the missing/invalid resource. */
+  const namesToken = /registration[- ]?token|"field"\s*:\s*"message\.token"|Requested entity was not found/i
+    .test(body);
+
   if (apnsReason && PERMANENT_APNS.has(apnsReason)) return { code: apnsReason, kind: "permanent" };
+  if (apnsReason && SUSPECT_APNS.has(apnsReason)) return { code: apnsReason, kind: "suspect" };
   if (errorCode && TRANSIENT_FCM.has(errorCode)) return { code: errorCode, kind: "transient" };
-  if (errorCode && PERMANENT_FCM.has(errorCode)) {
-    // A 404 / 400 naming the registration token is a dead token.
-    return { code: errorCode, kind: "permanent" };
+  if (errorCode && PERMANENT_FCM.has(errorCode)) return { code: errorCode, kind: "permanent" };
+  if (errorCode && SUSPECT_FCM.has(errorCode)) return { code: errorCode, kind: "suspect" };
+
+  // NOT_FOUND / 404: permanent only when the token is the missing resource.
+  if (errorCode === "NOT_FOUND" || status === 404) {
+    return { code: errorCode ?? "404", kind: namesToken ? "permanent" : "suspect" };
   }
-  if (status === 404 || status === 410) return { code: errorCode ?? `${status}`, kind: "permanent" };
+  if (status === 410) return { code: errorCode ?? "410", kind: "permanent" };
   if (status !== null && status >= 500) return { code: `${status} ${errorCode ?? "SERVER_ERROR"}`, kind: "transient" };
   if (status === 429) return { code: "429 THROTTLED", kind: "transient" };
   if (status === 401 || status === 403) return { code: `${status} AUTH`, kind: "transient" };
@@ -166,6 +182,7 @@ export function classifyFcmError(status: number | null, body: string): {
   // Unknown → treat as transient so we never delete a token we don't understand.
   return { code: errorCode ?? apnsReason ?? (status ? `${status} OTHER` : "OTHER"), kind: "transient" };
 }
+
 
 
 function buildVisibleMessageTarget(
