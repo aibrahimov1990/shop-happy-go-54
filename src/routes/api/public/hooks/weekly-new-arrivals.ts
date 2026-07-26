@@ -121,6 +121,9 @@ export const Route = createFileRoute("/api/public/hooks/weekly-new-arrivals")({
         let notified = 0;
         let totalDevices = 0;
         const invalidTokens: string[] = [];
+        const errorCounts: Record<string, number> = {};
+        let attemptedSends = 0;
+        let suspectCount = 0;
 
         for (const [userId, wishedIds] of byUser) {
           const tokens = tokensByUser.get(userId) ?? [];
@@ -162,24 +165,42 @@ export const Route = createFileRoute("/api/public/hooks/weekly-new-arrivals")({
           totalDevices += tokens.length;
           let anySuccess = false;
           for (const r of results) {
-            if (r.ok) anySuccess = true;
-            else if (r.kind === "permanent") {
-              invalidTokens.push(r.token);
+            attemptedSends++;
+            if (r.ok) {
+              anySuccess = true;
+              continue;
             }
+            const kind = r.kind ?? "transient";
+            const key = `${kind}:${r.code ?? "OTHER"}`;
+            errorCounts[key] = (errorCounts[key] ?? 0) + 1;
+            if (kind === "permanent") invalidTokens.push(r.token);
+            else if (kind === "suspect") suspectCount++;
           }
           if (anySuccess) notified++;
         }
 
-        if (invalidTokens.length > 0) {
-          await admin.from("device_tokens").delete().in("token", invalidTokens);
-        }
+        const { retireDeadTokens } = await import("@/lib/token-retirement.server");
+        const retirement = await retireDeadTokens(admin as never, {
+          candidates: Array.from(new Set(invalidTokens)),
+          attempted: attemptedSends,
+          errorCounts,
+          suspectCount,
+          reason: "weekly_new_arrivals_permanent_failure",
+        });
+        if (retirement.warning) console.error("[weekly-new-arrivals]", retirement.warning);
 
         return Response.json({
           ok: true,
           usersConsidered: byUser.size,
           notified,
           totalDevices,
-          prunedTokens: invalidTokens.length,
+          prunedTokens: retirement.deletedCount,
+          archivedTokens: retirement.archivedCount,
+          suspectFailures: suspectCount,
+          systemicSuspected: retirement.systemicSuspected,
+          dominantErrorCode: retirement.dominantErrorCode,
+          warning: retirement.warning,
+          errorCounts,
           newArrivalsFetched: newArrivals.length,
         });
       },
