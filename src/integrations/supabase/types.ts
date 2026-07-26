@@ -73,6 +73,7 @@ export type Database = {
           anonymous_recipients: number
           body: string
           created_at: string
+          dominant_error_code: string | null
           error_breakdown: Json
           failure_count: number
           id: string
@@ -81,6 +82,8 @@ export type Database = {
           sent_by: string | null
           signed_in_recipients: number
           success_count: number
+          suspect_failure_count: number
+          systemic_suspected: boolean
           title: string
           total_tokens: number
           transient_failure_count: number
@@ -90,6 +93,7 @@ export type Database = {
           anonymous_recipients?: number
           body: string
           created_at?: string
+          dominant_error_code?: string | null
           error_breakdown?: Json
           failure_count?: number
           id?: string
@@ -98,6 +102,8 @@ export type Database = {
           sent_by?: string | null
           signed_in_recipients?: number
           success_count?: number
+          suspect_failure_count?: number
+          systemic_suspected?: boolean
           title: string
           total_tokens?: number
           transient_failure_count?: number
@@ -107,6 +113,7 @@ export type Database = {
           anonymous_recipients?: number
           body?: string
           created_at?: string
+          dominant_error_code?: string | null
           error_breakdown?: Json
           failure_count?: number
           id?: string
@@ -115,6 +122,8 @@ export type Database = {
           sent_by?: string | null
           signed_in_recipients?: number
           success_count?: number
+          suspect_failure_count?: number
+          systemic_suspected?: boolean
           title?: string
           total_tokens?: number
           transient_failure_count?: number
@@ -145,6 +154,42 @@ export type Database = {
           platform?: string
           token?: string
           updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      device_tokens_deleted: {
+        Row: {
+          broadcast_id: string | null
+          deleted_at: string
+          id: string
+          platform: string | null
+          reason: string
+          token: string
+          token_created_at: string | null
+          token_updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          broadcast_id?: string | null
+          deleted_at?: string
+          id?: string
+          platform?: string | null
+          reason: string
+          token: string
+          token_created_at?: string | null
+          token_updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          broadcast_id?: string | null
+          deleted_at?: string
+          id?: string
+          platform?: string | null
+          reason?: string
+          token?: string
+          token_created_at?: string | null
+          token_updated_at?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -538,6 +583,10 @@ export type Database = {
           payload: Json
           source_queue: string
         }
+        Returns: number
+      }
+      prune_device_token_archive: {
+        Args: { _older_than_days?: number }
         Returns: number
       }
       prune_stale_device_tokens: {
