@@ -147,6 +147,7 @@ export const sendBroadcast = createServerFn({ method: "POST" })
     let failureCount = 0;
     let permanentFailureCount = 0;
     let transientFailureCount = 0;
+    let suspectFailureCount = 0;
     let signedInDelivered = 0;
     let anonymousDelivered = 0;
     let topicSubmitted = false;
@@ -215,9 +216,13 @@ export const sendBroadcast = createServerFn({ method: "POST" })
           }
 
           if (kind === "permanent") {
-            // Dead forever — remove the row so it is never retried.
+            // Dead forever — candidate for removal (subject to the breaker).
             permanentFailureCount++;
             invalidTokens.push(r.token);
+          } else if (kind === "suspect") {
+            // Ambiguous: could be a malformed payload or a bundle-ID/cert
+            // mismatch affecting every token. Never deleted.
+            suspectFailureCount++;
           } else {
             // Timeout / 5xx / throttling / credential issue — keep and retry next send.
             transientFailureCount++;
@@ -232,13 +237,11 @@ export const sendBroadcast = createServerFn({ method: "POST" })
           failureCount,
           permanentFailureCount,
           transientFailureCount,
+          suspectFailureCount,
           apnsCredentialIssue,
           errorCounts,
           errorSamples,
         });
-      }
-      if (invalidTokens.length > 0) {
-        await supabaseAdmin.from("device_tokens").delete().in("token", invalidTokens);
       }
     }
 
@@ -254,7 +257,8 @@ export const sendBroadcast = createServerFn({ method: "POST" })
         total_tokens: tokens.length,
         permanent_failure_count: permanentFailureCount,
         transient_failure_count: transientFailureCount,
-        pruned_token_count: invalidTokens.length,
+        suspect_failure_count: suspectFailureCount,
+        pruned_token_count: 0,
         signed_in_recipients: signedInDelivered,
         anonymous_recipients: anonymousDelivered,
         error_breakdown: errorCounts,
@@ -262,6 +266,28 @@ export const sendBroadcast = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (insErr) throw new Error(insErr.message);
+
+    // Retire dead tokens behind the mass-deletion circuit breaker, archiving
+    // each row into device_tokens_deleted first so it stays recoverable.
+    const { retireDeadTokens } = await import("./token-retirement.server");
+    const retirement = await retireDeadTokens(supabaseAdmin as never, {
+      candidates: invalidTokens,
+      attempted: tokens.length,
+      errorCounts,
+      suspectCount: suspectFailureCount,
+      reason: "broadcast_permanent_failure",
+      broadcastId: inserted.id,
+    });
+
+    await supabaseAdmin
+      .from("broadcasts")
+      .update({
+        pruned_token_count: retirement.deletedCount,
+        systemic_suspected: retirement.systemicSuspected,
+        dominant_error_code: retirement.dominantErrorCode,
+      })
+      .eq("id", inserted.id);
+
 
     return {
       broadcastId: inserted.id,
