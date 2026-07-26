@@ -206,7 +206,7 @@ export const Route = createFileRoute("/api/public/hooks/stock-alerts")({
             });
             for (const r of results) {
               if (r.ok) anySuccess = true;
-              else if (r.error && /UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND/i.test(r.error)) {
+              else if (r.kind === "permanent") {
                 invalidTokens.push(r.token);
               }
             }

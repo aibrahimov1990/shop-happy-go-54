@@ -124,18 +124,19 @@ function BroadcastPage() {
       const errBreakdown = Object.entries(res.errorCounts ?? {})
         .map(([k, n]) => `${n}× ${k}`)
         .join(", ");
-      const registeredCount = res.registeredTokenCount ?? res.totalTokens;
+      const audience = res.registeredTokenCount ?? res.totalTokens;
       const apnsCredentialMessage = res.apnsCredentialIssue
         ? " — APNs credential issue in Firebase: upload/replace the Apple Push Notifications Auth Key (.p8) for com.sellierknightsbridge.app"
         : "";
       toast.success(
-        (res.topicSubmitted
-          ? `Submitted to app broadcast channel (${registeredCount} registered device${registeredCount === 1 ? "" : "s"} currently visible)`
-          : `Submitted to ${res.successCount} of ${res.totalTokens} registered device${res.totalTokens === 1 ? "" : "s"}`) +
+        `${res.successCount} delivered of ${audience} device${audience === 1 ? "" : "s"} ` +
+          `(${res.signedInDelivered} signed-in · ${res.anonymousDelivered} anonymous)` +
+          (res.topicSubmitted ? " — also submitted to the app broadcast channel" : "") +
           (res.failureCount ? ` — ${res.failureCount} failed${errBreakdown ? ` (${errBreakdown})` : ""}` : "") +
           apnsCredentialMessage +
           (res.topicError && !res.topicSubmitted ? ` — channel error: ${res.topicError.slice(0, 120)}` : "") +
-          (res.prunedTokens ? `; pruned ${res.prunedTokens} stale token${res.prunedTokens === 1 ? "" : "s"}` : ""),
+          (res.prunedTokens ? `; removed ${res.prunedTokens} dead token${res.prunedTokens === 1 ? "" : "s"}` : ""),
+
         { duration: res.apnsCredentialIssue ? 14000 : 8000 },
       );
       if (res.errorSamples && res.errorSamples.length > 0) {
@@ -439,8 +440,20 @@ function BroadcastPage() {
               </div>
               <p className="mt-1 text-sm text-muted-foreground">{b.body}</p>
               <p className="mt-2 text-[11px] text-muted-foreground">
-                ✓ submitted · {b.success_count} registered · ✕ {b.failure_count} failed
+                ✓ {b.success_count} delivered · ✕ {b.failure_count} failed
+                {b.total_tokens ? ` · ${b.total_tokens} devices in audience` : ""}
+                {b.failure_count
+                  ? ` (${b.permanent_failure_count} dead tokens removed, ${b.transient_failure_count} retryable)`
+                  : ""}
               </p>
+              {(b.signed_in_recipients > 0 || b.anonymous_recipients > 0) && (
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {b.signed_in_recipients} signed-in account
+                  {b.signed_in_recipients === 1 ? "" : "s"} · {b.anonymous_recipients} anonymous
+                  device{b.anonymous_recipients === 1 ? "" : "s"}
+                </p>
+              )}
+
             </div>
           ))}
         </div>

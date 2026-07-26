@@ -163,7 +163,7 @@ export const Route = createFileRoute("/api/public/hooks/weekly-new-arrivals")({
           let anySuccess = false;
           for (const r of results) {
             if (r.ok) anySuccess = true;
-            else if (r.error && /UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND/i.test(r.error)) {
+            else if (r.kind === "permanent") {
               invalidTokens.push(r.token);
             }
           }
