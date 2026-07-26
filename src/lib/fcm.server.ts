@@ -86,16 +86,87 @@ async function getAccessToken(sa: ServiceAccount, forceRefresh = false): Promise
   return json.access_token;
 }
 
+/** Whether a failure means the token is dead forever, or just failed this time. */
+export type FailureKind = "permanent" | "transient";
+
 export interface SendResult {
   token: string;
   ok: boolean;
   error?: string;
+  /** Normalised failure code, e.g. "UNREGISTERED", "BadDeviceToken", "503 UNAVAILABLE". */
+  code?: string;
+  kind?: FailureKind;
 }
 
 export interface FcmSendOutcome {
   ok: boolean;
   error?: string;
+  code?: string;
+  kind?: FailureKind;
 }
+
+/**
+ * Classify an FCM HTTP v1 error response.
+ *
+ * Permanent: the registration token is invalid/unknown and will never work
+ * again — APNs `Unregistered` (410) / `BadDeviceToken` / `DeviceTokenNotForTopic`,
+ * or FCM `UNREGISTERED` / `NotRegistered` / `InvalidRegistration` /
+ * `INVALID_ARGUMENT` on the token. These rows must be deleted.
+ *
+ * Transient: timeouts, 5xx, throttling, and auth/credential problems
+ * (`THIRD_PARTY_AUTH_ERROR`, 401/403). These must be kept and retried.
+ */
+export function classifyFcmError(status: number | null, body: string): {
+  code: string;
+  kind: FailureKind;
+} {
+  const errorCode =
+    body.match(/"errorCode"\s*:\s*"([A-Z_]+)"/)?.[1] ??
+    body.match(/"status"\s*:\s*"([A-Z_]+)"/)?.[1] ??
+    null;
+  const apnsReason = body.match(/"reason"\s*:\s*"([A-Za-z]+)"/)?.[1] ?? null;
+
+  const PERMANENT_APNS = new Set([
+    "Unregistered",
+    "BadDeviceToken",
+    "DeviceTokenNotForTopic",
+    "TopicDisallowed",
+  ]);
+  const PERMANENT_FCM = new Set([
+    "UNREGISTERED",
+    "NOT_FOUND",
+    "NotRegistered",
+    "InvalidRegistration",
+    "INVALID_ARGUMENT",
+    "SENDER_ID_MISMATCH",
+  ]);
+  const TRANSIENT_FCM = new Set([
+    "UNAVAILABLE",
+    "INTERNAL",
+    "QUOTA_EXCEEDED",
+    "THIRD_PARTY_AUTH_ERROR",
+    "RESOURCE_EXHAUSTED",
+    "DEADLINE_EXCEEDED",
+    "PERMISSION_DENIED",
+    "UNAUTHENTICATED",
+    "APNS_AUTH_ERROR",
+  ]);
+
+  if (apnsReason && PERMANENT_APNS.has(apnsReason)) return { code: apnsReason, kind: "permanent" };
+  if (errorCode && TRANSIENT_FCM.has(errorCode)) return { code: errorCode, kind: "transient" };
+  if (errorCode && PERMANENT_FCM.has(errorCode)) {
+    // A 404 / 400 naming the registration token is a dead token.
+    return { code: errorCode, kind: "permanent" };
+  }
+  if (status === 404 || status === 410) return { code: errorCode ?? `${status}`, kind: "permanent" };
+  if (status !== null && status >= 500) return { code: `${status} ${errorCode ?? "SERVER_ERROR"}`, kind: "transient" };
+  if (status === 429) return { code: "429 THROTTLED", kind: "transient" };
+  if (status === 401 || status === 403) return { code: `${status} AUTH`, kind: "transient" };
+
+  // Unknown → treat as transient so we never delete a token we don't understand.
+  return { code: errorCode ?? apnsReason ?? (status ? `${status} OTHER` : "OTHER"), kind: "transient" };
+}
+
 
 function buildVisibleMessageTarget(
   target: { token: string } | { topic: string },
