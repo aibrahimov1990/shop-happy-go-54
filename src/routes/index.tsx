@@ -9,8 +9,11 @@ import { storefrontApiRequest, PRODUCTS_QUERY, type ShopifyProduct } from "@/lib
 import sellierLogo from "@/assets/sellier-logo.svg";
 import hero1 from "@/assets/hero-1.png";
 import hero2 from "@/assets/hero-2.png";
+import hero3 from "@/assets/hero-3.jpg.asset.json";
+import hero4 from "@/assets/hero-4.jpg.asset.json";
+import hero5 from "@/assets/hero-5.jpg.asset.json";
 
-const HERO_IMAGES = [hero1, hero2];
+const HERO_IMAGES = [hero1, hero2, hero3.url, hero4.url, hero5.url];
 
 export const Route = createFileRoute("/")({
   head: () => ({
