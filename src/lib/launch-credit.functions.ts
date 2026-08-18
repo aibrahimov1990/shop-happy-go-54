@@ -144,6 +144,27 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
 
     const amount = Number(config.amount_gbp);
 
+    // Normalise the window timestamps once, here. The raw values come from
+    // Postgres and are handed to both Shopify (which requires strict ISO 8601)
+    // and JavaScript's Date parser on the client. If a value is ever stored in
+    // a format either side rejects, the failure would otherwise be silent and
+    // total — every discount creation throws deep inside the Shopify call and
+    // nobody gets a code. Fail loudly at the top instead. Do not remove.
+    const startsAtMs = new Date(config.starts_at).getTime();
+    const endsAtMs = new Date(config.ends_at).getTime();
+    if (Number.isNaN(startsAtMs)) {
+      throw new Error(
+        `launch_credit_config.starts_at is not a valid date: ${String(config.starts_at)}`,
+      );
+    }
+    if (Number.isNaN(endsAtMs)) {
+      throw new Error(
+        `launch_credit_config.ends_at is not a valid date: ${String(config.ends_at)}`,
+      );
+    }
+    const startsAtIso = new Date(startsAtMs).toISOString();
+    const endsAtIso = new Date(endsAtMs).toISOString();
+
     const readOwn = async () => {
       const { data, error } = await supabaseAdmin
         .from("app_launch_credits")
@@ -162,8 +183,8 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
         basicCodeDiscount: {
           title: `App Launch £100 — ${code}`,
           code,
-          startsAt: config.starts_at,
-          endsAt: config.ends_at,
+          startsAt: startsAtIso,
+          endsAt: endsAtIso,
           customerSelection: { customers: { add: [customerGid] } },
           customerGets: {
             value: { discountAmount: { amount, appliesOnEachItem: false } },
@@ -192,7 +213,7 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
       let used = false;
       if (row.redeemed_at) {
         used = true;
-      } else if (Date.now() >= new Date(config.starts_at).getTime()) {
+      } else if (Date.now() >= startsAtMs) {
         // Window has opened (or closed) and the row isn't marked redeemed yet —
         // only then is it worth asking Shopify.
         const usage = row.shopify_discount_id
@@ -211,8 +232,8 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
         status: row.revoked_at ? ("revoked" as const) : ("issued" as const),
         code: row.code,
         amount,
-        startsAt: config.starts_at,
-        endsAt: config.ends_at,
+        startsAt: startsAtIso,
+        endsAt: endsAtIso,
         used,
       };
     };
@@ -241,8 +262,8 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
         status: existing.revoked_at ? ("revoked" as const) : ("issued" as const),
         code: existing.code,
         amount,
-        startsAt: config.starts_at,
-        endsAt: config.ends_at,
+        startsAt: startsAtIso,
+        endsAt: endsAtIso,
         used: false,
       };
     }
@@ -355,8 +376,8 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
       status: "issued" as const,
       code: reservedCode,
       amount,
-      startsAt: config.starts_at,
-      endsAt: config.ends_at,
+      startsAt: startsAtIso,
+      endsAt: endsAtIso,
       used: false,
     };
 
