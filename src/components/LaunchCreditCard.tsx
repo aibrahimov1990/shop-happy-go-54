@@ -76,19 +76,70 @@ export function LaunchCreditCard() {
 
   if (data.status !== "issued") return null;
 
+  const startsMs = new Date(data.startsAt).getTime();
+  const endsMs = new Date(data.endsAt).getTime();
+  const phase = data.used
+    ? ("used" as const)
+    : now < startsMs
+      ? ("before" as const)
+      : now < endsMs
+        ? ("live" as const)
+        : ("expired" as const);
+
   return (
     <div className="px-6 py-5 border-b border-border/60">
       <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground mb-2">
         Launch credit
       </p>
-      <p className="font-serif text-2xl">£{Math.round(data.amount)} credit</p>
-      <p className="font-mono text-sm tracking-[0.2em] mt-2">{data.code}</p>
-      <p className="text-xs text-muted-foreground mt-2">
-        {londonWindow(data.startsAt, data.endsAt)}
-      </p>
-      {data.used && (
-        <p className="text-xs text-muted-foreground mt-1">Already used on an order.</p>
+
+      {phase === "expired" ? (
+        <>
+          <p className="font-serif text-2xl text-muted-foreground">
+            £{Math.round(data.amount)} credit
+          </p>
+          <p className="font-mono text-sm tracking-[0.2em] mt-2 text-muted-foreground/70">
+            {data.code}
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            Expired {londonDateTime(data.endsAt)} (London time).
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="font-serif text-2xl">£{Math.round(data.amount)} credit</p>
+
+          {phase === "before" ? (
+            <>
+              <p className="font-mono text-xs tracking-[0.2em] mt-2 text-muted-foreground">
+                {data.code}
+              </p>
+              <p className="text-sm mt-3">
+                Live from {londonDateTime(data.startsAt)} (London time)
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                The code cannot be applied at checkout before then.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-mono text-sm tracking-[0.2em] mt-2">{data.code}</p>
+              {phase === "live" ? (
+                <>
+                  <p className="text-sm mt-3">Live now — apply at checkout.</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Closes {londonDateTime(data.endsAt)} (London time)
+                  </p>
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Already used on an order.
+                </p>
+              )}
+            </>
+          )}
+        </>
       )}
     </div>
+
   );
 }
