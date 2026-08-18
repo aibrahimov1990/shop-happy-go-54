@@ -76,6 +76,16 @@ mutation discountCodeDeactivate($id: ID!) {
   }
 }`;
 
+const DISCOUNT_BULK_DEACTIVATE = `
+mutation BulkDeactivate($ids: [ID!]) {
+  discountCodeBulkDeactivate(ids: $ids) {
+    job { id done }
+    userErrors { field message code }
+  }
+}`;
+
+
+
 const DISCOUNT_USAGE_QUERY = `
 query DiscountUsage($id: ID!) {
   codeDiscountNode(id: $id) {
@@ -137,12 +147,15 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
     const readOwn = async () => {
       const { data, error } = await supabaseAdmin
         .from("app_launch_credits")
-        .select("code, email, shopify_discount_id, shopify_customer_id, revoked_at")
+        .select(
+          "code, email, shopify_discount_id, shopify_customer_id, revoked_at, redeemed_at",
+        )
         .eq("user_id", context.userId)
         .maybeSingle();
       if (error) throw new Error(error.message);
       return data;
     };
+
 
     const createShopifyDiscount = async (code: string, customerGid: string) => {
       const data = await shopifyGraphQL(DISCOUNT_CREATE, {
@@ -174,16 +187,25 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
       code: string;
       shopify_discount_id: string | null;
       revoked_at: string | null;
+      redeemed_at?: string | null;
     }) => {
-      const usage = row.shopify_discount_id
-        ? await getDiscountUsageCount(row.shopify_discount_id)
-        : 0;
-      if (usage > 0) {
-        await supabaseAdmin
-          .from("app_launch_credits")
-          .update({ redeemed_at: new Date().toISOString() })
-          .eq("code", row.code)
-          .is("redeemed_at", null);
+      let used = false;
+      if (row.redeemed_at) {
+        used = true;
+      } else if (Date.now() >= new Date(config.starts_at).getTime()) {
+        // Window has opened (or closed) and the row isn't marked redeemed yet —
+        // only then is it worth asking Shopify.
+        const usage = row.shopify_discount_id
+          ? await getDiscountUsageCount(row.shopify_discount_id)
+          : 0;
+        used = usage > 0;
+        if (used) {
+          await supabaseAdmin
+            .from("app_launch_credits")
+            .update({ redeemed_at: new Date().toISOString() })
+            .eq("code", row.code)
+            .is("redeemed_at", null);
+        }
       }
       return {
         status: row.revoked_at ? ("revoked" as const) : ("issued" as const),
@@ -191,9 +213,10 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
         amount,
         startsAt: config.starts_at,
         endsAt: config.ends_at,
-        used: usage > 0,
+        used,
       };
     };
+
 
     const existing = await readOwn();
     if (existing) {
@@ -380,4 +403,65 @@ export const revokeLaunchCredit = createServerFn({ method: "POST" })
     if (updErr) throw new Error(updErr.message);
 
     return { status: "revoked" as const, code: row.code };
+  });
+
+export const killAllLaunchCredits = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { reason?: string } | undefined) => data ?? {})
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: adminRow, error: roleErr } = await supabaseAdmin
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", context.userId)
+      .eq("role", "admin")
+      .limit(1)
+      .maybeSingle();
+    if (roleErr) throw new Error(roleErr.message);
+    if (!adminRow) throw new Error("Forbidden");
+
+    const { data: rows, error } = await supabaseAdmin
+      .from("app_launch_credits")
+      .select("code, shopify_discount_id")
+      .is("redeemed_at", null)
+      .is("revoked_at", null)
+      .not("shopify_discount_id", "is", null);
+    if (error) throw new Error(error.message);
+
+    const live = (rows ?? []).filter((r) => r.shopify_discount_id);
+    if (!live.length) return { deactivated: 0, jobs: [] as string[] };
+
+    const jobs: string[] = [];
+    const deactivatedCodes: string[] = [];
+
+    for (let i = 0; i < live.length; i += 250) {
+      const batch = live.slice(i, i + 250);
+      const res = await shopifyGraphQL(DISCOUNT_BULK_DEACTIVATE, {
+        ids: batch.map((r) => r.shopify_discount_id),
+      });
+      const errs = res?.discountCodeBulkDeactivate?.userErrors ?? [];
+      if (errs.length) {
+        throw new Error(
+          `discountCodeBulkDeactivate: ${errs
+            .map((e: any) => `${(e.field ?? []).join(".")} ${e.code ?? ""} ${e.message}`.trim())
+            .join("; ")}`,
+        );
+      }
+      const jobId = res?.discountCodeBulkDeactivate?.job?.id as string | undefined;
+      if (jobId) jobs.push(jobId);
+      deactivatedCodes.push(...batch.map((r) => r.code));
+    }
+
+    const reason = data.reason ?? "Bulk kill switch";
+    for (let i = 0; i < deactivatedCodes.length; i += 500) {
+      const chunk = deactivatedCodes.slice(i, i + 500);
+      const { error: updErr } = await supabaseAdmin
+        .from("app_launch_credits")
+        .update({ revoked_at: new Date().toISOString(), revoked_reason: reason })
+        .in("code", chunk);
+      if (updErr) throw new Error(updErr.message);
+    }
+
+    return { deactivated: deactivatedCodes.length, jobs };
   });
