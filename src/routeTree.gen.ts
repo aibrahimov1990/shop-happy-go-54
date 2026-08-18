@@ -33,6 +33,7 @@ import { Route as EditsIdRouteImport } from './routes/edits.$id'
 import { Route as CollectionsHandleRouteImport } from './routes/collections.$handle'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminStatsRouteImport } from './routes/admin.stats'
+import { Route as AdminLaunchCreditRouteImport } from './routes/admin.launch-credit'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
 import { Route as ShopperClientsIndexRouteImport } from './routes/shopper.clients.index'
@@ -168,6 +169,11 @@ const AdminStatsRoute = AdminStatsRouteImport.update({
   path: '/admin/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminLaunchCreditRoute = AdminLaunchCreditRouteImport.update({
+  id: '/admin/launch-credit',
+  path: '/admin/launch-credit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminEmailsRoute = AdminEmailsRouteImport.update({
   id: '/admin/emails',
   path: '/admin/emails',
@@ -262,6 +268,7 @@ export interface FileRoutesByFullPath {
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/launch-credit': typeof AdminLaunchCreditRoute
   '/admin/stats': typeof AdminStatsRoute
   '/admin/users': typeof AdminUsersRoute
   '/collections/$handle': typeof CollectionsHandleRoute
@@ -300,6 +307,7 @@ export interface FileRoutesByTo {
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/launch-credit': typeof AdminLaunchCreditRoute
   '/admin/stats': typeof AdminStatsRoute
   '/admin/users': typeof AdminUsersRoute
   '/collections/$handle': typeof CollectionsHandleRoute
@@ -341,6 +349,7 @@ export interface FileRoutesById {
   '/wishlist': typeof WishlistRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/launch-credit': typeof AdminLaunchCreditRoute
   '/admin/stats': typeof AdminStatsRoute
   '/admin/users': typeof AdminUsersRoute
   '/collections/$handle': typeof CollectionsHandleRoute
@@ -383,6 +392,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/broadcast'
     | '/admin/emails'
+    | '/admin/launch-credit'
     | '/admin/stats'
     | '/admin/users'
     | '/collections/$handle'
@@ -421,6 +431,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/broadcast'
     | '/admin/emails'
+    | '/admin/launch-credit'
     | '/admin/stats'
     | '/admin/users'
     | '/collections/$handle'
@@ -461,6 +472,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/broadcast'
     | '/admin/emails'
+    | '/admin/launch-credit'
     | '/admin/stats'
     | '/admin/users'
     | '/collections/$handle'
@@ -502,6 +514,7 @@ export interface RootRouteChildren {
   WishlistRoute: typeof WishlistRoute
   AdminBroadcastRoute: typeof AdminBroadcastRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
+  AdminLaunchCreditRoute: typeof AdminLaunchCreditRoute
   AdminStatsRoute: typeof AdminStatsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   CollectionsHandleRoute: typeof CollectionsHandleRoute
@@ -688,6 +701,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/launch-credit': {
+      id: '/admin/launch-credit'
+      path: '/admin/launch-credit'
+      fullPath: '/admin/launch-credit'
+      preLoaderRoute: typeof AdminLaunchCreditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/emails': {
       id: '/admin/emails'
       path: '/admin/emails'
@@ -838,6 +858,7 @@ const rootRouteChildren: RootRouteChildren = {
   WishlistRoute: WishlistRoute,
   AdminBroadcastRoute: AdminBroadcastRoute,
   AdminEmailsRoute: AdminEmailsRoute,
+  AdminLaunchCreditRoute: AdminLaunchCreditRoute,
   AdminStatsRoute: AdminStatsRoute,
   AdminUsersRoute: AdminUsersRoute,
   CollectionsHandleRoute: CollectionsHandleRoute,
