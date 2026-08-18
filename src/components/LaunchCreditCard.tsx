@@ -17,13 +17,29 @@ function londonWindow(startsAt: string, endsAt: string) {
 
 export function LaunchCreditCard() {
   const claim = useServerFn(getOrCreateLaunchCredit);
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["launch-credit"],
     queryFn: () => claim(),
     retry: false,
   });
 
+  // Surface failures instead of rendering nothing: a thrown server error used to
+  // make this card disappear silently, which is indistinguishable from "disabled".
+  if (error) {
+    return (
+      <div className="px-6 py-5 border-b border-border/60">
+        <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground mb-2">
+          Launch credit
+        </p>
+        <p className="text-sm text-muted-foreground">
+          We couldn’t load your launch credit just now. Please try again shortly.
+        </p>
+      </div>
+    );
+  }
+
   if (isLoading || !data || data.status === "disabled") return null;
+
 
   const message = (() => {
     switch (data.status) {
