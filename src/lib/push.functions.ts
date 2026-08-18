@@ -196,9 +196,19 @@ export const sendBroadcast = createServerFn({ method: "POST" })
 
     let retirement: {
       deletedCount: number;
+      archivedCount: number;
       systemicSuspected: boolean;
+      breakerTripped: boolean;
       dominantErrorCode: string | null;
-    } = { deletedCount: 0, systemicSuspected: false, dominantErrorCode: null };
+      warning: string | null;
+    } = {
+      deletedCount: 0,
+      archivedCount: 0,
+      systemicSuspected: false,
+      breakerTripped: false,
+      dominantErrorCode: null,
+      warning: null,
+    };
 
     try {
       const { BROADCAST_TOPIC, sendFcmToTokens, sendFcmToTopic } = await import("./fcm.server");
