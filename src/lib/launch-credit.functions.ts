@@ -46,20 +46,6 @@ async function shopifyGraphQL(query: string, variables: Record<string, unknown>)
   return json.data;
 }
 
-const CUSTOMER_SEARCH = `
-query FindCustomer($q: String!) {
-  customers(first: 1, query: $q) {
-    edges { node { id } }
-  }
-}`;
-
-const CUSTOMER_CREATE = `
-mutation customerCreate($input: CustomerInput!) {
-  customerCreate(input: $input) {
-    customer { id }
-    userErrors { field message }
-  }
-}`;
 
 const DISCOUNT_CREATE = `
 mutation discountCodeBasicCreate($basicCodeDiscount: DiscountCodeBasicInput!) {
@@ -106,28 +92,6 @@ async function getDiscountUsageCount(id: string): Promise<number> {
   }
 }
 
-function escapeQuery(value: string): string {
-  return value.replace(/["\\]/g, "\\$&");
-}
-
-async function resolveShopifyCustomerId(email: string, fullName: string | null): Promise<string> {
-  const found = await shopifyGraphQL(CUSTOMER_SEARCH, { q: `email:"${escapeQuery(email)}"` });
-  const existing = found?.customers?.edges?.[0]?.node?.id as string | undefined;
-  if (existing) return existing;
-
-  const parts = (fullName ?? "").trim().split(/\s+/).filter(Boolean);
-  const input: Record<string, unknown> = { email };
-  if (parts.length) {
-    input.firstName = parts[0];
-    if (parts.length > 1) input.lastName = parts.slice(1).join(" ");
-  }
-  const created = await shopifyGraphQL(CUSTOMER_CREATE, { input });
-  const errs = created?.customerCreate?.userErrors ?? [];
-  if (errs.length) throw new Error(errs.map((e: any) => e.message).join("; "));
-  const id = created?.customerCreate?.customer?.id as string | undefined;
-  if (!id) throw new Error("Could not resolve a Shopify customer for this email");
-  return id;
-}
 
 export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -168,9 +132,7 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
     const readOwn = async () => {
       const { data, error } = await supabaseAdmin
         .from("app_launch_credits")
-        .select(
-          "code, email, shopify_discount_id, shopify_customer_id, revoked_at, redeemed_at",
-        )
+        .select("code, email, shopify_discount_id, revoked_at, redeemed_at")
         .eq("user_id", context.userId)
         .maybeSingle();
       if (error) throw new Error(error.message);
@@ -178,14 +140,15 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
     };
 
 
-    const createShopifyDiscount = async (code: string, customerGid: string) => {
+    const createShopifyDiscount = async (code: string) => {
       const data = await shopifyGraphQL(DISCOUNT_CREATE, {
         basicCodeDiscount: {
           title: `App Launch £100 — ${code}`,
           code,
           startsAt: startsAtIso,
           endsAt: endsAtIso,
-          customerSelection: { customers: { add: [customerGid] } },
+          customerSelection: { all: true },
+
           customerGets: {
             value: { discountAmount: { amount, appliesOnEachItem: false } },
             items: { all: true },
@@ -244,19 +207,12 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
       if (existing.shopify_discount_id) return buildExisting(existing);
       // Reserved but incomplete: finish creating the Shopify discount for the
       // code already stored on the row, then update it in place.
-      const { data: profileRow } = await supabaseAdmin
-        .from("profiles")
-        .select("full_name")
-        .eq("id", context.userId)
-        .maybeSingle();
-      const customerGid =
-        existing.shopify_customer_id ??
-        (await resolveShopifyCustomerId(existing.email, profileRow?.full_name ?? null));
-      const shopifyId = await createShopifyDiscount(existing.code, customerGid);
+      const shopifyId = await createShopifyDiscount(existing.code);
       const { error: updErr } = await supabaseAdmin
         .from("app_launch_credits")
-        .update({ shopify_discount_id: shopifyId, shopify_customer_id: customerGid })
+        .update({ shopify_discount_id: shopifyId })
         .eq("code", existing.code);
+
       if (updErr) throw new Error(updErr.message);
       return {
         status: existing.revoked_at ? ("revoked" as const) : ("issued" as const),
@@ -307,14 +263,6 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
     if (countErr) throw new Error(countErr.message);
     if ((count ?? 0) >= config.max_codes) return { status: "capacity_reached" as const };
 
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("full_name")
-      .eq("id", context.userId)
-      .maybeSingle();
-
-    const customerGid = await resolveShopifyCustomerId(user.email, profile?.full_name ?? null);
-
     // Reserve in the database FIRST so the unique constraints gate everything
     // before any Shopify write. Retry only on a code collision.
     let reservedCode: string | null = null;
@@ -325,8 +273,8 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
         email: user.email,
         email_normalised: normalised,
         code,
-        shopify_customer_id: customerGid,
       });
+
       if (!insErr) {
         reservedCode = code;
         break;
