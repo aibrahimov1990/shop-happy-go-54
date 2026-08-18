@@ -169,7 +169,48 @@ export const sendBroadcast = createServerFn({ method: "POST" })
       imageUrl = signed?.signedUrl;
     }
 
-    {
+    // Record the broadcast BEFORE any sending happens, so a throw, timeout or
+    // request termination during the fan-out always leaves evidence behind.
+    const { data: inserted, error: insErr } = await supabaseAdmin
+      .from("broadcasts")
+      .insert({
+        sent_by: userId,
+        title: data.title,
+        body: data.body,
+        url: data.url ?? null,
+        status: "sending",
+        success_count: 0,
+        failure_count: 0,
+        total_tokens: tokens.length,
+        permanent_failure_count: 0,
+        transient_failure_count: 0,
+        suspect_failure_count: 0,
+        pruned_token_count: 0,
+        signed_in_recipients: 0,
+        anonymous_recipients: 0,
+        error_breakdown: {},
+      })
+      .select("id")
+      .single();
+    if (insErr) throw new Error(insErr.message);
+
+    let retirement: {
+      deletedCount: number;
+      archivedCount: number;
+      systemicSuspected: boolean;
+      breakerTripped: boolean;
+      dominantErrorCode: string | null;
+      warning: string | null;
+    } = {
+      deletedCount: 0,
+      archivedCount: 0,
+      systemicSuspected: false,
+      breakerTripped: false,
+      dominantErrorCode: null,
+      warning: null,
+    };
+
+    try {
       const { BROADCAST_TOPIC, sendFcmToTokens, sendFcmToTopic } = await import("./fcm.server");
       const payload = {
         title: data.title,
@@ -243,50 +284,58 @@ export const sendBroadcast = createServerFn({ method: "POST" })
           errorSamples,
         });
       }
+
+      // Retire dead tokens behind the mass-deletion circuit breaker, archiving
+      // each row into device_tokens_deleted first so it stays recoverable.
+      const { retireDeadTokens } = await import("./token-retirement.server");
+      retirement = await retireDeadTokens(supabaseAdmin as never, {
+        candidates: invalidTokens,
+        attempted: tokens.length,
+        errorCounts,
+        suspectCount: suspectFailureCount,
+        reason: "broadcast_permanent_failure",
+        broadcastId: inserted.id,
+      });
+
+      await supabaseAdmin
+        .from("broadcasts")
+        .update({
+          status: "completed",
+          completed_at: new Date().toISOString(),
+          success_count: successCount,
+          failure_count: failureCount,
+          permanent_failure_count: permanentFailureCount,
+          transient_failure_count: transientFailureCount,
+          suspect_failure_count: suspectFailureCount,
+          signed_in_recipients: signedInDelivered,
+          anonymous_recipients: anonymousDelivered,
+          error_breakdown: errorCounts,
+          pruned_token_count: retirement.deletedCount,
+          systemic_suspected: retirement.systemicSuspected,
+          dominant_error_code: retirement.dominantErrorCode,
+        })
+        .eq("id", inserted.id);
+    } catch (sendError) {
+      const message = sendError instanceof Error ? sendError.message : String(sendError);
+      console.error("[broadcast] send failed", { broadcastId: inserted.id, error: message });
+      await supabaseAdmin
+        .from("broadcasts")
+        .update({
+          status: "failed",
+          completed_at: new Date().toISOString(),
+          success_count: successCount,
+          failure_count: failureCount,
+          permanent_failure_count: permanentFailureCount,
+          transient_failure_count: transientFailureCount,
+          suspect_failure_count: suspectFailureCount,
+          signed_in_recipients: signedInDelivered,
+          anonymous_recipients: anonymousDelivered,
+          error_breakdown: { ...errorCounts, fatal: message.slice(0, 1200) },
+        })
+        .eq("id", inserted.id);
+      throw sendError;
     }
 
-    const { data: inserted, error: insErr } = await supabaseAdmin
-      .from("broadcasts")
-      .insert({
-        sent_by: userId,
-        title: data.title,
-        body: data.body,
-        url: data.url ?? null,
-        success_count: successCount,
-        failure_count: failureCount,
-        total_tokens: tokens.length,
-        permanent_failure_count: permanentFailureCount,
-        transient_failure_count: transientFailureCount,
-        suspect_failure_count: suspectFailureCount,
-        pruned_token_count: 0,
-        signed_in_recipients: signedInDelivered,
-        anonymous_recipients: anonymousDelivered,
-        error_breakdown: errorCounts,
-      })
-      .select("id")
-      .single();
-    if (insErr) throw new Error(insErr.message);
-
-    // Retire dead tokens behind the mass-deletion circuit breaker, archiving
-    // each row into device_tokens_deleted first so it stays recoverable.
-    const { retireDeadTokens } = await import("./token-retirement.server");
-    const retirement = await retireDeadTokens(supabaseAdmin as never, {
-      candidates: invalidTokens,
-      attempted: tokens.length,
-      errorCounts,
-      suspectCount: suspectFailureCount,
-      reason: "broadcast_permanent_failure",
-      broadcastId: inserted.id,
-    });
-
-    await supabaseAdmin
-      .from("broadcasts")
-      .update({
-        pruned_token_count: retirement.deletedCount,
-        systemic_suspected: retirement.systemicSuspected,
-        dominant_error_code: retirement.dominantErrorCode,
-      })
-      .eq("id", inserted.id);
 
 
     return {
