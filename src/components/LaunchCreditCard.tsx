@@ -137,7 +137,7 @@ export function LaunchCreditCard() {
   if (error) {
     return (
       <div className="px-6 py-5 border-b border-border/60 text-center">
-        <p className="font-serif text-2xl text-muted-foreground mb-2">
+        <p className="font-serif text-2xl mb-2">
           Launch credit
         </p>
         <p className="text-sm text-muted-foreground">
@@ -169,7 +169,7 @@ export function LaunchCreditCard() {
   if (message) {
     return (
       <div className="px-6 py-5 border-b border-border/60 text-center">
-        <p className="font-serif text-2xl text-muted-foreground mb-2">
+        <p className="font-serif text-2xl mb-2">
           Launch credit
         </p>
         <p className="text-sm text-muted-foreground">{message}</p>
@@ -191,7 +191,7 @@ export function LaunchCreditCard() {
 
   return (
     <div className="px-6 py-7 border-b border-border/60 text-center">
-      <p className="font-serif text-2xl text-muted-foreground">
+      <p className="font-serif text-2xl">
         Launch credit
       </p>
 
