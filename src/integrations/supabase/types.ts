@@ -68,6 +68,48 @@ export type Database = {
         }
         Relationships: []
       }
+      app_launch_credits: {
+        Row: {
+          code: string
+          email: string
+          email_normalised: string
+          id: string
+          issued_at: string
+          redeemed_at: string | null
+          revoked_at: string | null
+          revoked_reason: string | null
+          shopify_customer_id: string | null
+          shopify_discount_id: string | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          email: string
+          email_normalised: string
+          id?: string
+          issued_at?: string
+          redeemed_at?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          shopify_customer_id?: string | null
+          shopify_discount_id?: string | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          email?: string
+          email_normalised?: string
+          id?: string
+          issued_at?: string
+          redeemed_at?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          shopify_customer_id?: string | null
+          shopify_discount_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       broadcasts: {
         Row: {
           anonymous_recipients: number
@@ -364,6 +406,51 @@ export type Database = {
           id?: string
           token?: string
           used_at?: string | null
+        }
+        Relationships: []
+      }
+      launch_credit_blocked_domains: {
+        Row: {
+          domain: string
+        }
+        Insert: {
+          domain: string
+        }
+        Update: {
+          domain?: string
+        }
+        Relationships: []
+      }
+      launch_credit_config: {
+        Row: {
+          amount_gbp: number
+          enabled: boolean
+          ends_at: string
+          id: number
+          max_codes: number
+          require_verified_email: boolean
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          amount_gbp?: number
+          enabled?: boolean
+          ends_at?: string
+          id?: number
+          max_codes?: number
+          require_verified_email?: boolean
+          starts_at?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_gbp?: number
+          enabled?: boolean
+          ends_at?: string
+          id?: number
+          max_codes?: number
+          require_verified_email?: boolean
+          starts_at?: string
+          updated_at?: string
         }
         Relationships: []
       }
