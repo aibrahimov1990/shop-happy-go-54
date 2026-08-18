@@ -177,16 +177,25 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
       code: string;
       shopify_discount_id: string | null;
       revoked_at: string | null;
+      redeemed_at?: string | null;
     }) => {
-      const usage = row.shopify_discount_id
-        ? await getDiscountUsageCount(row.shopify_discount_id)
-        : 0;
-      if (usage > 0) {
-        await supabaseAdmin
-          .from("app_launch_credits")
-          .update({ redeemed_at: new Date().toISOString() })
-          .eq("code", row.code)
-          .is("redeemed_at", null);
+      let used = false;
+      if (row.redeemed_at) {
+        used = true;
+      } else if (Date.now() >= new Date(config.starts_at).getTime()) {
+        // Window has opened (or closed) and the row isn't marked redeemed yet —
+        // only then is it worth asking Shopify.
+        const usage = row.shopify_discount_id
+          ? await getDiscountUsageCount(row.shopify_discount_id)
+          : 0;
+        used = usage > 0;
+        if (used) {
+          await supabaseAdmin
+            .from("app_launch_credits")
+            .update({ redeemed_at: new Date().toISOString() })
+            .eq("code", row.code)
+            .is("redeemed_at", null);
+        }
       }
       return {
         status: row.revoked_at ? ("revoked" as const) : ("issued" as const),
@@ -194,9 +203,10 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
         amount,
         startsAt: config.starts_at,
         endsAt: config.ends_at,
-        used: usage > 0,
+        used,
       };
     };
+
 
     const existing = await readOwn();
     if (existing) {
