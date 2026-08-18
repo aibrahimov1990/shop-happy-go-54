@@ -137,11 +137,37 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
     const readOwn = async () => {
       const { data, error } = await supabaseAdmin
         .from("app_launch_credits")
-        .select("code, shopify_discount_id, revoked_at")
+        .select("code, email, shopify_discount_id, shopify_customer_id, revoked_at")
         .eq("user_id", context.userId)
         .maybeSingle();
       if (error) throw new Error(error.message);
       return data;
+    };
+
+    const createShopifyDiscount = async (code: string, customerGid: string) => {
+      const data = await shopifyGraphQL(DISCOUNT_CREATE, {
+        basicCodeDiscount: {
+          title: `App Launch £100 — ${code}`,
+          code,
+          startsAt: config.starts_at,
+          endsAt: config.ends_at,
+          customerSelection: { customers: { add: [customerGid] } },
+          customerGets: {
+            value: { discountAmount: { amount, appliesOnEachItem: false } },
+            items: { all: true },
+          },
+          appliesOncePerCustomer: true,
+          usageLimit: 1,
+          combinesWith: {
+            orderDiscounts: false,
+            productDiscounts: false,
+            shippingDiscounts: true,
+          },
+        },
+      });
+      const errs = data?.discountCodeBasicCreate?.userErrors ?? [];
+      if (errs.length) throw new Error(errs.map((e: any) => e.message).join("; "));
+      return data.discountCodeBasicCreate.codeDiscountNode.id as string;
     };
 
     const buildExisting = async (row: {
@@ -170,7 +196,34 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
     };
 
     const existing = await readOwn();
-    if (existing) return buildExisting(existing);
+    if (existing) {
+      if (existing.shopify_discount_id) return buildExisting(existing);
+      // Reserved but incomplete: finish creating the Shopify discount for the
+      // code already stored on the row, then update it in place.
+      const { data: profileRow } = await supabaseAdmin
+        .from("profiles")
+        .select("full_name")
+        .eq("id", context.userId)
+        .maybeSingle();
+      const customerGid =
+        existing.shopify_customer_id ??
+        (await resolveShopifyCustomerId(existing.email, profileRow?.full_name ?? null));
+      const shopifyId = await createShopifyDiscount(existing.code, customerGid);
+      const { error: updErr } = await supabaseAdmin
+        .from("app_launch_credits")
+        .update({ shopify_discount_id: shopifyId, shopify_customer_id: customerGid })
+        .eq("code", existing.code);
+      if (updErr) throw new Error(updErr.message);
+      return {
+        status: existing.revoked_at ? ("revoked" as const) : ("issued" as const),
+        code: existing.code,
+        amount,
+        startsAt: config.starts_at,
+        endsAt: config.ends_at,
+        used: false,
+      };
+    }
+
 
     const { data: authUser, error: authErr } = await supabaseAdmin.auth.admin.getUserById(
       context.userId,
