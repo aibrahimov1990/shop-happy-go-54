@@ -1,27 +1,32 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getOrCreateLaunchCredit } from "@/lib/launch-credit.functions";
 
-function londonWindow(startsAt: string, endsAt: string) {
-  const fmt = (iso: string) =>
-    new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Europe/London",
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(iso));
-  return `${fmt(startsAt)} – ${fmt(endsAt)} (London)`;
+function londonDateTime(iso: string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+    .format(new Date(iso))
+    .replace(",", "");
 }
 
 export function LaunchCreditCard() {
   const claim = useServerFn(getOrCreateLaunchCredit);
+  // Single read of the clock per render — deliberately no interval/countdown.
+  const [now] = useState(() => Date.now());
   const { data, isLoading, error } = useQuery({
     queryKey: ["launch-credit"],
     queryFn: () => claim(),
     retry: false,
   });
+
 
   // Surface failures instead of rendering nothing: a thrown server error used to
   // make this card disappear silently, which is indistinguishable from "disabled".
