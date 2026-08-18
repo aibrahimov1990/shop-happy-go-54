@@ -434,3 +434,80 @@ export const killAllLaunchCredits = createServerFn({ method: "POST" })
 
     return { deactivated: deactivatedCodes.length, jobs };
   });
+
+const adminGate = async (
+  supabaseAdmin: Awaited<
+    typeof import("@/integrations/supabase/client.server")
+  >["supabaseAdmin"],
+  userId: string,
+) => {
+  const { data: adminRow, error } = await supabaseAdmin
+    .from("user_roles")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!adminRow) throw new Error("Forbidden");
+};
+
+export const getLaunchCreditAdminStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await adminGate(supabaseAdmin, context.userId);
+
+    const { data: config, error: cfgErr } = await supabaseAdmin
+      .from("launch_credit_config")
+      .select("*")
+      .eq("id", 1)
+      .maybeSingle();
+    if (cfgErr) throw new Error(cfgErr.message);
+
+    const countOf = async (build: (q: any) => any) => {
+      const { count, error } = await build(
+        supabaseAdmin.from("app_launch_credits").select("id", { count: "exact", head: true }),
+      );
+      if (error) throw new Error(error.message);
+      return count ?? 0;
+    };
+
+    const total = await countOf((q: any) => q);
+    const redeemed = await countOf((q: any) => q.not("redeemed_at", "is", null));
+    const revoked = await countOf((q: any) => q.not("revoked_at", "is", null));
+    const live = await countOf((q: any) =>
+      q.is("redeemed_at", null).is("revoked_at", null).not("shopify_discount_id", "is", null),
+    );
+
+    const { data: recent, error: recentErr } = await supabaseAdmin
+      .from("app_launch_credits")
+      .select("code, email, redeemed_at")
+      .not("redeemed_at", "is", null)
+      .order("redeemed_at", { ascending: false })
+      .limit(25);
+    if (recentErr) throw new Error(recentErr.message);
+
+    return {
+      config,
+      counts: { total, redeemed, revoked, live },
+      recentRedemptions: recent ?? [],
+    };
+  });
+
+export const setLaunchCreditEnabled = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { enabled: boolean }) => data)
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await adminGate(supabaseAdmin, context.userId);
+
+    const { data: row, error } = await supabaseAdmin
+      .from("launch_credit_config")
+      .update({ enabled: data.enabled, updated_at: new Date().toISOString() })
+      .eq("id", 1)
+      .select("enabled")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return { enabled: row?.enabled ?? data.enabled };
+  });
