@@ -103,6 +103,9 @@ function Home() {
         <h2 className="font-serif text-2xl">Buy now or cry later</h2>
       </div>
 
+      <LaunchCreditCard />
+
+
 
 
       {/* Featured grid */}
