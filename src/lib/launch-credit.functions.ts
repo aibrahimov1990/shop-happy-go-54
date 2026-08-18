@@ -307,7 +307,7 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
 
     let shopifyId: string;
     try {
-      shopifyId = await createShopifyDiscount(reservedCode, customerGid);
+      shopifyId = await createShopifyDiscount(reservedCode);
     } catch (e) {
       // Release the reservation so the user is not locked out permanently.
       await supabaseAdmin.from("app_launch_credits").delete().eq("code", reservedCode);
