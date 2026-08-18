@@ -322,13 +322,30 @@ export async function sendFcmToTokens(
 
   }
 
-  const results: SendResult[] = [];
-  for (const token of tokens) {
-    const result = await sendOne(token);
-    results.push(result);
-  }
+  return runWithConcurrency(tokens, FANOUT_CONCURRENCY, sendOne);
+}
+
+/** Bounded-parallel map. Every input yields exactly one result, index-aligned. */
+const FANOUT_CONCURRENCY = 25;
+
+async function runWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  worker: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let next = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (true) {
+      const i = next++;
+      if (i >= items.length) return;
+      results[i] = await worker(items[i]!);
+    }
+  });
+  await Promise.all(workers);
   return results;
 }
+
 
 /**
  * Silent validation ping used by the admin "Clean up dead tokens" action.
