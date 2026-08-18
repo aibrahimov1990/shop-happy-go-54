@@ -183,8 +183,8 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
         basicCodeDiscount: {
           title: `App Launch £100 — ${code}`,
           code,
-          startsAt: config.starts_at,
-          endsAt: config.ends_at,
+          startsAt: startsAtIso,
+          endsAt: endsAtIso,
           customerSelection: { customers: { add: [customerGid] } },
           customerGets: {
             value: { discountAmount: { amount, appliesOnEachItem: false } },
@@ -213,7 +213,7 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
       let used = false;
       if (row.redeemed_at) {
         used = true;
-      } else if (Date.now() >= new Date(config.starts_at).getTime()) {
+      } else if (Date.now() >= startsAtMs) {
         // Window has opened (or closed) and the row isn't marked redeemed yet —
         // only then is it worth asking Shopify.
         const usage = row.shopify_discount_id
@@ -232,8 +232,8 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
         status: row.revoked_at ? ("revoked" as const) : ("issued" as const),
         code: row.code,
         amount,
-        startsAt: config.starts_at,
-        endsAt: config.ends_at,
+        startsAt: startsAtIso,
+        endsAt: endsAtIso,
         used,
       };
     };
@@ -262,8 +262,8 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
         status: existing.revoked_at ? ("revoked" as const) : ("issued" as const),
         code: existing.code,
         amount,
-        startsAt: config.starts_at,
-        endsAt: config.ends_at,
+        startsAt: startsAtIso,
+        endsAt: endsAtIso,
         used: false,
       };
     }
@@ -376,8 +376,8 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
       status: "issued" as const,
       code: reservedCode,
       amount,
-      startsAt: config.starts_at,
-      endsAt: config.ends_at,
+      startsAt: startsAtIso,
+      endsAt: endsAtIso,
       used: false,
     };
 
