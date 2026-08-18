@@ -76,6 +76,16 @@ mutation discountCodeDeactivate($id: ID!) {
   }
 }`;
 
+const DISCOUNT_BULK_DEACTIVATE = `
+mutation BulkDeactivate($ids: [ID!]) {
+  discountCodeBulkDeactivate(ids: $ids) {
+    job { id done }
+    userErrors { field message code }
+  }
+}`;
+
+
+
 const DISCOUNT_USAGE_QUERY = `
 query DiscountUsage($id: ID!) {
   codeDiscountNode(id: $id) {
