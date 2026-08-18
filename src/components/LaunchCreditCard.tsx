@@ -137,7 +137,7 @@ export function LaunchCreditCard() {
   if (error) {
     return (
       <div className="px-6 py-5 border-b border-border/60 text-center">
-        <p className="font-serif text-lg text-muted-foreground mb-2">
+        <p className="font-serif text-2xl text-muted-foreground mb-2">
           Launch credit
         </p>
         <p className="text-sm text-muted-foreground">
@@ -169,7 +169,7 @@ export function LaunchCreditCard() {
   if (message) {
     return (
       <div className="px-6 py-5 border-b border-border/60 text-center">
-        <p className="font-serif text-lg text-muted-foreground mb-2">
+        <p className="font-serif text-2xl text-muted-foreground mb-2">
           Launch credit
         </p>
         <p className="text-sm text-muted-foreground">{message}</p>
@@ -191,13 +191,13 @@ export function LaunchCreditCard() {
 
   return (
     <div className="px-6 py-7 border-b border-border/60 text-center">
-      <p className="font-serif text-lg text-muted-foreground">
+      <p className="font-serif text-2xl text-muted-foreground">
         Launch credit
       </p>
 
       {phase === "expired" ? (
         <>
-          <p className="font-serif text-3xl mt-3 text-muted-foreground">
+          <p className="font-serif text-2xl mt-3 text-muted-foreground">
             £{Math.round(data.amount)} credit
           </p>
           <CopyableCode code={data.code} muted />
@@ -207,7 +207,7 @@ export function LaunchCreditCard() {
         </>
       ) : phase === "used" ? (
         <>
-          <p className="font-serif text-3xl mt-3">£{Math.round(data.amount)} credit</p>
+          <p className="font-serif text-2xl mt-3">£{Math.round(data.amount)} credit</p>
           <CopyableCode code={data.code} />
           <p className="text-sm text-muted-foreground mt-4">
             Already used on an order.
@@ -215,7 +215,7 @@ export function LaunchCreditCard() {
         </>
       ) : phase === "before" ? (
         <>
-          <p className="font-serif text-3xl mt-3">£{Math.round(data.amount)} credit</p>
+          <p className="font-serif text-2xl mt-3">£{Math.round(data.amount)} credit</p>
           <Countdown target={startsMs} now={now} />
           <CopyableCode code={data.code} muted />
           <p className="text-sm mt-4">
@@ -227,7 +227,7 @@ export function LaunchCreditCard() {
         </>
       ) : (
         <>
-          <p className="font-serif text-3xl mt-3">£{Math.round(data.amount)} credit</p>
+          <p className="font-serif text-2xl mt-3">£{Math.round(data.amount)} credit</p>
           <Countdown target={endsMs} now={now} />
           <CopyableCode code={data.code} />
           <p className="text-sm mt-4">Live now — apply at checkout.</p>
