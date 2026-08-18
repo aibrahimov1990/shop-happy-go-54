@@ -137,12 +137,15 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
     const readOwn = async () => {
       const { data, error } = await supabaseAdmin
         .from("app_launch_credits")
-        .select("code, email, shopify_discount_id, shopify_customer_id, revoked_at")
+        .select(
+          "code, email, shopify_discount_id, shopify_customer_id, revoked_at, redeemed_at",
+        )
         .eq("user_id", context.userId)
         .maybeSingle();
       if (error) throw new Error(error.message);
       return data;
     };
+
 
     const createShopifyDiscount = async (code: string, customerGid: string) => {
       const data = await shopifyGraphQL(DISCOUNT_CREATE, {
