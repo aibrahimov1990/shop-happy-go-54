@@ -360,8 +360,7 @@ export async function probeFcmTokens(tokens: string[]): Promise<SendResult[]> {
   }
   if (!projectId) throw new Error("FIREBASE_PROJECT_ID is not set");
 
-  const results: SendResult[] = [];
-  for (const token of tokens) {
+  return runWithConcurrency(tokens, FANOUT_CONCURRENCY, async (token) => {
     const message: Record<string, unknown> = {
       token,
       data: { type: "token_validation" },
@@ -373,17 +372,16 @@ export async function probeFcmTokens(tokens: string[]): Promise<SendResult[]> {
     };
     try {
       const result = await sendFcmMessage(message, projectId);
-      results.push({ token, ...result });
+      return { token, ...result } as SendResult;
     } catch (e) {
-      results.push({
+      return {
         token,
         ok: false,
         error: e instanceof Error ? e.message : String(e),
         code: "NETWORK",
         kind: "transient",
-      });
+      } as SendResult;
     }
-  }
-  return results;
+  });
 }
 
