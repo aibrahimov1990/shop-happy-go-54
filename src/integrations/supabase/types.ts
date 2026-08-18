@@ -114,6 +114,7 @@ export type Database = {
         Row: {
           anonymous_recipients: number
           body: string
+          completed_at: string | null
           created_at: string
           dominant_error_code: string | null
           error_breakdown: Json
@@ -123,6 +124,7 @@ export type Database = {
           pruned_token_count: number
           sent_by: string | null
           signed_in_recipients: number
+          status: string
           success_count: number
           suspect_failure_count: number
           systemic_suspected: boolean
@@ -134,6 +136,7 @@ export type Database = {
         Insert: {
           anonymous_recipients?: number
           body: string
+          completed_at?: string | null
           created_at?: string
           dominant_error_code?: string | null
           error_breakdown?: Json
@@ -143,6 +146,7 @@ export type Database = {
           pruned_token_count?: number
           sent_by?: string | null
           signed_in_recipients?: number
+          status?: string
           success_count?: number
           suspect_failure_count?: number
           systemic_suspected?: boolean
@@ -154,6 +158,7 @@ export type Database = {
         Update: {
           anonymous_recipients?: number
           body?: string
+          completed_at?: string | null
           created_at?: string
           dominant_error_code?: string | null
           error_breakdown?: Json
@@ -163,6 +168,7 @@ export type Database = {
           pruned_token_count?: number
           sent_by?: string | null
           signed_in_recipients?: number
+          status?: string
           success_count?: number
           suspect_failure_count?: number
           systemic_suspected?: boolean
