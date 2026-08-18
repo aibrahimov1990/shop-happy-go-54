@@ -144,6 +144,27 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
 
     const amount = Number(config.amount_gbp);
 
+    // Normalise the window timestamps once, here. The raw values come from
+    // Postgres and are handed to both Shopify (which requires strict ISO 8601)
+    // and JavaScript's Date parser on the client. If a value is ever stored in
+    // a format either side rejects, the failure would otherwise be silent and
+    // total — every discount creation throws deep inside the Shopify call and
+    // nobody gets a code. Fail loudly at the top instead. Do not remove.
+    const startsAtMs = new Date(config.starts_at).getTime();
+    const endsAtMs = new Date(config.ends_at).getTime();
+    if (Number.isNaN(startsAtMs)) {
+      throw new Error(
+        `launch_credit_config.starts_at is not a valid date: ${String(config.starts_at)}`,
+      );
+    }
+    if (Number.isNaN(endsAtMs)) {
+      throw new Error(
+        `launch_credit_config.ends_at is not a valid date: ${String(config.ends_at)}`,
+      );
+    }
+    const startsAtIso = new Date(startsAtMs).toISOString();
+    const endsAtIso = new Date(endsAtMs).toISOString();
+
     const readOwn = async () => {
       const { data, error } = await supabaseAdmin
         .from("app_launch_credits")
