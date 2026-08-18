@@ -137,11 +137,37 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
     const readOwn = async () => {
       const { data, error } = await supabaseAdmin
         .from("app_launch_credits")
-        .select("code, shopify_discount_id, revoked_at")
+        .select("code, email, shopify_discount_id, shopify_customer_id, revoked_at")
         .eq("user_id", context.userId)
         .maybeSingle();
       if (error) throw new Error(error.message);
       return data;
+    };
+
+    const createShopifyDiscount = async (code: string, customerGid: string) => {
+      const data = await shopifyGraphQL(DISCOUNT_CREATE, {
+        basicCodeDiscount: {
+          title: `App Launch £100 — ${code}`,
+          code,
+          startsAt: config.starts_at,
+          endsAt: config.ends_at,
+          customerSelection: { customers: { add: [customerGid] } },
+          customerGets: {
+            value: { discountAmount: { amount, appliesOnEachItem: false } },
+            items: { all: true },
+          },
+          appliesOncePerCustomer: true,
+          usageLimit: 1,
+          combinesWith: {
+            orderDiscounts: false,
+            productDiscounts: false,
+            shippingDiscounts: true,
+          },
+        },
+      });
+      const errs = data?.discountCodeBasicCreate?.userErrors ?? [];
+      if (errs.length) throw new Error(errs.map((e: any) => e.message).join("; "));
+      return data.discountCodeBasicCreate.codeDiscountNode.id as string;
     };
 
     const buildExisting = async (row: {
@@ -170,7 +196,34 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
     };
 
     const existing = await readOwn();
-    if (existing) return buildExisting(existing);
+    if (existing) {
+      if (existing.shopify_discount_id) return buildExisting(existing);
+      // Reserved but incomplete: finish creating the Shopify discount for the
+      // code already stored on the row, then update it in place.
+      const { data: profileRow } = await supabaseAdmin
+        .from("profiles")
+        .select("full_name")
+        .eq("id", context.userId)
+        .maybeSingle();
+      const customerGid =
+        existing.shopify_customer_id ??
+        (await resolveShopifyCustomerId(existing.email, profileRow?.full_name ?? null));
+      const shopifyId = await createShopifyDiscount(existing.code, customerGid);
+      const { error: updErr } = await supabaseAdmin
+        .from("app_launch_credits")
+        .update({ shopify_discount_id: shopifyId, shopify_customer_id: customerGid })
+        .eq("code", existing.code);
+      if (updErr) throw new Error(updErr.message);
+      return {
+        status: existing.revoked_at ? ("revoked" as const) : ("issued" as const),
+        code: existing.code,
+        amount,
+        startsAt: config.starts_at,
+        endsAt: config.ends_at,
+        used: false,
+      };
+    }
+
 
     const { data: authUser, error: authErr } = await supabaseAdmin.auth.admin.getUserById(
       context.userId,
@@ -218,67 +271,72 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
 
     const customerGid = await resolveShopifyCustomerId(user.email, profile?.full_name ?? null);
 
-    let lastErr: unknown = null;
+    // Reserve in the database FIRST so the unique constraints gate everything
+    // before any Shopify write. Retry only on a code collision.
+    let reservedCode: string | null = null;
     for (let i = 0; i < 3; i++) {
       const code = generateCode();
-      try {
-        const data = await shopifyGraphQL(DISCOUNT_CREATE, {
-          basicCodeDiscount: {
-            title: `App Launch £100 — ${code}`,
-            code,
-            startsAt: config.starts_at,
-            endsAt: config.ends_at,
-            customerSelection: { customers: { add: [customerGid] } },
-            customerGets: {
-              value: { discountAmount: { amount, appliesOnEachItem: false } },
-              items: { all: true },
-            },
-            appliesOncePerCustomer: true,
-            usageLimit: 1,
-            combinesWith: {
-              orderDiscounts: false,
-              productDiscounts: false,
-              shippingDiscounts: true,
-            },
-          },
-        });
-        const errs = data?.discountCodeBasicCreate?.userErrors ?? [];
-        if (errs.length) throw new Error(errs.map((e: any) => e.message).join("; "));
-        const shopifyId = data.discountCodeBasicCreate.codeDiscountNode.id as string;
-
-        const { error: insErr } = await supabaseAdmin.from("app_launch_credits").insert({
-          user_id: context.userId,
-          email: user.email,
-          email_normalised: normalised,
-          code,
-          shopify_discount_id: shopifyId,
-          shopify_customer_id: customerGid,
-        });
-        if (insErr) {
-          // 23505 = unique violation: a concurrent request already issued a code.
-          if (insErr.code === "23505") {
-            const row = await readOwn();
-            if (row) return buildExisting(row);
-            return { status: "already_claimed" as const };
-          }
-          throw new Error(insErr.message);
-        }
-
-        return {
-          status: "issued" as const,
-          code,
-          amount,
-          startsAt: config.starts_at,
-          endsAt: config.ends_at,
-          used: false,
-        };
-      } catch (e) {
-        lastErr = e;
+      const { error: insErr } = await supabaseAdmin.from("app_launch_credits").insert({
+        user_id: context.userId,
+        email: user.email,
+        email_normalised: normalised,
+        code,
+        shopify_customer_id: customerGid,
+      });
+      if (!insErr) {
+        reservedCode = code;
+        break;
       }
+      if (insErr.code !== "23505") throw new Error(insErr.message);
+
+      // Which constraint collided?
+      const row = await readOwn();
+      if (row) return buildExisting(row);
+
+      const { data: sameEmail, error: sameEmailErr } = await supabaseAdmin
+        .from("app_launch_credits")
+        .select("id")
+        .eq("email_normalised", normalised)
+        .maybeSingle();
+      if (sameEmailErr) throw new Error(sameEmailErr.message);
+      if (sameEmail) return { status: "already_claimed" as const };
+
+      const { data: sameCode, error: sameCodeErr } = await supabaseAdmin
+        .from("app_launch_credits")
+        .select("id")
+        .eq("code", code)
+        .maybeSingle();
+      if (sameCodeErr) throw new Error(sameCodeErr.message);
+      if (sameCode) continue; // code collision — generate a new one and retry
+
+      return { status: "already_claimed" as const };
     }
-    throw new Error(
-      `Could not create launch credit. ${lastErr instanceof Error ? lastErr.message : ""}`,
-    );
+    if (!reservedCode) throw new Error("Could not reserve a launch credit code");
+
+    let shopifyId: string;
+    try {
+      shopifyId = await createShopifyDiscount(reservedCode, customerGid);
+    } catch (e) {
+      // Release the reservation so the user is not locked out permanently.
+      await supabaseAdmin.from("app_launch_credits").delete().eq("code", reservedCode);
+      throw e;
+    }
+
+    const { error: updErr } = await supabaseAdmin
+      .from("app_launch_credits")
+      .update({ shopify_discount_id: shopifyId })
+      .eq("code", reservedCode);
+    if (updErr) throw new Error(updErr.message);
+
+    return {
+      status: "issued" as const,
+      code: reservedCode,
+      amount,
+      startsAt: config.starts_at,
+      endsAt: config.ends_at,
+      used: false,
+    };
+
   });
 
 export const revokeLaunchCredit = createServerFn({ method: "POST" })
@@ -287,12 +345,16 @@ export const revokeLaunchCredit = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: isAdmin, error: roleErr } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
+    const { data: adminRow, error: roleErr } = await supabaseAdmin
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", context.userId)
+      .eq("role", "admin")
+      .limit(1)
+      .maybeSingle();
     if (roleErr) throw new Error(roleErr.message);
-    if (!isAdmin) throw new Error("Forbidden");
+    if (!adminRow) throw new Error("Forbidden");
+
 
     const { data: row, error } = await supabaseAdmin
       .from("app_launch_credits")
