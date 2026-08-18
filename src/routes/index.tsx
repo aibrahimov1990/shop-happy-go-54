@@ -4,6 +4,8 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
+import { LaunchCreditCard } from "@/components/LaunchCreditCard";
+
 
 import { storefrontApiRequest, PRODUCTS_QUERY, type ShopifyProduct } from "@/lib/shopify";
 import sellierLogo from "@/assets/sellier-logo.svg";
