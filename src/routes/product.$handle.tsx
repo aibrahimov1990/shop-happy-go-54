@@ -14,6 +14,7 @@ import {
 } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { ProductCard } from "@/components/ProductCard";
+import { ImageZoomViewer } from "@/components/ImageZoomViewer";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/product/$handle")({
@@ -28,6 +29,7 @@ function ProductPage() {
   const isLoading = useCartStore((s) => s.isLoading);
   const [variantId, setVariantId] = useState<string | null>(null);
   const [imgIdx, setImgIdx] = useState(0);
+  const [viewerOpen, setViewerOpen] = useState(false);
   const { has, toggle } = useWishlist();
 
   const { data, isLoading: loadingProduct } = useQuery({
@@ -150,7 +152,12 @@ function ProductPage() {
           <ChevronLeft className="h-4 w-4" />
         </button>
 
-        <div className="aspect-[4/5] w-full bg-white overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setViewerOpen(true)}
+          aria-label="View image full screen"
+          className="block aspect-[4/5] w-full bg-white overflow-hidden"
+        >
           {images[imgIdx] && (
             <img
               src={images[imgIdx].url}
@@ -159,7 +166,7 @@ function ProductPage() {
               style={{ objectPosition: "center center" }}
             />
           )}
-        </div>
+        </button>
 
         {images.length > 1 && (
           <div className="flex gap-2 overflow-x-auto px-4 py-3 no-scrollbar">
@@ -177,6 +184,16 @@ function ProductPage() {
           </div>
         )}
       </div>
+
+      {viewerOpen && images.length > 0 && (
+        <ImageZoomViewer
+          images={images}
+          index={imgIdx}
+          onIndexChange={setImgIdx}
+          onClose={() => setViewerOpen(false)}
+          alt={data.title}
+        />
+      )}
 
       <div className="px-4 py-6">
         {data.vendor && (

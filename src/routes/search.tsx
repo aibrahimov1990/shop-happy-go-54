@@ -1,12 +1,17 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
 import { storefrontApiRequest, PRODUCTS_QUERY, type ShopifyProduct } from "@/lib/shopify";
 
+type SearchParams = { q?: string };
+
 export const Route = createFileRoute("/search")({
+  validateSearch: (search: Record<string, unknown>): SearchParams => ({
+    q: typeof search.q === "string" ? search.q : "",
+  }),
   head: () => ({
     meta: [
       { title: "Search — Sellier Knightsbridge" },
@@ -19,13 +24,30 @@ export const Route = createFileRoute("/search")({
 });
 
 function SearchPage() {
-  const [input, setInput] = useState("");
-  const [query, setQuery] = useState("");
+  const { q = "" } = Route.useSearch();
+  const navigate = useNavigate({ from: "/search" });
+  const query = q.trim();
+  const [input, setInput] = useState(q);
+
+  // Keep the input in sync with the URL (back navigation, shared links).
+  useEffect(() => {
+    setInput(q);
+  }, [q]);
+
+  // Debounced URL update — no request per keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const v = input.trim();
+      if (v !== query) navigate({ search: { q: v }, replace: true });
+    }, 350);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input]);
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["products", "search", query],
     queryFn: async (): Promise<ShopifyProduct[]> => {
-      if (!query.trim()) return [];
+      if (!query) return [];
       const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
         first: 40,
         query: `(title:*${query}* OR vendor:*${query}*) AND -tag:KIDS`,
@@ -42,7 +64,7 @@ function SearchPage() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            setQuery(input.trim());
+            navigate({ search: { q: input.trim() }, replace: true });
           }}
           className="relative"
         >

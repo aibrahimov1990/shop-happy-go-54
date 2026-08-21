@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
@@ -50,15 +50,43 @@ const SORTS = [
   { label: "Best Selling", sortKey: "BEST_SELLING", reverse: false },
 ] as const;
 
-type ShopSearch = { category?: "clothing" | "bags" | "shoes" | "accessories" };
+type ShopSearch = {
+  category?: "clothing" | "bags" | "shoes" | "accessories";
+  q?: string;
+  types?: string[];
+  designers?: string[];
+  conditions?: string[];
+  colours?: string[];
+  sizes?: string[];
+  shoeSizes?: string[];
+  sort?: number;
+  newIn?: boolean;
+};
+
+function strList(v: unknown): string[] {
+  if (Array.isArray(v)) return v.filter((x): x is string => typeof x === "string");
+  if (typeof v === "string" && v.length) return [v];
+  return [];
+}
 
 export const Route = createFileRoute("/shop")({
   validateSearch: (search: Record<string, unknown>): ShopSearch => {
     const c = search.category;
-    if (c === "clothing" || c === "bags" || c === "shoes" || c === "accessories") {
-      return { category: c };
-    }
-    return {};
+    const category =
+      c === "clothing" || c === "bags" || c === "shoes" || c === "accessories" ? c : undefined;
+    const sortRaw = Number(search.sort);
+    const sort = Number.isFinite(sortRaw) ? sortRaw : 0;
+    const q = typeof search.q === "string" ? search.q : "";
+    const out: ShopSearch = {};
+    if (category) out.category = category;
+    if (q) out.q = q;
+    (["types", "designers", "conditions", "colours", "sizes", "shoeSizes"] as const).forEach((k) => {
+      const list = strList(search[k]);
+      if (list.length) out[k] = list;
+    });
+    if (sort) out.sort = sort;
+    if (search.newIn === true || search.newIn === "true") out.newIn = true;
+    return out;
   },
   head: () => ({
     meta: [
@@ -193,24 +221,70 @@ function FacetGroup({
 
 function Shop() {
   const search_ = Route.useSearch();
-  const [sortIdx, setSortIdx] = useState(0);
+  const navigate = useNavigate({ from: "/shop" });
   const [filterOpen, setFilterOpen] = useState(false);
-  const [newIn, setNewIn] = useState(false);
-  const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
 
-  // Debounce the search input so we don't hammer Shopify on every keystroke.
+  // All refine state lives in the URL so the result set is reconstructible,
+  // shareable and survives back-navigation from a product.
+  const search = (search_.q ?? "").trim();
+  const types = search_.types ?? [];
+  const designers = search_.designers ?? [];
+  const conditions = search_.conditions ?? [];
+  const colours = search_.colours ?? [];
+  const sizes = search_.sizes ?? [];
+  const shoeSizes = search_.shoeSizes ?? [];
+  const sortIdx = SORTS[search_.sort ?? 0] ? (search_.sort ?? 0) : 0;
+  const newIn = search_.newIn ?? false;
+
+  // Drop defaults/empties so the URL stays short and shareable.
+  const clean = (s: ShopSearch): ShopSearch => {
+    const out: ShopSearch = {};
+    if (s.category) out.category = s.category;
+    if (s.q) out.q = s.q;
+    (["types", "designers", "conditions", "colours", "sizes", "shoeSizes"] as const).forEach((k) => {
+      if ((s[k] ?? []).length) out[k] = s[k];
+    });
+    if (s.sort) out.sort = s.sort;
+    if (s.newIn) out.newIn = true;
+    return out;
+  };
+
+  const patch = (next: Partial<ShopSearch>) =>
+    navigate({ search: (prev: ShopSearch) => clean({ ...prev, ...next }), replace: true });
+
+  const listSetter =
+    (key: "types" | "designers" | "conditions" | "colours" | "sizes" | "shoeSizes") =>
+    (value: string[] | ((cur: string[]) => string[])) =>
+      navigate({
+        search: (prev: ShopSearch) => {
+          const cur = prev[key] ?? [];
+          return clean({ ...prev, [key]: typeof value === "function" ? value(cur) : value });
+        },
+        replace: true,
+      });
+
+  const setTypes = listSetter("types");
+  const setDesigners = listSetter("designers");
+  const setConditions = listSetter("conditions");
+  const setColours = listSetter("colours");
+  const setSizes = listSetter("sizes");
+  const setShoeSizes = listSetter("shoeSizes");
+  const setSortIdx = (i: number) => patch({ sort: i });
+
+  // Local input mirrors the URL term; URL updates are debounced so we don't
+  // push history entries / fire a request on every keystroke.
+  const [searchInput, setSearchInput] = useState(search_.q ?? "");
   useEffect(() => {
-    const t = setTimeout(() => setSearch(searchInput.trim()), 300);
+    setSearchInput(search_.q ?? "");
+  }, [search_.q]);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const v = searchInput.trim();
+      if (v !== (search_.q ?? "").trim()) patch({ q: v });
+    }, 350);
     return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput]);
-
-  const [types, setTypes] = useState<string[]>([]);
-  const [designers, setDesigners] = useState<string[]>([]);
-  const [conditions, setConditions] = useState<string[]>([]);
-  const [colours, setColours] = useState<string[]>([]);
-  const [sizes, setSizes] = useState<string[]>([]);
-  const [shoeSizes, setShoeSizes] = useState<string[]>([]);
 
   const searchActive = search.length > 0;
   const sort = newIn && !searchActive ? SORTS[0] : SORTS[sortIdx];
@@ -320,17 +394,11 @@ function Shop() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const toggle =
-    (setter: React.Dispatch<React.SetStateAction<string[]>>) => (v: string) =>
+    (setter: (value: string[] | ((cur: string[]) => string[])) => void) => (v: string) =>
       setter((cur) => (cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v]));
 
-  const clearAll = () => {
-    setTypes([]);
-    setDesigners([]);
-    setConditions([]);
-    setColours([]);
-    setSizes([]);
-    setShoeSizes([]);
-  };
+  const clearAll = () =>
+    patch({ types: [], designers: [], conditions: [], colours: [], sizes: [], shoeSizes: [] });
 
   // Top category nav
   const CLOTHING_TYPES = [
@@ -350,16 +418,19 @@ function Shop() {
   const [clothingOpen, setClothingOpen] = useState(false);
 
   // Apply category preset from URL search params (e.g. /shop?category=clothing).
-  // Runs once on first mount for a given category value.
+  // Skipped when the URL already carries explicit types (e.g. back-navigation
+  // or a shared link), so it never overwrites a reconstructed result set.
   const appliedCategoryRef = useRef<string | null>(null);
   useEffect(() => {
     const cat = search_.category;
     if (!cat || appliedCategoryRef.current === cat) return;
     appliedCategoryRef.current = cat;
+    if ((search_.types ?? []).length) return;
     if (cat === "clothing") setTypes(CLOTHING_TYPES);
     else if (cat === "bags") setTypes(["Bag"]);
     else if (cat === "shoes") setTypes(["Shoes"]);
     else if (cat === "accessories") setTypes(["Accessories"]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search_.category]);
 
 
@@ -412,13 +483,11 @@ function Shop() {
           <button
             onClick={() => {
               const next = !newIn;
-              setNewIn(next);
-              if (next) {
-                setTypes([]);
-                setDesigners([]);
-                setConditions([]);
-                setColours([]);
-              }
+              patch(
+                next
+                  ? { newIn: true, types: [], designers: [], conditions: [], colours: [] }
+                  : { newIn: false },
+              );
             }}
             className={navBtn(newIn)}
           >
@@ -426,8 +495,7 @@ function Shop() {
           </button>
           <button
             onClick={() => {
-              setNewIn(false);
-              setTypes(bagsActive ? [] : ["Bag"]);
+              patch({ newIn: false, types: bagsActive ? [] : ["Bag"] });
             }}
             className={navBtn(bagsActive && !newIn)}
           >
