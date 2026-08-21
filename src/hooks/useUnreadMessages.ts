@@ -47,7 +47,7 @@ export function useUnreadMessages(options?: { notify?: boolean }) {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel(`unread-messages-${user.id}`)
+      .channel(`unread-messages-${user.id}-${instanceId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "messages" },
