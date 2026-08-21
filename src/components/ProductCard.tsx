@@ -113,7 +113,7 @@ export function ProductCard({
         )}
 
         {soldOut && (
-          <span className="absolute top-2 left-2 z-10 bg-background/90 backdrop-blur-sm px-2 py-1 text-[9px] uppercase tracking-[0.2em] text-foreground">
+          <span className="absolute top-2 left-2 z-10 px-2 py-1 text-[9px] uppercase tracking-[0.2em] text-foreground">
             Sold out
           </span>
         )}
