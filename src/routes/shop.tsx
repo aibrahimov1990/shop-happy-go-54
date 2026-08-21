@@ -381,17 +381,11 @@ function Shop() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const toggle =
-    (setter: React.Dispatch<React.SetStateAction<string[]>>) => (v: string) =>
+    (setter: (value: string[] | ((cur: string[]) => string[])) => void) => (v: string) =>
       setter((cur) => (cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v]));
 
-  const clearAll = () => {
-    setTypes([]);
-    setDesigners([]);
-    setConditions([]);
-    setColours([]);
-    setSizes([]);
-    setShoeSizes([]);
-  };
+  const clearAll = () =>
+    patch({ types: [], designers: [], conditions: [], colours: [], sizes: [], shoeSizes: [] });
 
   // Top category nav
   const CLOTHING_TYPES = [
