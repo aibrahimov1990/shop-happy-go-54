@@ -14,6 +14,9 @@ export function useUnreadMessages(options?: { notify?: boolean }) {
   const notify = options?.notify ?? false;
   const { user } = useAuth();
   const [unread, setUnread] = useState(0);
+  // Unique per hook instance: multiple components use this hook at once, and
+  // reusing one channel name makes the second subscriber throw.
+  const instanceId = useId();
 
   const refresh = useCallback(async () => {
     if (!user) {
