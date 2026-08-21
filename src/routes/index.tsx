@@ -171,8 +171,6 @@ function Home() {
           <li><Link to="/terms">Terms</Link></li>
           <li aria-hidden className="text-foreground/30">·</li>
           <li><Link to="/refund-policy">Refunds</Link></li>
-          <li aria-hidden className="text-foreground/30">·</li>
-          <li><Link to="/sell-with-us">Sell With Us</Link></li>
         </ul>
 
         <div className="mt-8 space-y-1 text-xs text-foreground/70">
