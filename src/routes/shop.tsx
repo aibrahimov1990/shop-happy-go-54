@@ -52,15 +52,15 @@ const SORTS = [
 
 type ShopSearch = {
   category?: "clothing" | "bags" | "shoes" | "accessories";
-  q: string;
-  types: string[];
-  designers: string[];
-  conditions: string[];
-  colours: string[];
-  sizes: string[];
-  shoeSizes: string[];
-  sort: number;
-  newIn: boolean;
+  q?: string;
+  types?: string[];
+  designers?: string[];
+  conditions?: string[];
+  colours?: string[];
+  sizes?: string[];
+  shoeSizes?: string[];
+  sort?: number;
+  newIn?: boolean;
 };
 
 function strList(v: unknown): string[] {
