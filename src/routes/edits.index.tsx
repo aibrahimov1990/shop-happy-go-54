@@ -60,6 +60,14 @@ function EditsPage() {
       const { data, error } = await supabase
         .from("edits")
         .select("id, title, note, status, created_at, sent_at")
+        .or(
+          [
+            `client_user_id.eq.${user!.id}`,
+            user!.email ? `client_email.ilike.${user!.email}` : null,
+          ]
+            .filter(Boolean)
+            .join(","),
+        )
         .neq("status", "draft")
         .order("sent_at", { ascending: false, nullsFirst: false });
       if (error) throw error;

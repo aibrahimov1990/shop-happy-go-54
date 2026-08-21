@@ -33,6 +33,7 @@ interface EditFull {
   note: string | null;
   status: "draft" | "sent" | "viewed";
   sent_at: string | null;
+  shopper_id: string;
   client_email: string;
   client_user_id: string | null;
   edit_items: EditItem[];
@@ -40,7 +41,7 @@ interface EditFull {
 
 function ShopperEditDetail() {
   const { id } = Route.useParams();
-  const { user, loading, isShopper } = useAuth();
+  const { user, loading, isShopper, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -56,7 +57,7 @@ function ShopperEditDetail() {
       const { data, error } = await supabase
         .from("edits")
         .select(
-          "id, title, note, status, sent_at, client_email, client_user_id, edit_items(id, shopify_handle, title, image_url, price_amount, price_currency)",
+          "id, title, note, status, sent_at, shopper_id, client_email, client_user_id, edit_items(id, shopify_handle, title, image_url, price_amount, price_currency)",
         )
         .eq("id", id)
         .maybeSingle();
@@ -64,6 +65,13 @@ function ShopperEditDetail() {
       return data as EditFull | null;
     },
   });
+
+  // An edit sent *to* this shopper belongs in the client view.
+  useEffect(() => {
+    if (edit && user && edit.shopper_id !== user.id && !isAdmin) {
+      navigate({ to: "/edits/$id", params: { id }, replace: true });
+    }
+  }, [edit, user, isAdmin, navigate, id]);
 
   if (loading || !user || isLoading) {
     return (
