@@ -22,6 +22,9 @@ export function ProductCard({
   const [adding, setAdding] = useState(false);
 
   const firstVariant = p.variants.edges[0]?.node;
+  const soldOut =
+    p.variants.edges.length > 0 &&
+    !p.variants.edges.some((v) => v.node.availableForSale);
   const hasOptions =
     p.variants.edges.length > 1 ||
     (p.options?.length === 1 && p.options[0]?.values?.length > 1);
@@ -109,6 +112,12 @@ export function ProductCard({
           </div>
         )}
 
+        {soldOut && (
+          <span className="absolute top-2 left-2 z-10 bg-background/90 backdrop-blur-sm px-2 py-1 text-[9px] uppercase tracking-[0.2em] text-foreground">
+            Sold out
+          </span>
+        )}
+
         <button
           type="button"
           aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
@@ -133,14 +142,21 @@ export function ProductCard({
           </p>
         )}
         <h3 className="font-serif text-sm leading-tight line-clamp-2">{p.title}</h3>
-        <p className="text-xs mt-1">{formatPrice(price.amount, price.currencyCode)}</p>
+        <p className="text-xs mt-1">
+          {formatPrice(price.amount, price.currencyCode)}
+          {soldOut && (
+            <span className="ml-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              Sold out
+            </span>
+          )}
+        </p>
       </Link>
 
       {showAddToBag && (
         <button
           type="button"
           onClick={handleAddToBag}
-          disabled={adding}
+          disabled={adding || soldOut}
           className="mt-2 w-full flex items-center justify-center gap-1.5 border border-foreground py-2 text-[10px] uppercase tracking-[0.2em] disabled:opacity-50"
         >
           {adding ? (
@@ -148,7 +164,7 @@ export function ProductCard({
           ) : (
             <>
               <ShoppingBag className="h-3 w-3" strokeWidth={1.5} />
-              {hasOptions ? "Select options" : "Add to bag"}
+              {soldOut ? "Sold out" : hasOptions ? "Select options" : "Add to bag"}
             </>
           )}
         </button>
