@@ -4,6 +4,7 @@ import { flushSync } from "react-dom";
 import { useServerFn } from "@tanstack/react-start";
 import { MobileLayout } from "@/components/MobileLayout";
 import { useAuth } from "@/hooks/useAuth";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -46,6 +47,7 @@ export const Route = createFileRoute("/account")({
 
 function Account() {
   const { user, loading, isShopper, isAdmin, signOut } = useAuth();
+  const { unread: unreadMessages } = useUnreadMessages();
   const navigate = useNavigate();
   const deleteAccount = useServerFn(deleteMyAccount);
   const [deleting, setDeleting] = useState(false);
@@ -223,6 +225,11 @@ function Account() {
           <div className="flex items-center gap-3">
             <MessageCircle className="h-4 w-4" />
             <span className="text-sm">Messages</span>
+            {unreadMessages > 0 && (
+              <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] leading-5 text-center font-medium">
+                {unreadMessages}
+              </span>
+            )}
           </div>
           <span className="text-muted-foreground">›</span>
         </Link>

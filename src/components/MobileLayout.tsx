@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Search, User, Sparkles, Heart } from "lucide-react";
 import { CartDrawer, CartButton } from "./CartDrawer";
 import { useCartSync } from "@/hooks/useCartSync";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import sellierLogo from "@/assets/sellier-logo.svg";
 
 const navItems = [
@@ -17,6 +18,7 @@ export function MobileLayout({ children }: { children: ReactNode }) {
   const [cartOpen, setCartOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   useCartSync();
+  const { unread } = useUnreadMessages({ notify: true });
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -47,7 +49,14 @@ export function MobileLayout({ children }: { children: ReactNode }) {
                   active ? "text-foreground" : "text-muted-foreground"
                 }`}
               >
-                <Icon className="h-5 w-5" strokeWidth={active ? 2 : 1.5} />
+                <span className="relative">
+                  <Icon className="h-5 w-5" strokeWidth={active ? 2 : 1.5} />
+                  {to === "/account" && unread > 0 && (
+                    <span className="absolute -top-1 -right-2 min-w-[1rem] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] leading-4 text-center font-medium">
+                      {unread > 9 ? "9+" : unread}
+                    </span>
+                  )}
+                </span>
                 <span>{label}</span>
               </Link>
             );
