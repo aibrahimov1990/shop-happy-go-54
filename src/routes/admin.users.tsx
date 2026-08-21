@@ -33,7 +33,7 @@ export const Route = createFileRoute("/admin/users")({
 });
 
 function UsersPage() {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isShopper } = useAuth();
   const navigate = useNavigate();
   const fetchUsers = useServerFn(listAllUsers);
   const [filter, setFilter] = useState<"all" | "sellier">("all");
@@ -46,7 +46,7 @@ function UsersPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin-users", filter],
     queryFn: () => fetchUsers({ data: { filter } }),
-    enabled: !!user && isAdmin,
+    enabled: !!user && isShopper,
   });
 
   type UserRow = NonNullable<typeof data>["users"][number];
@@ -61,7 +61,7 @@ function UsersPage() {
     );
   }, [data, search]);
 
-  if (loading || (user && isAdmin && isLoading)) {
+  if (loading || (user && isShopper && isLoading)) {
     return (
       <MobileLayout>
         <div className="flex items-center justify-center py-20">
@@ -71,11 +71,11 @@ function UsersPage() {
     );
   }
 
-  if (user && !isAdmin) {
+  if (user && !isShopper) {
     return (
       <MobileLayout>
         <div className="px-6 py-16 text-center">
-          <h1 className="font-serif text-2xl mb-2">Admins only</h1>
+          <h1 className="font-serif text-2xl mb-2">Team only</h1>
           <Link to="/account"><Button className="mt-4">Back</Button></Link>
         </div>
       </MobileLayout>
