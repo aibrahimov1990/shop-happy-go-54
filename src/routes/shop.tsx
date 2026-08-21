@@ -405,16 +405,19 @@ function Shop() {
   const [clothingOpen, setClothingOpen] = useState(false);
 
   // Apply category preset from URL search params (e.g. /shop?category=clothing).
-  // Runs once on first mount for a given category value.
+  // Skipped when the URL already carries explicit types (e.g. back-navigation
+  // or a shared link), so it never overwrites a reconstructed result set.
   const appliedCategoryRef = useRef<string | null>(null);
   useEffect(() => {
     const cat = search_.category;
     if (!cat || appliedCategoryRef.current === cat) return;
     appliedCategoryRef.current = cat;
+    if ((search_.types ?? []).length) return;
     if (cat === "clothing") setTypes(CLOTHING_TYPES);
     else if (cat === "bags") setTypes(["Bag"]);
     else if (cat === "shoes") setTypes(["Shoes"]);
     else if (cat === "accessories") setTypes(["Accessories"]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search_.category]);
 
 
