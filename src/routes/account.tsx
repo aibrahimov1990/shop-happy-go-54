@@ -265,7 +265,7 @@ function Account() {
           </Link>
         )}
 
-        {isAdmin && (
+        {isShopper && (
           <Link to="/admin/users" className="flex items-center justify-between px-6 py-5 active:bg-muted/40">
             <div className="flex items-center gap-3">
               <Users className="h-4 w-4" />
