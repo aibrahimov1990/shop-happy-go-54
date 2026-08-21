@@ -129,13 +129,17 @@ function BootstrapAdmin() {
 }
 
 function ShopperEditsList({ isAdmin }: { isAdmin: boolean }) {
+  const { user } = useAuth();
   const { data: edits = [], isLoading } = useQuery({
-    queryKey: ["shopper-edits"],
+    queryKey: ["shopper-edits", user?.id],
+    enabled: !!user,
     queryFn: async (): Promise<ShopperEdit[]> => {
-      const { data, error } = await supabase
+      // Only edits this shopper authored — edits *sent to* them live in /edits.
+      let query = supabase
         .from("edits")
-        .select("id, title, client_email, status, created_at, sent_at, viewed_at")
-        .order("created_at", { ascending: false });
+        .select("id, title, client_email, status, created_at, sent_at, viewed_at");
+      if (!isAdmin) query = query.eq("shopper_id", user!.id);
+      const { data, error } = await query.order("created_at", { ascending: false });
       if (error) throw error;
       return data as ShopperEdit[];
     },
