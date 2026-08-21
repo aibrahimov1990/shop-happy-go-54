@@ -236,8 +236,21 @@ function Shop() {
   const sortIdx = SORTS[search_.sort ?? 0] ? (search_.sort ?? 0) : 0;
   const newIn = search_.newIn ?? false;
 
+  // Drop defaults/empties so the URL stays short and shareable.
+  const clean = (s: ShopSearch): ShopSearch => {
+    const out: ShopSearch = {};
+    if (s.category) out.category = s.category;
+    if (s.q) out.q = s.q;
+    (["types", "designers", "conditions", "colours", "sizes", "shoeSizes"] as const).forEach((k) => {
+      if ((s[k] ?? []).length) out[k] = s[k];
+    });
+    if (s.sort) out.sort = s.sort;
+    if (s.newIn) out.newIn = true;
+    return out;
+  };
+
   const patch = (next: Partial<ShopSearch>) =>
-    navigate({ search: (prev: ShopSearch) => ({ ...prev, ...next }), replace: true });
+    navigate({ search: (prev: ShopSearch) => clean({ ...prev, ...next }), replace: true });
 
   const listSetter =
     (key: "types" | "designers" | "conditions" | "colours" | "sizes" | "shoeSizes") =>
@@ -245,7 +258,7 @@ function Shop() {
       navigate({
         search: (prev: ShopSearch) => {
           const cur = prev[key] ?? [];
-          return { ...prev, [key]: typeof value === "function" ? value(cur) : value };
+          return clean({ ...prev, [key]: typeof value === "function" ? value(cur) : value });
         },
         replace: true,
       });
