@@ -221,24 +221,57 @@ function FacetGroup({
 
 function Shop() {
   const search_ = Route.useSearch();
-  const [sortIdx, setSortIdx] = useState(0);
+  const navigate = useNavigate({ from: "/shop" });
   const [filterOpen, setFilterOpen] = useState(false);
-  const [newIn, setNewIn] = useState(false);
-  const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
 
-  // Debounce the search input so we don't hammer Shopify on every keystroke.
+  // All refine state lives in the URL so the result set is reconstructible,
+  // shareable and survives back-navigation from a product.
+  const search = (search_.q ?? "").trim();
+  const types = search_.types ?? [];
+  const designers = search_.designers ?? [];
+  const conditions = search_.conditions ?? [];
+  const colours = search_.colours ?? [];
+  const sizes = search_.sizes ?? [];
+  const shoeSizes = search_.shoeSizes ?? [];
+  const sortIdx = SORTS[search_.sort ?? 0] ? (search_.sort ?? 0) : 0;
+  const newIn = search_.newIn ?? false;
+
+  const patch = (next: Partial<ShopSearch>) =>
+    navigate({ search: (prev) => ({ ...prev, ...next }), replace: true });
+
+  const listSetter =
+    (key: "types" | "designers" | "conditions" | "colours" | "sizes" | "shoeSizes") =>
+    (value: string[] | ((cur: string[]) => string[])) =>
+      navigate({
+        search: (prev: ShopSearch) => {
+          const cur = prev[key] ?? [];
+          return { ...prev, [key]: typeof value === "function" ? value(cur) : value };
+        },
+        replace: true,
+      });
+
+  const setTypes = listSetter("types");
+  const setDesigners = listSetter("designers");
+  const setConditions = listSetter("conditions");
+  const setColours = listSetter("colours");
+  const setSizes = listSetter("sizes");
+  const setShoeSizes = listSetter("shoeSizes");
+  const setSortIdx = (i: number) => patch({ sort: i });
+
+  // Local input mirrors the URL term; URL updates are debounced so we don't
+  // push history entries / fire a request on every keystroke.
+  const [searchInput, setSearchInput] = useState(search_.q ?? "");
   useEffect(() => {
-    const t = setTimeout(() => setSearch(searchInput.trim()), 300);
+    setSearchInput(search_.q ?? "");
+  }, [search_.q]);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const v = searchInput.trim();
+      if (v !== (search_.q ?? "").trim()) patch({ q: v });
+    }, 350);
     return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput]);
-
-  const [types, setTypes] = useState<string[]>([]);
-  const [designers, setDesigners] = useState<string[]>([]);
-  const [conditions, setConditions] = useState<string[]>([]);
-  const [colours, setColours] = useState<string[]>([]);
-  const [sizes, setSizes] = useState<string[]>([]);
-  const [shoeSizes, setShoeSizes] = useState<string[]>([]);
 
   const searchActive = search.length > 0;
   const sort = newIn && !searchActive ? SORTS[0] : SORTS[sortIdx];
