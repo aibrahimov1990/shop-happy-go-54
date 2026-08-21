@@ -153,3 +153,19 @@ export function formatPrice(amount: string | number, currency = "GBP") {
     return `${currency} ${n.toFixed(0)}`;
   }
 }
+
+/**
+ * Request a large variant of a Shopify CDN image (used by the full-screen
+ * zoom viewer) rather than upscaling the gallery thumbnail.
+ */
+export function shopifyImageUrl(url: string, width = 2048): string {
+  try {
+    const u = new URL(url);
+    u.searchParams.set("width", String(width));
+    u.searchParams.delete("height");
+    u.searchParams.delete("crop");
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
