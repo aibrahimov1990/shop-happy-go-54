@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,9 @@ export function useUnreadMessages(options?: { notify?: boolean }) {
   const notify = options?.notify ?? false;
   const { user } = useAuth();
   const [unread, setUnread] = useState(0);
+  // Unique per hook instance: multiple components use this hook at once, and
+  // reusing one channel name makes the second subscriber throw.
+  const instanceId = useId();
 
   const refresh = useCallback(async () => {
     if (!user) {
@@ -44,7 +47,7 @@ export function useUnreadMessages(options?: { notify?: boolean }) {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel(`unread-messages-${user.id}`)
+      .channel(`unread-messages-${user.id}-${instanceId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "messages" },
@@ -78,7 +81,7 @@ export function useUnreadMessages(options?: { notify?: boolean }) {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [user, notify, refresh]);
+  }, [user, notify, refresh, instanceId]);
 
   return { unread, refresh };
 }
