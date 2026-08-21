@@ -4,6 +4,7 @@ import { flushSync } from "react-dom";
 import { useServerFn } from "@tanstack/react-start";
 import { MobileLayout } from "@/components/MobileLayout";
 import { useAuth } from "@/hooks/useAuth";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -46,6 +47,7 @@ export const Route = createFileRoute("/account")({
 
 function Account() {
   const { user, loading, isShopper, isAdmin, signOut } = useAuth();
+  const { unread: unreadMessages } = useUnreadMessages();
   const navigate = useNavigate();
   const deleteAccount = useServerFn(deleteMyAccount);
   const [deleting, setDeleting] = useState(false);
