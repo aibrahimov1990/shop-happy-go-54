@@ -15,6 +15,7 @@ import {
 import { useCartStore } from "@/stores/cartStore";
 import { ProductCard } from "@/components/ProductCard";
 import { ImageZoomViewer } from "@/components/ImageZoomViewer";
+import { InlineZoomImage } from "@/components/InlineZoomImage";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/product/$handle")({
@@ -152,21 +153,13 @@ function ProductPage() {
           <ChevronLeft className="h-4 w-4" />
         </button>
 
-        <button
-          type="button"
-          onClick={() => setViewerOpen(true)}
-          aria-label="View image full screen"
-          className="block aspect-[4/5] w-full bg-white overflow-hidden"
-        >
-          {images[imgIdx] && (
-            <img
-              src={images[imgIdx].url}
-              alt={images[imgIdx].altText ?? data.title}
-              className="h-full w-full object-cover"
-              style={{ objectPosition: "center center" }}
-            />
-          )}
-        </button>
+        {images[imgIdx] && (
+          <InlineZoomImage
+            url={images[imgIdx].url}
+            alt={images[imgIdx].altText ?? data.title}
+            onOpen={() => setViewerOpen(true)}
+          />
+        )}
 
         {images.length > 1 && (
           <div className="flex gap-2 overflow-x-auto px-4 py-3 no-scrollbar">
