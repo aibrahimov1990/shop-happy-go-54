@@ -90,7 +90,7 @@ export const sendMessage = createServerFn({ method: "POST" })
         await sendFcmToTokens(tokens, {
           title: isShopperSender ? `${senderName} · Sellier` : `${senderName}`,
           body: preview,
-          url: isShopperSender ? "/messages" : "/messages",
+          url: `/messages/${userId}`,
         });
       }
     } catch (err) {

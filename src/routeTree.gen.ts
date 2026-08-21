@@ -25,9 +25,11 @@ import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopperIndexRouteImport } from './routes/shopper.index'
+import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as EditsIndexRouteImport } from './routes/edits.index'
 import { Route as ShopperNewRouteImport } from './routes/shopper.new'
 import { Route as ProductHandleRouteImport } from './routes/product.$handle'
+import { Route as MessagesUserIdRouteImport } from './routes/messages.$userId'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as EditsIdRouteImport } from './routes/edits.$id'
 import { Route as CollectionsHandleRouteImport } from './routes/collections.$handle'
@@ -129,6 +131,11 @@ const ShopperIndexRoute = ShopperIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ShopperRoute,
 } as any)
+const MessagesIndexRoute = MessagesIndexRouteImport.update({
+  id: '/messages/',
+  path: '/messages/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EditsIndexRoute = EditsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -142,6 +149,11 @@ const ShopperNewRoute = ShopperNewRouteImport.update({
 const ProductHandleRoute = ProductHandleRouteImport.update({
   id: '/product/$handle',
   path: '/product/$handle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesUserIdRoute = MessagesUserIdRouteImport.update({
+  id: '/messages/$userId',
+  path: '/messages/$userId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
@@ -274,9 +286,11 @@ export interface FileRoutesByFullPath {
   '/collections/$handle': typeof CollectionsHandleRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/messages/$userId': typeof MessagesUserIdRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
   '/edits/': typeof EditsIndexRoute
+  '/messages/': typeof MessagesIndexRoute
   '/shopper/': typeof ShopperIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/open/edits/$id': typeof OpenEditsIdRoute
@@ -313,9 +327,11 @@ export interface FileRoutesByTo {
   '/collections/$handle': typeof CollectionsHandleRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/messages/$userId': typeof MessagesUserIdRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
   '/edits': typeof EditsIndexRoute
+  '/messages': typeof MessagesIndexRoute
   '/shopper': typeof ShopperIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/open/edits/$id': typeof OpenEditsIdRoute
@@ -355,9 +371,11 @@ export interface FileRoutesById {
   '/collections/$handle': typeof CollectionsHandleRoute
   '/edits/$id': typeof EditsIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/messages/$userId': typeof MessagesUserIdRoute
   '/product/$handle': typeof ProductHandleRoute
   '/shopper/new': typeof ShopperNewRoute
   '/edits/': typeof EditsIndexRoute
+  '/messages/': typeof MessagesIndexRoute
   '/shopper/': typeof ShopperIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/open/edits/$id': typeof OpenEditsIdRoute
@@ -398,9 +416,11 @@ export interface FileRouteTypes {
     | '/collections/$handle'
     | '/edits/$id'
     | '/email/unsubscribe'
+    | '/messages/$userId'
     | '/product/$handle'
     | '/shopper/new'
     | '/edits/'
+    | '/messages/'
     | '/shopper/'
     | '/lovable/email/suppression'
     | '/open/edits/$id'
@@ -437,9 +457,11 @@ export interface FileRouteTypes {
     | '/collections/$handle'
     | '/edits/$id'
     | '/email/unsubscribe'
+    | '/messages/$userId'
     | '/product/$handle'
     | '/shopper/new'
     | '/edits'
+    | '/messages'
     | '/shopper'
     | '/lovable/email/suppression'
     | '/open/edits/$id'
@@ -478,9 +500,11 @@ export interface FileRouteTypes {
     | '/collections/$handle'
     | '/edits/$id'
     | '/email/unsubscribe'
+    | '/messages/$userId'
     | '/product/$handle'
     | '/shopper/new'
     | '/edits/'
+    | '/messages/'
     | '/shopper/'
     | '/lovable/email/suppression'
     | '/open/edits/$id'
@@ -519,7 +543,9 @@ export interface RootRouteChildren {
   AdminUsersRoute: typeof AdminUsersRoute
   CollectionsHandleRoute: typeof CollectionsHandleRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  MessagesUserIdRoute: typeof MessagesUserIdRoute
   ProductHandleRoute: typeof ProductHandleRoute
+  MessagesIndexRoute: typeof MessagesIndexRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   OpenEditsIdRoute: typeof OpenEditsIdRoute
   ApiPublicHooksStockAlertsRoute: typeof ApiPublicHooksStockAlertsRoute
@@ -645,6 +671,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopperIndexRouteImport
       parentRoute: typeof ShopperRoute
     }
+    '/messages/': {
+      id: '/messages/'
+      path: '/messages'
+      fullPath: '/messages/'
+      preLoaderRoute: typeof MessagesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/edits/': {
       id: '/edits/'
       path: '/'
@@ -664,6 +697,13 @@ declare module '@tanstack/react-router' {
       path: '/product/$handle'
       fullPath: '/product/$handle'
       preLoaderRoute: typeof ProductHandleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages/$userId': {
+      id: '/messages/$userId'
+      path: '/messages/$userId'
+      fullPath: '/messages/$userId'
+      preLoaderRoute: typeof MessagesUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/email/unsubscribe': {
@@ -863,7 +903,9 @@ const rootRouteChildren: RootRouteChildren = {
   AdminUsersRoute: AdminUsersRoute,
   CollectionsHandleRoute: CollectionsHandleRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  MessagesUserIdRoute: MessagesUserIdRoute,
   ProductHandleRoute: ProductHandleRoute,
+  MessagesIndexRoute: MessagesIndexRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   OpenEditsIdRoute: OpenEditsIdRoute,
   ApiPublicHooksStockAlertsRoute: ApiPublicHooksStockAlertsRoute,
