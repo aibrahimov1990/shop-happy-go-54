@@ -75,18 +75,18 @@ export const Route = createFileRoute("/shop")({
     const category =
       c === "clothing" || c === "bags" || c === "shoes" || c === "accessories" ? c : undefined;
     const sortRaw = Number(search.sort);
-    return {
-      ...(category ? { category } : {}),
-      q: typeof search.q === "string" ? search.q : "",
-      types: strList(search.types),
-      designers: strList(search.designers),
-      conditions: strList(search.conditions),
-      colours: strList(search.colours),
-      sizes: strList(search.sizes),
-      shoeSizes: strList(search.shoeSizes),
-      sort: Number.isFinite(sortRaw) ? sortRaw : 0,
-      newIn: search.newIn === true || search.newIn === "true",
-    };
+    const sort = Number.isFinite(sortRaw) ? sortRaw : 0;
+    const q = typeof search.q === "string" ? search.q : "";
+    const out: ShopSearch = {};
+    if (category) out.category = category;
+    if (q) out.q = q;
+    (["types", "designers", "conditions", "colours", "sizes", "shoeSizes"] as const).forEach((k) => {
+      const list = strList(search[k]);
+      if (list.length) out[k] = list;
+    });
+    if (sort) out.sort = sort;
+    if (search.newIn === true || search.newIn === "true") out.newIn = true;
+    return out;
   },
   head: () => ({
     meta: [
