@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
@@ -237,7 +237,7 @@ function Shop() {
   const newIn = search_.newIn ?? false;
 
   const patch = (next: Partial<ShopSearch>) =>
-    navigate({ search: (prev) => ({ ...prev, ...next }), replace: true });
+    navigate({ search: (prev: ShopSearch) => ({ ...prev, ...next }), replace: true });
 
   const listSetter =
     (key: "types" | "designers" | "conditions" | "colours" | "sizes" | "shoeSizes") =>
@@ -473,13 +473,11 @@ function Shop() {
           <button
             onClick={() => {
               const next = !newIn;
-              setNewIn(next);
-              if (next) {
-                setTypes([]);
-                setDesigners([]);
-                setConditions([]);
-                setColours([]);
-              }
+              patch(
+                next
+                  ? { newIn: true, types: [], designers: [], conditions: [], colours: [] }
+                  : { newIn: false },
+              );
             }}
             className={navBtn(newIn)}
           >
@@ -487,8 +485,7 @@ function Shop() {
           </button>
           <button
             onClick={() => {
-              setNewIn(false);
-              setTypes(bagsActive ? [] : ["Bag"]);
+              patch({ newIn: false, types: bagsActive ? [] : ["Bag"] });
             }}
             className={navBtn(bagsActive && !newIn)}
           >
