@@ -50,15 +50,43 @@ const SORTS = [
   { label: "Best Selling", sortKey: "BEST_SELLING", reverse: false },
 ] as const;
 
-type ShopSearch = { category?: "clothing" | "bags" | "shoes" | "accessories" };
+type ShopSearch = {
+  category?: "clothing" | "bags" | "shoes" | "accessories";
+  q: string;
+  types: string[];
+  designers: string[];
+  conditions: string[];
+  colours: string[];
+  sizes: string[];
+  shoeSizes: string[];
+  sort: number;
+  newIn: boolean;
+};
+
+function strList(v: unknown): string[] {
+  if (Array.isArray(v)) return v.filter((x): x is string => typeof x === "string");
+  if (typeof v === "string" && v.length) return [v];
+  return [];
+}
 
 export const Route = createFileRoute("/shop")({
   validateSearch: (search: Record<string, unknown>): ShopSearch => {
     const c = search.category;
-    if (c === "clothing" || c === "bags" || c === "shoes" || c === "accessories") {
-      return { category: c };
-    }
-    return {};
+    const category =
+      c === "clothing" || c === "bags" || c === "shoes" || c === "accessories" ? c : undefined;
+    const sortRaw = Number(search.sort);
+    return {
+      ...(category ? { category } : {}),
+      q: typeof search.q === "string" ? search.q : "",
+      types: strList(search.types),
+      designers: strList(search.designers),
+      conditions: strList(search.conditions),
+      colours: strList(search.colours),
+      sizes: strList(search.sizes),
+      shoeSizes: strList(search.shoeSizes),
+      sort: Number.isFinite(sortRaw) ? sortRaw : 0,
+      newIn: search.newIn === true || search.newIn === "true",
+    };
   },
   head: () => ({
     meta: [
