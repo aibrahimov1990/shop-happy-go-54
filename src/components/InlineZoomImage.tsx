@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ZoomIn } from "lucide-react";
 import { shopifyImageUrl } from "@/lib/shopify";
 
 const MIN_ZOOM = 1;
@@ -197,6 +198,14 @@ export function InlineZoomImage({
           transition: g.current.mode === "none" ? "transform 180ms ease-out" : "none",
         }}
       />
+      {zoom === 1 && (
+        <span
+          aria-hidden
+          className="absolute bottom-3 right-3 flex h-7 w-7 items-center justify-center rounded-full bg-background/70 backdrop-blur-sm text-foreground/80"
+        >
+          <ZoomIn className="h-3.5 w-3.5" strokeWidth={1.5} />
+        </span>
+      )}
       {zoom > 1 && (
         <button
           type="button"
