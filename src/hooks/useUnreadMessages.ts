@@ -81,7 +81,7 @@ export function useUnreadMessages(options?: { notify?: boolean }) {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [user, notify, refresh]);
+  }, [user, notify, refresh, instanceId]);
 
   return { unread, refresh };
 }
