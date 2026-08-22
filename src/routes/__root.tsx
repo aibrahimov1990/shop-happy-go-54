@@ -129,31 +129,42 @@ function RootComponent() {
 
   useEffect(() => {
     let mounted = true;
+    let done = false;
+
+    const proceed = () => {
+      if (!mounted || done) return;
+      done = true;
+      setNativeSessionReady(true);
+      // Native splash handoff is triggered by <NativeWebSplash />.
+      void import("../lib/native-oauth").then((m) =>
+        m.installNativeAuthDeepLinkHandler((path) => {
+          window.location.assign(path);
+        }),
+      );
+      void import("../lib/push-client").then((m) => m.initPushNotifications());
+      void import("../lib/analytics-client").then((m) => m.initAnalytics());
+      void import("../lib/native-deep-links").then((m) =>
+        m.installAppDeepLinkHandler((path) => {
+          router.navigate({ to: path });
+        }),
+      );
+    };
+
+    // Never let session restore hold the whole app on a blank screen: if the
+    // network is slow or a token refresh hangs, render anyway after 3s.
+    const failSafe = setTimeout(proceed, 3000);
+
     void import("../lib/native-session")
       .then((m) => m.initNativeSessionPersistence())
-      .finally(() => {
-        if (mounted) {
-          setNativeSessionReady(true);
-          // Native splash handoff is triggered by <NativeWebSplash />.
-          void import("../lib/native-oauth").then((m) =>
-            m.installNativeAuthDeepLinkHandler((path) => {
-              window.location.assign(path);
-            }),
-          );
-          void import("../lib/push-client").then((m) => m.initPushNotifications());
-          void import("../lib/analytics-client").then((m) => m.initAnalytics());
-          void import("../lib/native-deep-links").then((m) =>
-            m.installAppDeepLinkHandler((path) => {
-              router.navigate({ to: path });
-            }),
-          );
-        }
-      });
+      .catch((err) => console.warn("Native session init failed", err))
+      .finally(proceed);
 
     return () => {
       mounted = false;
+      clearTimeout(failSafe);
     };
   }, []);
+
 
   useEffect(() => {
     if (!nativeSessionReady) return;
