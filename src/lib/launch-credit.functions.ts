@@ -232,9 +232,12 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
     const existing = await readOwn();
     if (existing) {
       if (existing.shopify_discount_id) return buildExisting(existing);
-      // Reserved but incomplete: finish creating the Shopify discount for the
-      // code already stored on the row, then update it in place.
-      const shopifyId = await createShopifyDiscount(existing.code);
+      // Reserved but incomplete: the Shopify discount may already exist for the
+      // stored code (created, but the database update was lost). Look it up
+      // first and only create when nothing is there.
+      const shopifyId =
+        (await findDiscountIdByCode(existing.code)) ??
+        (await createShopifyDiscount(existing.code));
       const { error: updErr } = await supabaseAdmin
         .from("app_launch_credits")
         .update({ shopify_discount_id: shopifyId })
