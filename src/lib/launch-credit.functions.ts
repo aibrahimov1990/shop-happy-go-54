@@ -92,6 +92,24 @@ async function getDiscountUsageCount(id: string): Promise<number> {
   }
 }
 
+const DISCOUNT_LOOKUP_BY_CODE = `
+query LookupByCode($code: String!) {
+  codeDiscountNodeByCode(code: $code) { id }
+}`;
+
+// Finds an existing Shopify discount by its code. Must use
+// codeDiscountNodeByCode — codeDiscountNodes(query: "code:X") ignores the
+// code: prefix and returns unrelated discounts.
+async function findDiscountIdByCode(code: string): Promise<string | null> {
+  const data = await shopifyGraphQL(DISCOUNT_LOOKUP_BY_CODE, { code });
+  return (data?.codeDiscountNodeByCode?.id as string | undefined) ?? null;
+}
+
+function isCodeTakenError(e: any): boolean {
+  return e?.code === "TAKEN" || /must be unique|already exists|taken/i.test(e?.message ?? "");
+}
+
+
 
 export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
