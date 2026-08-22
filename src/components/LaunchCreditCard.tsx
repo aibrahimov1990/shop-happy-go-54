@@ -120,10 +120,14 @@ function CopyableCode({ code, muted }: { code: string; muted?: boolean }) {
 
 export function LaunchCreditCard() {
   const claim = useServerFn(getOrCreateLaunchCredit);
+  const { session, loading: authLoading } = useAuth();
   const [now, setNow] = useState(() => Date.now());
   const { data, isLoading, error } = useQuery({
-    queryKey: ["launch-credit"],
+    queryKey: ["launch-credit", session?.user.id ?? null],
     queryFn: () => claim(),
+    // The server fn requires an authenticated caller — querying while signed
+    // out only produces an Unauthorized error card on the home page.
+    enabled: !authLoading && !!session,
     retry: false,
   });
 
@@ -131,6 +135,8 @@ export function LaunchCreditCard() {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  if (authLoading || !session) return null;
 
   // Surface failures instead of rendering nothing: a thrown server error used to
   // make this card disappear silently, which is indistinguishable from "disabled".
@@ -148,6 +154,7 @@ export function LaunchCreditCard() {
   }
 
   if (isLoading || !data || data.status === "disabled") return null;
+
 
   const message = (() => {
     switch (data.status) {
