@@ -28,38 +28,60 @@ export function useAuth(): AuthState & {
         if (!cancelled) setRoles([]);
         return;
       }
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId);
-      if (cancelled) return;
-      if (error) {
-        console.error("Failed to load roles", error);
-        setRoles([]);
-      } else {
-        setRoles((data ?? []).map((r) => r.role as AppRole));
+      try {
+        const { data, error } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId);
+        if (cancelled) return;
+        if (error) {
+          console.error("Failed to load roles", error);
+          setRoles([]);
+        } else {
+          setRoles((data ?? []).map((r) => r.role as AppRole));
+        }
+      } catch (err) {
+        console.error("Failed to load roles", err);
+        if (!cancelled) setRoles([]);
       }
     };
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
+      // Any auth event means the client has resolved its state — never keep the
+      // UI stuck on a spinner waiting for getSession() alone.
+      setLoading(false);
       // Defer Supabase call to avoid deadlock inside the callback
-      setTimeout(() => fetchRoles(newSession?.user.id), 0);
+      setTimeout(() => void fetchRoles(newSession?.user.id), 0);
     });
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (cancelled) return;
-      setSession(data.session);
-      fetchRoles(data.session?.user.id).finally(() => {
+    // Fail-safe: a hanging or rejected network call must not leave the app
+    // spinning forever. Resolve the loading state no matter what.
+    const failSafe = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 4000);
+
+    supabase.auth
+      .getSession()
+      .then(async ({ data }) => {
+        if (cancelled) return;
+        setSession(data.session);
+        await fetchRoles(data.session?.user.id);
+      })
+      .catch((err) => {
+        console.error("Failed to load session", err);
+      })
+      .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    });
 
     return () => {
       cancelled = true;
+      clearTimeout(failSafe);
       sub.subscription.unsubscribe();
     };
   }, []);
+
 
   return {
     session,

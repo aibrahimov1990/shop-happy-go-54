@@ -125,11 +125,11 @@ export function LaunchCreditCard() {
   const [now, setNow] = useState(() => Date.now());
   const { data, isLoading, error } = useQuery({
     queryKey: ["launch-credit", session?.user.id ?? null],
+    // Wait until the auth state is known so the call carries a bearer token —
+    // querying too early only produces an Unauthorized error.
+    enabled: !authLoading,
     queryFn: () => claim(),
-    // The server fn requires an authenticated caller — querying while signed
-    // out only produces an Unauthorized error card on the home page.
-    enabled: !authLoading && !!session,
-    retry: false,
+    retry: 1,
   });
 
   useEffect(() => {
@@ -137,7 +137,9 @@ export function LaunchCreditCard() {
     return () => clearInterval(id);
   }, []);
 
-  if (authLoading || !session) return null;
+  // Signed-out visitors have no credit to show — never show an error box to them.
+  const unauthorized = /unauthorized/i.test(String((error as Error)?.message ?? ""));
+  if (error && (unauthorized || !session)) return null;
 
   // Surface failures instead of rendering nothing: a thrown server error used to
   // make this card disappear silently, which is indistinguishable from "disabled".
@@ -153,6 +155,7 @@ export function LaunchCreditCard() {
       </div>
     );
   }
+
 
   if (isLoading || !data || data.status === "disabled") return null;
 
