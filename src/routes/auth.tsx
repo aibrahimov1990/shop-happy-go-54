@@ -104,7 +104,10 @@ function AuthPage() {
         redirect_uri: window.location.origin,
       });
       if (result.error) {
-        toast.error("Google sign-in failed");
+        // Surface the real reason (disabled provider, blocked popup, rejected
+        // redirect URI) instead of a generic message we can't diagnose.
+        toast.error(result.error.message ?? "Google sign-in failed");
+        console.error("Google sign-in failed", result.error);
         return;
       }
       if (result.redirected) return;
@@ -130,7 +133,8 @@ function AuthPage() {
         redirect_uri: window.location.origin,
       });
       if (result.error) {
-        toast.error("Apple sign-in failed");
+        toast.error(result.error.message ?? "Apple sign-in failed");
+        console.error("Apple sign-in failed", result.error);
         return;
       }
       if (result.redirected) return;
