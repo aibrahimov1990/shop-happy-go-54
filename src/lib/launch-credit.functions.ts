@@ -181,9 +181,18 @@ export const getOrCreateLaunchCredit = createServerFn({ method: "POST" })
         },
       });
       const errs = data?.discountCodeBasicCreate?.userErrors ?? [];
-      if (errs.length) throw new Error(errs.map((e: any) => e.message).join("; "));
+      if (errs.length) {
+        // The discount may already exist in Shopify from an earlier attempt
+        // whose database update was lost. Adopt it instead of failing.
+        if (errs.some(isCodeTakenError)) {
+          const existingId = await findDiscountIdByCode(code);
+          if (existingId) return existingId;
+        }
+        throw new Error(errs.map((e: any) => e.message).join("; "));
+      }
       return data.discountCodeBasicCreate.codeDiscountNode.id as string;
     };
+
 
     const buildExisting = async (row: {
       code: string;
