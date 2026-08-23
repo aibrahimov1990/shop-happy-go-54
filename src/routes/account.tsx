@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { User, LogOut, Sparkles, Crown, Loader2, Shield, Trash2, Lock, Megaphone, Users, Package, BellRing, MessageCircle } from "lucide-react";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { getPushDiagnostics, initPushNotifications } from "@/lib/push-client";
-import { LaunchCreditCard } from "@/components/LaunchCreditCard";
+
 
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -209,7 +209,7 @@ function Account() {
         <p className="font-serif text-xl">{user.email}</p>
       </div>
 
-      <LaunchCreditCard />
+
 
       <div className="divide-y divide-border/60">
 
