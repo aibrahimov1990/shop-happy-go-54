@@ -314,6 +314,9 @@ export const sendBroadcast = createServerFn({ method: "POST" })
           pruned_token_count: retirement.deletedCount,
           systemic_suspected: retirement.systemicSuspected,
           dominant_error_code: retirement.dominantErrorCode,
+          topic_submitted: topicSubmitted,
+          topic_error: topicError ?? null,
+          token_page_count: tokenPageCount,
         })
         .eq("id", inserted.id);
     } catch (sendError) {
