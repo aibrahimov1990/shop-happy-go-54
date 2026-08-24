@@ -335,6 +335,9 @@ export const sendBroadcast = createServerFn({ method: "POST" })
           signed_in_recipients: signedInDelivered,
           anonymous_recipients: anonymousDelivered,
           error_breakdown: { ...errorCounts, fatal: message.slice(0, 1200) },
+          topic_submitted: topicSubmitted,
+          topic_error: topicError ?? null,
+          token_page_count: tokenPageCount,
         })
         .eq("id", inserted.id);
       throw sendError;
