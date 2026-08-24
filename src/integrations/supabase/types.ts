@@ -129,6 +129,9 @@ export type Database = {
           suspect_failure_count: number
           systemic_suspected: boolean
           title: string
+          token_page_count: number | null
+          topic_error: string | null
+          topic_submitted: boolean | null
           total_tokens: number
           transient_failure_count: number
           url: string | null
@@ -151,6 +154,9 @@ export type Database = {
           suspect_failure_count?: number
           systemic_suspected?: boolean
           title: string
+          token_page_count?: number | null
+          topic_error?: string | null
+          topic_submitted?: boolean | null
           total_tokens?: number
           transient_failure_count?: number
           url?: string | null
@@ -173,6 +179,9 @@ export type Database = {
           suspect_failure_count?: number
           systemic_suspected?: boolean
           title?: string
+          token_page_count?: number | null
+          topic_error?: string | null
+          topic_submitted?: boolean | null
           total_tokens?: number
           transient_failure_count?: number
           url?: string | null

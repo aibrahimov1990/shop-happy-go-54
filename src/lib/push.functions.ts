@@ -123,14 +123,15 @@ export const sendBroadcast = createServerFn({ method: "POST" })
     if (roleError) throw new Error(roleError.message);
     if (!isAdmin) throw new Error("Forbidden: admin role required");
 
-    // Load all tokens (admin client to bypass RLS for the fan-out read)
+    // Load all tokens (admin client to bypass RLS for the fan-out read).
+    // Paginated: the Data API caps a single response at 1,000 rows.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: tokenRows, error: tokenErr } = await supabaseAdmin
-      .from("device_tokens")
-      .select("token, user_id");
-    if (tokenErr) throw new Error(tokenErr.message);
+    const { fetchAllDeviceTokens } = await import("./device-tokens.server");
+    const { rows: tokenRows, pageCount: tokenPageCount } = await fetchAllDeviceTokens(
+      supabaseAdmin as never,
+    );
 
-    const rows = tokenRows ?? [];
+    const rows = tokenRows;
     const seen = new Set<string>();
     const audience: Array<{ token: string; user_id: string | null }> = [];
     for (const r of rows) {
@@ -313,6 +314,9 @@ export const sendBroadcast = createServerFn({ method: "POST" })
           pruned_token_count: retirement.deletedCount,
           systemic_suspected: retirement.systemicSuspected,
           dominant_error_code: retirement.dominantErrorCode,
+          topic_submitted: topicSubmitted,
+          topic_error: topicError ?? null,
+          token_page_count: tokenPageCount,
         })
         .eq("id", inserted.id);
     } catch (sendError) {
@@ -331,6 +335,9 @@ export const sendBroadcast = createServerFn({ method: "POST" })
           signed_in_recipients: signedInDelivered,
           anonymous_recipients: anonymousDelivered,
           error_breakdown: { ...errorCounts, fatal: message.slice(0, 1200) },
+          topic_submitted: topicSubmitted,
+          topic_error: topicError ?? null,
+          token_page_count: tokenPageCount,
         })
         .eq("id", inserted.id);
       throw sendError;
@@ -342,6 +349,7 @@ export const sendBroadcast = createServerFn({ method: "POST" })
       broadcastId: inserted.id,
       totalTokens: tokens.length,
       registeredTokenCount: tokens.length,
+      tokenPageCount,
       signedInAudience,
       anonymousAudience,
       signedInDelivered,
@@ -387,12 +395,10 @@ export const cleanupDeadTokens = createServerFn({ method: "POST" })
     if (!isAdminRole) throw new Error("Forbidden: admin role required");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: rows, error: tokenErr } = await supabaseAdmin
-      .from("device_tokens")
-      .select("token, user_id");
-    if (tokenErr) throw new Error(tokenErr.message);
+    const { fetchAllDeviceTokens } = await import("./device-tokens.server");
+    const { rows } = await fetchAllDeviceTokens(supabaseAdmin as never);
 
-    const tokens = (rows ?? []).map((r) => r.token);
+    const tokens = rows.map((r) => r.token);
     if (tokens.length === 0) {
       return {
         dryRun: !data.confirm,
@@ -488,7 +494,7 @@ export const listBroadcasts = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("broadcasts")
       .select(
-        "id, title, body, url, success_count, failure_count, total_tokens, permanent_failure_count, transient_failure_count, suspect_failure_count, systemic_suspected, dominant_error_code, pruned_token_count, signed_in_recipients, anonymous_recipients, error_breakdown, created_at",
+        "id, title, body, url, success_count, failure_count, total_tokens, permanent_failure_count, transient_failure_count, suspect_failure_count, systemic_suspected, dominant_error_code, pruned_token_count, signed_in_recipients, anonymous_recipients, error_breakdown, topic_submitted, topic_error, token_page_count, created_at",
       )
 
       .order("created_at", { ascending: false })
