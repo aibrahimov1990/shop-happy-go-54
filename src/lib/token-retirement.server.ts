@@ -13,8 +13,9 @@
 export const MASS_DELETION_THRESHOLD = 0.3;
 
 type AdminClient = {
-  from: (table: string) => any;
+  rpc: (fn: string, args: Record<string, unknown>) => any;
 };
+
 
 export interface RetireTokensInput {
   /** Tokens classified as unambiguously permanent failures. */
