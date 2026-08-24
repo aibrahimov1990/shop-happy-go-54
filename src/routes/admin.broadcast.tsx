@@ -975,13 +975,18 @@ function DeadTokenCleanup({
     mutationFn: () => cleanup({ data: { confirm: true } }),
     onSuccess: (res) => {
       setReport(null);
-      toast.success(
-        `Removed ${res.deletedCount} dead token${res.deletedCount === 1 ? "" : "s"} (archived ${res.archivedCount}). ` +
-          `${res.aliveCount} devices still reachable.`,
-        { duration: 10000 },
-      );
+      if (res.warning) {
+        toast.error(res.warning, { duration: 14000 });
+      } else {
+        toast.success(
+          `Removed ${res.deletedCount} dead token${res.deletedCount === 1 ? "" : "s"} (archived ${res.archivedCount}). ` +
+            `${res.aliveCount} devices still reachable.`,
+          { duration: 10000 },
+        );
+      }
       onDone();
     },
+
     onError: (e: Error) => toast.error(e.message),
   });
 
