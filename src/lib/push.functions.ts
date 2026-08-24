@@ -349,6 +349,7 @@ export const sendBroadcast = createServerFn({ method: "POST" })
       broadcastId: inserted.id,
       totalTokens: tokens.length,
       registeredTokenCount: tokens.length,
+      tokenPageCount,
       signedInAudience,
       anonymousAudience,
       signedInDelivered,
