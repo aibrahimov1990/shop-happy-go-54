@@ -394,12 +394,10 @@ export const cleanupDeadTokens = createServerFn({ method: "POST" })
     if (!isAdminRole) throw new Error("Forbidden: admin role required");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: rows, error: tokenErr } = await supabaseAdmin
-      .from("device_tokens")
-      .select("token, user_id");
-    if (tokenErr) throw new Error(tokenErr.message);
+    const { fetchAllDeviceTokens } = await import("./device-tokens.server");
+    const { rows } = await fetchAllDeviceTokens(supabaseAdmin as never);
 
-    const tokens = (rows ?? []).map((r) => r.token);
+    const tokens = rows.map((r) => r.token);
     if (tokens.length === 0) {
       return {
         dryRun: !data.confirm,
