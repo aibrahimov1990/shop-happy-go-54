@@ -92,67 +92,41 @@ export async function retireDeadTokens(
     };
   }
 
-  // Archive before deleting so any misclassification is recoverable.
-  let archivedCount = 0;
-  const { data: rows } = await admin
-    .from("device_tokens")
-    .select("token, platform, user_id, created_at, updated_at")
-    .in("token", candidates);
+  // Archive + delete in a single Postgres transaction. RPC args travel in the
+  // POST body, so there is no URL-length limit, and the counts are computed
+  // server-side, so there is no 1,000-row Data API cap.
+  const { data, error: rpcErr } = await admin.rpc("retire_device_tokens", {
+    p_tokens: candidates,
+    p_reason: reason,
+    p_broadcast_id: broadcastId ?? null,
+  });
 
-  const found = (rows ?? []) as Array<{
-    token: string;
-    platform: string | null;
-    user_id: string | null;
-    created_at: string | null;
-    updated_at: string | null;
-  }>;
-
-  if (found.length > 0) {
-    const { error: archiveErr } = await admin.from("device_tokens_deleted").insert(
-      found.map((r) => ({
-        token: r.token,
-        platform: r.platform,
-        user_id: r.user_id,
-        token_created_at: r.created_at,
-        token_updated_at: r.updated_at,
-        reason,
-        broadcast_id: broadcastId ?? null,
-      })),
-    );
-    if (archiveErr) {
-      // Never delete when the archive write failed — recoverability first.
-      console.error("[token-retirement] archive failed, skipping deletion", archiveErr);
-      return {
-        deletedCount: 0,
-        archivedCount: 0,
-        systemicSuspected,
-        breakerTripped,
-        dominantErrorCode: dominant,
-        warning: `Archive write failed — no tokens deleted (${archiveErr.message ?? "unknown error"}).`,
-      };
-    }
-    archivedCount = found.length;
-  }
-
-  const { error: delErr } = await admin.from("device_tokens").delete().in("token", candidates);
-  if (delErr) {
-    console.error("[token-retirement] delete failed", delErr);
+  if (rpcErr) {
+    console.error("[token-retirement] retire_device_tokens failed", rpcErr);
     return {
       deletedCount: 0,
-      archivedCount,
+      archivedCount: 0,
       systemicSuspected,
       breakerTripped,
       dominantErrorCode: dominant,
-      warning: `Token delete failed: ${delErr.message ?? "unknown error"}`,
+      warning:
+        `Token retirement failed: ${rpcErr.message ?? "unknown error"}. ` +
+        `The operation is transactional, so nothing was archived and nothing was deleted.`,
     };
   }
 
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { archived_count?: number | null; deleted_count?: number | null }
+    | null
+    | undefined;
+
   return {
-    deletedCount: candidates.length,
-    archivedCount,
+    deletedCount: row?.deleted_count ?? 0,
+    archivedCount: row?.archived_count ?? 0,
     systemicSuspected,
     breakerTripped,
     dominantErrorCode: dominant,
     warning,
   };
 }
+
