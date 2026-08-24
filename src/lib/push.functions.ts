@@ -123,14 +123,15 @@ export const sendBroadcast = createServerFn({ method: "POST" })
     if (roleError) throw new Error(roleError.message);
     if (!isAdmin) throw new Error("Forbidden: admin role required");
 
-    // Load all tokens (admin client to bypass RLS for the fan-out read)
+    // Load all tokens (admin client to bypass RLS for the fan-out read).
+    // Paginated: the Data API caps a single response at 1,000 rows.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: tokenRows, error: tokenErr } = await supabaseAdmin
-      .from("device_tokens")
-      .select("token, user_id");
-    if (tokenErr) throw new Error(tokenErr.message);
+    const { fetchAllDeviceTokens } = await import("./device-tokens.server");
+    const { rows: tokenRows, pageCount: tokenPageCount } = await fetchAllDeviceTokens(
+      supabaseAdmin as never,
+    );
 
-    const rows = tokenRows ?? [];
+    const rows = tokenRows;
     const seen = new Set<string>();
     const audience: Array<{ token: string; user_id: string | null }> = [];
     for (const r of rows) {
