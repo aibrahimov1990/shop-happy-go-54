@@ -703,6 +703,13 @@ export type Database = {
           read_ct: number
         }[]
       }
+      retire_device_tokens: {
+        Args: { p_broadcast_id?: string; p_reason: string; p_tokens: string[] }
+        Returns: {
+          archived_count: number
+          deleted_count: number
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "shopper" | "client"
