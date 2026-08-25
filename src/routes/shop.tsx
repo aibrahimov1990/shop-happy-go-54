@@ -300,8 +300,9 @@ function Shop() {
   const activeCount =
     types.length + designers.length + conditions.length + colours.length + sizes.length + shoeSizes.length;
 
-  // Collection query used when New In is active — pulls the first 100 products
-  // from Shopify's automatic "All" collection.
+  // Collection query used when New In is active — mirrors the manually curated
+  // Shopify "new-drops" collection.
+  const NEW_IN_HANDLE = "new-drops";
   const NEW_IN_COLLECTION_QUERY = `
     query NewInCollection($handle: String!, $first: Int!, $after: String) {
       collection(handle: $handle) {
@@ -330,20 +331,20 @@ function Shop() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["products", "shop", newIn && !searchActive ? "all-collection-first-100" : query, sort.label, newIn, searchActive],
+    queryKey: ["products", "shop", newIn && !searchActive ? "new-drops-collection" : query, sort.label, newIn, searchActive],
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
       if (newIn && !searchActive) {
         const res = await storefrontApiRequest<any>(NEW_IN_COLLECTION_QUERY, {
-          handle: "all",
-          first: 100,
-          after: null,
+          handle: NEW_IN_HANDLE,
+          first: 24,
+          after: pageParam,
         });
         const products = res?.data?.collection?.products;
         return {
           edges: (products?.edges ?? []) as ShopifyProduct[],
           endCursor: products?.pageInfo?.endCursor ?? null,
-          hasNextPage: false,
+          hasNextPage: products?.pageInfo?.hasNextPage ?? false,
         };
       }
       const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
@@ -364,9 +365,14 @@ function Shop() {
   });
 
 
-  const products: ShopifyProduct[] = (data?.pages.flatMap((p) => p.edges) ?? []).filter(
-    (p) => !isKidsProduct(p),
-  );
+  const products: ShopifyProduct[] = (data?.pages.flatMap((p) => p.edges) ?? [])
+    .filter((p) => !isKidsProduct(p))
+    .filter((p) =>
+      newIn && !searchActive
+        ? p.node.variants.edges.some((v) => v.node.availableForSale)
+        : true,
+    );
+
 
   // When any refine filter is active, auto-fetch all remaining pages so the
   // user sees the full catalogue for that filter — not just the first page.
