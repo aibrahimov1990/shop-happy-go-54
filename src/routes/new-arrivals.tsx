@@ -1,14 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
-import {
-  storefrontApiRequest,
-  PRODUCTS_QUERY,
-  isKidsProduct,
-  type ShopifyProduct,
-} from "@/lib/shopify";
-import { useWishlist } from "@/hooks/useWishlist";
+import { storefrontApiRequest, isKidsProduct, type ShopifyProduct } from "@/lib/shopify";
+import { useEffect, useRef } from "react";
+import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/new-arrivals")({
   head: () => ({
@@ -29,113 +25,94 @@ export const Route = createFileRoute("/new-arrivals")({
   component: NewArrivalsPage,
 });
 
-const LOOKBACK_DAYS = 30;
+const NEW_DROPS_HANDLE = "new-drops";
 
-function daysAgoISO(days: number) {
-  const d = new Date();
-  d.setDate(d.getDate() - days);
-  return d.toISOString().slice(0, 10);
-}
-
-async function fetchProductsByIds(ids: string[]): Promise<ShopifyProduct[]> {
-  if (ids.length === 0) return [];
-  const q = ids.map((id) => `id:${id.split("/").pop()}`).join(" OR ");
-  const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, { first: 50, query: q });
-  return res?.data?.products?.edges ?? [];
-}
-
-async function fetchNewArrivalsByVendors(vendors: string[]): Promise<ShopifyProduct[]> {
-  const sinceQ = `created_at:>=${daysAgoISO(LOOKBACK_DAYS)} -tag:KIDS`;
-  const vendorQ =
-    vendors.length > 0
-      ? " AND (" + vendors.map((v) => `vendor:"${v.replace(/"/g, '\\"')}"`).join(" OR ") + ")"
-      : "";
-  const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
-    first: 50,
-    query: sinceQ + vendorQ,
-    sortKey: "CREATED_AT",
-    reverse: true,
-  });
-  const edges: ShopifyProduct[] = res?.data?.products?.edges ?? [];
-  return edges.filter((e) => !isKidsProduct(e));
-}
-
-async function fetchLatestOverall(): Promise<ShopifyProduct[]> {
-  const res = await storefrontApiRequest<any>(PRODUCTS_QUERY, {
-    first: 24,
-    query: "-tag:KIDS",
-    sortKey: "CREATED_AT",
-    reverse: true,
-  });
-  const edges: ShopifyProduct[] = res?.data?.products?.edges ?? [];
-  return edges.filter((e) => !isKidsProduct(e));
-}
+const COLLECTION_QUERY = `
+  query GetCollection($handle: String!, $first: Int!, $after: String) {
+    collection(handle: $handle) {
+      id
+      title
+      description
+      products(first: $first, after: $after, sortKey: COLLECTION_DEFAULT) {
+        pageInfo { hasNextPage endCursor }
+        edges {
+          node {
+            id
+            title
+            description
+            handle
+            vendor
+            tags
+            priceRange { minVariantPrice { amount currencyCode } }
+            images(first: 5) { edges { node { url(transform: { preferredContentType: JPG }) altText } } }
+            variants(first: 10) {
+              edges {
+                node {
+                  id
+                  title
+                  price { amount currencyCode }
+                  availableForSale
+                  selectedOptions { name value }
+                }
+              }
+            }
+            options { name values }
+          }
+        }
+      }
+    }
+  }
+`;
 
 function NewArrivalsPage() {
-  const { ids } = useWishlist();
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ["collection", NEW_DROPS_HANDLE, "new-arrivals"],
+      initialPageParam: null as string | null,
+      queryFn: async ({ pageParam }) => {
+        const res = await storefrontApiRequest<any>(COLLECTION_QUERY, {
+          handle: NEW_DROPS_HANDLE,
+          first: 24,
+          after: pageParam,
+        });
+        const collection = res?.data?.collection;
+        return {
+          edges: (collection?.products?.edges ?? []) as ShopifyProduct[],
+          endCursor: collection?.products?.pageInfo?.endCursor ?? null,
+          hasNextPage: collection?.products?.pageInfo?.hasNextPage ?? false,
+        };
+      },
+      getNextPageParam: (last) => (last.hasNextPage ? last.endCursor : undefined),
+    });
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["new-arrivals", ids.slice().sort().join(",")],
-    queryFn: async () => {
-      const wishlisted = await fetchProductsByIds(ids);
-      const vendors = Array.from(
-        new Set(
-          wishlisted
-            .map((e) => (e.node.vendor ?? "").trim())
-            .filter((v) => v.length > 0),
-        ),
-      );
+  const rawProducts: ShopifyProduct[] = data?.pages.flatMap((p) => p.edges) ?? [];
+  const products: ShopifyProduct[] = rawProducts
+    .filter((p) => !isKidsProduct(p))
+    .filter((p) => p.node.variants.edges.some((v) => v.node.availableForSale));
 
-      if (vendors.length === 0) {
-        const latest = await fetchLatestOverall();
-        return { personalised: false, vendors: [] as string[], products: latest };
-      }
-
-      const matches = await fetchNewArrivalsByVendors(vendors);
-      // Fall back to overall latest if no vendor matches recently.
-      const products = matches.length > 0 ? matches : await fetchLatestOverall();
-      return { personalised: matches.length > 0, vendors, products };
-    },
-  });
-
-  const products = data?.products ?? [];
-  const personalised = data?.personalised ?? false;
-  const vendors = data?.vendors ?? [];
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "600px" },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <MobileLayout>
       <div className="px-4 pt-6 pb-3">
-        <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-2">
-          Last {LOOKBACK_DAYS} days
-        </p>
         <h1 className="font-serif text-3xl">New Arrivals</h1>
-        {personalised ? (
-          <p className="text-xs text-muted-foreground mt-2">
-            Curated from the brands on your wishlist
-            {vendors.length > 0 && (
-              <>
-                {": "}
-                <span className="text-foreground">
-                  {vendors.slice(0, 4).join(", ")}
-                  {vendors.length > 4 ? ` +${vendors.length - 4} more` : ""}
-                </span>
-              </>
-            )}
-            .
-          </p>
-        ) : ids.length === 0 ? (
-          <p className="text-xs text-muted-foreground mt-2">
-            Save pieces to your{" "}
-            <Link to="/wishlist" className="underline">
-              wishlist
-            </Link>{" "}
-            to personalise this feed.
-          </p>
-        ) : (
-          <p className="text-xs text-muted-foreground mt-2">
-            Nothing new from your favourite brands this month — here's the latest edit.
-          </p>
-        )}
+        <p className="text-xs text-muted-foreground mt-2">
+          The latest pieces to land at Sellier.
+        </p>
       </div>
 
       <section className="px-4 py-6">
@@ -153,11 +130,24 @@ function NewArrivalsPage() {
             No new arrivals right now. Check back soon.
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-x-3 gap-y-6">
-            {products.map((p) => (
-              <ProductCard key={p.node.id} product={p} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 gap-x-3 gap-y-6">
+              {products.map((p) => (
+                <ProductCard key={p.node.id} product={p} />
+              ))}
+            </div>
+            <div ref={sentinelRef} className="h-10" />
+            {isFetchingNextPage && (
+              <div className="flex justify-center py-6">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {!hasNextPage && products.length > 0 && (
+              <p className="text-center text-[10px] uppercase tracking-[0.25em] text-muted-foreground py-8">
+                End of results
+              </p>
+            )}
+          </>
         )}
       </section>
     </MobileLayout>
