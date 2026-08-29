@@ -356,13 +356,27 @@ function Shop() {
   });
 
 
+  const norm = (s: string) => s.trim().toLowerCase();
+  const matchesOption = (p: ShopifyProduct, optionName: string, selected: string[]) => {
+    if (!selected.length) return true;
+    const wanted = selected.map(norm);
+    return p.node.variants.edges.some((v) =>
+      v.node.selectedOptions.some(
+        (o) => norm(o.name) === norm(optionName) && wanted.includes(norm(o.value)),
+      ),
+    );
+  };
+
   const products: ShopifyProduct[] = (data?.pages.flatMap((p) => p.edges) ?? [])
     .filter((p) => !isKidsProduct(p))
     .filter((p) =>
       newIn && !searchActive
         ? p.node.variants.edges.some((v) => v.node.availableForSale)
         : true,
-    );
+    )
+    .filter((p) => matchesOption(p, "Condition", conditions))
+    .filter((p) => matchesOption(p, "Colour", colours));
+
 
 
   // When any refine filter is active, auto-fetch all remaining pages so the
