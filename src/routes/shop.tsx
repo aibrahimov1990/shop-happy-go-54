@@ -127,18 +127,9 @@ function buildQuery(filters: {
         ")",
     );
   }
-  if (filters.conditions.length) {
-    parts.push("(" + filters.conditions.map((c) => `tag:"${c}"`).join(" OR ") + ")");
-  }
-  if (filters.colours.length) {
-    parts.push(
-      "(" +
-        filters.colours
-          .map((c) => `title:"${c}" OR tag:"${c}"`)
-          .join(" OR ") +
-        ")",
-    );
-  }
+  // Condition and Colour are variant options on this store, not tags — they
+  // are filtered client-side from variant selectedOptions instead.
+
   if (filters.sizes.length) {
     // Clothing sizes: match "UK <size>" anywhere in the product's default
     // search fields (title, description, tags, vendor, product_type).
