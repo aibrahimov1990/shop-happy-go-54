@@ -50,6 +50,7 @@ import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/em
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicHooksWeeklyNewArrivalsRouteImport } from './routes/api/public/hooks/weekly-new-arrivals'
 import { Route as ApiPublicHooksStockAlertsRouteImport } from './routes/api/public/hooks/stock-alerts'
+import { Route as ApiPublicHooksRunScheduledBroadcastsRouteImport } from './routes/api/public/hooks/run-scheduled-broadcasts'
 
 const WishlistRoute = WishlistRouteImport.update({
   id: '/wishlist',
@@ -261,6 +262,12 @@ const ApiPublicHooksStockAlertsRoute =
     path: '/api/public/hooks/stock-alerts',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksRunScheduledBroadcastsRoute =
+  ApiPublicHooksRunScheduledBroadcastsRouteImport.update({
+    id: '/api/public/hooks/run-scheduled-broadcasts',
+    path: '/api/public/hooks/run-scheduled-broadcasts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -297,6 +304,7 @@ export interface FileRoutesByFullPath {
   '/shopper/clients/$id': typeof ShopperClientsIdRoute
   '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/shopper/clients/': typeof ShopperClientsIndexRoute
+  '/api/public/hooks/run-scheduled-broadcasts': typeof ApiPublicHooksRunScheduledBroadcastsRoute
   '/api/public/hooks/stock-alerts': typeof ApiPublicHooksStockAlertsRoute
   '/api/public/hooks/weekly-new-arrivals': typeof ApiPublicHooksWeeklyNewArrivalsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -338,6 +346,7 @@ export interface FileRoutesByTo {
   '/shopper/clients/$id': typeof ShopperClientsIdRoute
   '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/shopper/clients': typeof ShopperClientsIndexRoute
+  '/api/public/hooks/run-scheduled-broadcasts': typeof ApiPublicHooksRunScheduledBroadcastsRoute
   '/api/public/hooks/stock-alerts': typeof ApiPublicHooksStockAlertsRoute
   '/api/public/hooks/weekly-new-arrivals': typeof ApiPublicHooksWeeklyNewArrivalsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -382,6 +391,7 @@ export interface FileRoutesById {
   '/shopper/clients/$id': typeof ShopperClientsIdRoute
   '/shopper/edits/$id': typeof ShopperEditsIdRoute
   '/shopper/clients/': typeof ShopperClientsIndexRoute
+  '/api/public/hooks/run-scheduled-broadcasts': typeof ApiPublicHooksRunScheduledBroadcastsRoute
   '/api/public/hooks/stock-alerts': typeof ApiPublicHooksStockAlertsRoute
   '/api/public/hooks/weekly-new-arrivals': typeof ApiPublicHooksWeeklyNewArrivalsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -427,6 +437,7 @@ export interface FileRouteTypes {
     | '/shopper/clients/$id'
     | '/shopper/edits/$id'
     | '/shopper/clients/'
+    | '/api/public/hooks/run-scheduled-broadcasts'
     | '/api/public/hooks/stock-alerts'
     | '/api/public/hooks/weekly-new-arrivals'
     | '/lovable/email/auth/preview'
@@ -468,6 +479,7 @@ export interface FileRouteTypes {
     | '/shopper/clients/$id'
     | '/shopper/edits/$id'
     | '/shopper/clients'
+    | '/api/public/hooks/run-scheduled-broadcasts'
     | '/api/public/hooks/stock-alerts'
     | '/api/public/hooks/weekly-new-arrivals'
     | '/lovable/email/auth/preview'
@@ -511,6 +523,7 @@ export interface FileRouteTypes {
     | '/shopper/clients/$id'
     | '/shopper/edits/$id'
     | '/shopper/clients/'
+    | '/api/public/hooks/run-scheduled-broadcasts'
     | '/api/public/hooks/stock-alerts'
     | '/api/public/hooks/weekly-new-arrivals'
     | '/lovable/email/auth/preview'
@@ -548,6 +561,7 @@ export interface RootRouteChildren {
   MessagesIndexRoute: typeof MessagesIndexRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   OpenEditsIdRoute: typeof OpenEditsIdRoute
+  ApiPublicHooksRunScheduledBroadcastsRoute: typeof ApiPublicHooksRunScheduledBroadcastsRoute
   ApiPublicHooksStockAlertsRoute: typeof ApiPublicHooksStockAlertsRoute
   ApiPublicHooksWeeklyNewArrivalsRoute: typeof ApiPublicHooksWeeklyNewArrivalsRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -846,6 +860,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksStockAlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/run-scheduled-broadcasts': {
+      id: '/api/public/hooks/run-scheduled-broadcasts'
+      path: '/api/public/hooks/run-scheduled-broadcasts'
+      fullPath: '/api/public/hooks/run-scheduled-broadcasts'
+      preLoaderRoute: typeof ApiPublicHooksRunScheduledBroadcastsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -908,6 +929,8 @@ const rootRouteChildren: RootRouteChildren = {
   MessagesIndexRoute: MessagesIndexRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   OpenEditsIdRoute: OpenEditsIdRoute,
+  ApiPublicHooksRunScheduledBroadcastsRoute:
+    ApiPublicHooksRunScheduledBroadcastsRoute,
   ApiPublicHooksStockAlertsRoute: ApiPublicHooksStockAlertsRoute,
   ApiPublicHooksWeeklyNewArrivalsRoute: ApiPublicHooksWeeklyNewArrivalsRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
