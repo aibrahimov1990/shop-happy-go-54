@@ -403,6 +403,27 @@ export const isAdmin = createServerFn({ method: "GET" })
     return { isAdmin: Boolean(data) };
   });
 
+export const canBroadcast = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: adminRole, error: adminErr } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
+    });
+    if (adminErr) throw new Error(adminErr.message);
+    if (adminRole) return { canBroadcast: true };
+
+    const { data: broadcasterRole, error: bErr } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "broadcaster",
+    });
+    if (bErr) throw new Error(bErr.message);
+    return { canBroadcast: Boolean(broadcasterRole) };
+  });
+
+
+
 const editNotifySchema = z.object({
   editId: z.string().uuid(),
   clientEmail: z.string().email(),
