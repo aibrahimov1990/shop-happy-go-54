@@ -4,7 +4,15 @@ import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tansta
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
-import { listBroadcasts, sendBroadcast, cleanupDeadTokens } from "@/lib/push.functions";
+import {
+  listBroadcasts,
+  sendBroadcast,
+  cleanupDeadTokens,
+  canBroadcast as canBroadcastFn,
+  scheduleBroadcast,
+  listScheduledBroadcasts,
+  cancelScheduledBroadcast,
+} from "@/lib/push.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -14,6 +22,36 @@ import { Label } from "@/components/ui/label";
 import sellierLogo from "@/assets/sellier-logo.svg";
 import { storefrontApiRequest, PRODUCTS_QUERY, COLLECTIONS_QUERY, isKidsProduct, type ShopifyProduct } from "@/lib/shopify";
 
+
+const LONDON_TZ = "Europe/London";
+
+function formatLondon(iso: string) {
+  return new Date(iso).toLocaleString("en-GB", {
+    timeZone: LONDON_TZ,
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/**
+ * Convert a date + time typed in Europe/London into a UTC ISO string,
+ * resolving the London offset (GMT/BST) for that instant.
+ */
+function londonInputToUtcISO(date: string, time: string): string | null {
+  const naive = `${date}T${time}:00`;
+  const guess = new Date(`${naive}Z`);
+  if (Number.isNaN(guess.getTime())) return null;
+  // What London clock time does this UTC instant show? The difference is the offset.
+  const shown = new Date(
+    new Date(guess).toLocaleString("en-US", { timeZone: LONDON_TZ }),
+  ).getTime();
+  const utcShown = new Date(guess.toLocaleString("en-US", { timeZone: "UTC" })).getTime();
+  const offsetMs = shown - utcShown;
+  return new Date(guess.getTime() - offsetMs).toISOString();
+}
 
 export const Route = createFileRoute("/admin/broadcast")({
   component: BroadcastPage,
@@ -43,25 +81,31 @@ function BroadcastPage() {
   const navigate = useNavigate();
   const fetchBroadcasts = useServerFn(listBroadcasts);
   const send = useServerFn(sendBroadcast);
+  const schedule = useServerFn(scheduleBroadcast);
+  const fetchScheduled = useServerFn(listScheduledBroadcasts);
+  const cancelScheduled = useServerFn(cancelScheduledBroadcast);
   const cleanup = useServerFn(cleanupDeadTokens);
   const qc = useQueryClient();
 
+  const checkCanBroadcast = useServerFn(canBroadcastFn);
   const adminQuery = useQuery({
-    queryKey: ["isAdmin", user?.id],
+    queryKey: ["canBroadcast", user?.id],
     enabled: !loading && !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("has_role", {
-        _user_id: user!.id,
-        _role: "admin",
-      });
-      if (error) throw error;
-      return data === true;
+      const res = await checkCanBroadcast();
+      return res.canBroadcast === true;
     },
   });
 
   const broadcastsQuery = useQuery({
     queryKey: ["broadcasts"],
     queryFn: () => fetchBroadcasts(),
+    enabled: adminQuery.data === true,
+  });
+
+  const scheduledQuery = useQuery({
+    queryKey: ["scheduled-broadcasts"],
+    queryFn: () => fetchScheduled(),
     enabled: adminQuery.data === true,
   });
 
@@ -73,6 +117,9 @@ function BroadcastPage() {
   const [uploading, setUploading] = useState(false);
   const [productImageUrl, setProductImageUrl] = useState<string | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [mode, setMode] = useState<"now" | "schedule">("now");
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [scheduleTime, setScheduleTime] = useState("");
 
   const newArrivalsQuery = useInfiniteQuery({
     queryKey: ["broadcast-new-arrivals"],
@@ -167,6 +214,53 @@ function BroadcastPage() {
     onError: (err: Error) => toast.error(err.message),
   });
 
+  const scheduleMutation = useMutation({
+    mutationFn: (input: {
+      title: string;
+      body: string;
+      url: string;
+      imagePath?: string;
+      imageUrl?: string;
+      scheduledFor: string;
+    }) =>
+      schedule({
+        data: {
+          title: input.title,
+          body: input.body,
+          url: input.url || undefined,
+          imagePath: input.imagePath,
+          imageUrl: input.imageUrl,
+          scheduledFor: input.scheduledFor,
+        },
+      }),
+    onSuccess: (res) => {
+      toast.success(
+        `Scheduled for ${formatLondon(res.scheduledFor as string)} (London) — sends within 5 minutes of that slot.`,
+        { duration: 8000 },
+      );
+      setTitle("");
+      setBody("");
+      setUrl("");
+      setImageFile(null);
+      setImagePreview(null);
+      setProductImageUrl(null);
+      setSelectedProductId(null);
+      setScheduleDate("");
+      setScheduleTime("");
+      qc.invalidateQueries({ queryKey: ["scheduled-broadcasts"] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: (id: string) => cancelScheduled({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Scheduled broadcast cancelled");
+      qc.invalidateQueries({ queryKey: ["scheduled-broadcasts"] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null;
     if (!file) {
@@ -198,7 +292,7 @@ function BroadcastPage() {
       <div className="mx-auto max-w-md p-8 text-center">
         <h1 className="font-serif text-2xl">Sign in required</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Sign in with your admin account to send broadcasts.
+          Sign in with an account that has broadcast access.
         </p>
         <Button
           className="mt-6"
@@ -215,7 +309,7 @@ function BroadcastPage() {
       <div className="mx-auto max-w-md p-8 text-center">
         <h1 className="font-serif text-2xl">Restricted</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          You need an admin account to send broadcasts.
+          You need broadcast access to send push notifications.
         </p>
         <Link
           to="/"
@@ -242,7 +336,24 @@ function BroadcastPage() {
             toast.error("Title and message are required");
             return;
           }
-          if (!confirm(`Send "${title}" to all devices?`)) return;
+          let scheduledFor: string | undefined;
+          if (mode === "schedule") {
+            if (!scheduleDate || !scheduleTime) {
+              toast.error("Pick a date and time to schedule");
+              return;
+            }
+            const utc = londonInputToUtcISO(scheduleDate, scheduleTime);
+            if (!utc) {
+              toast.error("That date and time isn't valid");
+              return;
+            }
+            if (new Date(utc).getTime() < Date.now() + 2 * 60 * 1000) {
+              toast.error("Scheduled time must be at least 2 minutes in the future");
+              return;
+            }
+            scheduledFor = utc;
+            if (!confirm(`Schedule "${title}" for ${formatLondon(utc)} (London)?`)) return;
+          } else if (!confirm(`Send "${title}" to all devices?`)) return;
 
           let imagePath: string | undefined;
           if (imageFile) {
@@ -264,13 +375,18 @@ function BroadcastPage() {
             imagePath = path;
           }
 
-          mutation.mutate({
+          const payload = {
             title: title.trim(),
             body: body.trim(),
             url: url.trim(),
             imagePath,
             imageUrl: !imagePath && productImageUrl ? productImageUrl : undefined,
-          });
+          };
+          if (mode === "schedule" && scheduledFor) {
+            scheduleMutation.mutate({ ...payload, scheduledFor });
+          } else {
+            mutation.mutate(payload);
+          }
         }}
       >
         <div>
@@ -430,10 +546,106 @@ function BroadcastPage() {
           </div>
         </div>
 
-        <Button type="submit" disabled={mutation.isPending || uploading} className="w-full">
-          {uploading ? "Uploading image…" : mutation.isPending ? "Sending…" : "Send broadcast"}
+        <div>
+          <Label>When</Label>
+          <div className="mt-2 flex border border-input">
+            <button
+              type="button"
+              onClick={() => setMode("now")}
+              className={`flex-1 px-4 py-2 text-[11px] uppercase tracking-[0.2em] ${
+                mode === "now" ? "bg-foreground text-background" : "text-muted-foreground"
+              }`}
+            >
+              Send now
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("schedule")}
+              className={`flex-1 px-4 py-2 text-[11px] uppercase tracking-[0.2em] ${
+                mode === "schedule" ? "bg-foreground text-background" : "text-muted-foreground"
+              }`}
+            >
+              Schedule
+            </button>
+          </div>
+
+          {mode === "schedule" && (
+            <div className="mt-3 space-y-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="sched-date">Date (Europe/London)</Label>
+                  <Input
+                    id="sched-date"
+                    type="date"
+                    value={scheduleDate}
+                    onChange={(e) => setScheduleDate(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="sched-time">Time (Europe/London)</Label>
+                  <Input
+                    id="sched-time"
+                    type="time"
+                    value={scheduleTime}
+                    onChange={(e) => setScheduleTime(e.target.value)}
+                  />
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                The scheduler checks every 5 minutes, so a broadcast fires within 5 minutes of its
+                slot, not to the second. Times are entered and shown in Europe/London.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <Button
+          type="submit"
+          disabled={mutation.isPending || scheduleMutation.isPending || uploading}
+          className="w-full"
+        >
+          {uploading
+            ? "Uploading image…"
+            : mode === "schedule"
+              ? scheduleMutation.isPending
+                ? "Scheduling…"
+                : "Schedule broadcast"
+              : mutation.isPending
+                ? "Sending…"
+                : "Send broadcast"}
         </Button>
       </form>
+
+      <div className="mt-12">
+        <h2 className="font-serif text-xl">Scheduled</h2>
+        <div className="mt-4 space-y-3">
+          {scheduledQuery.data?.scheduled.length === 0 && (
+            <p className="text-sm text-muted-foreground">Nothing scheduled.</p>
+          )}
+          {scheduledQuery.data?.scheduled.map((b) => (
+            <div key={b.id} className="border border-border p-4">
+              <div className="flex items-baseline justify-between gap-4">
+                <p className="font-serif text-base">{b.title}</p>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {b.scheduled_for ? `${formatLondon(b.scheduled_for)} London` : "—"}
+                </span>
+              </div>
+              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{b.body}</p>
+              <button
+                type="button"
+                disabled={cancelMutation.isPending}
+                onClick={() => {
+                  if (!confirm(`Cancel the scheduled broadcast "${b.title}"?`)) return;
+                  cancelMutation.mutate(b.id);
+                }}
+                className="mt-3 text-[11px] uppercase tracking-[0.2em] text-destructive underline disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
 
 
 

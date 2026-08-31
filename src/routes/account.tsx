@@ -46,7 +46,7 @@ export const Route = createFileRoute("/account")({
 });
 
 function Account() {
-  const { user, loading, isShopper, isAdmin, signOut } = useAuth();
+  const { user, loading, isShopper, isAdmin, canBroadcast, signOut } = useAuth();
   const { unread: unreadMessages } = useUnreadMessages();
   const navigate = useNavigate();
   const deleteAccount = useServerFn(deleteMyAccount);
@@ -260,7 +260,7 @@ function Account() {
           </Link>
         )}
 
-        {isAdmin && (
+        {canBroadcast && (
           <Link to="/admin/broadcast" className="flex items-center justify-between px-6 py-5 active:bg-muted/40">
             <div className="flex items-center gap-3">
               <Megaphone className="h-4 w-4" />

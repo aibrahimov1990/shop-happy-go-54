@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole = "admin" | "shopper" | "client";
+export type AppRole = "admin" | "shopper" | "client" | "broadcaster";
 
 interface AuthState {
   session: Session | null;
@@ -14,6 +14,7 @@ interface AuthState {
 export function useAuth(): AuthState & {
   isShopper: boolean;
   isAdmin: boolean;
+  canBroadcast: boolean;
   signOut: () => Promise<void>;
 } {
   const [session, setSession] = useState<Session | null>(null);
@@ -90,6 +91,7 @@ export function useAuth(): AuthState & {
     loading,
     isShopper: roles.includes("shopper") || roles.includes("admin"),
     isAdmin: roles.includes("admin"),
+    canBroadcast: roles.includes("admin") || roles.includes("broadcaster"),
     signOut: async () => {
       // Release this device's FCM token from the current user BEFORE signing
       // out — the session is still valid here, so the authenticated server fn

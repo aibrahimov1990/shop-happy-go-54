@@ -114,14 +114,19 @@ export type Database = {
         Row: {
           anonymous_recipients: number
           body: string
+          cancelled_at: string | null
           completed_at: string | null
           created_at: string
           dominant_error_code: string | null
           error_breakdown: Json
           failure_count: number
           id: string
+          image_path: string | null
+          image_url: string | null
           permanent_failure_count: number
           pruned_token_count: number
+          scheduled_by: string | null
+          scheduled_for: string | null
           sent_by: string | null
           signed_in_recipients: number
           status: string
@@ -139,14 +144,19 @@ export type Database = {
         Insert: {
           anonymous_recipients?: number
           body: string
+          cancelled_at?: string | null
           completed_at?: string | null
           created_at?: string
           dominant_error_code?: string | null
           error_breakdown?: Json
           failure_count?: number
           id?: string
+          image_path?: string | null
+          image_url?: string | null
           permanent_failure_count?: number
           pruned_token_count?: number
+          scheduled_by?: string | null
+          scheduled_for?: string | null
           sent_by?: string | null
           signed_in_recipients?: number
           status?: string
@@ -164,14 +174,19 @@ export type Database = {
         Update: {
           anonymous_recipients?: number
           body?: string
+          cancelled_at?: string | null
           completed_at?: string | null
           created_at?: string
           dominant_error_code?: string | null
           error_breakdown?: Json
           failure_count?: number
           id?: string
+          image_path?: string | null
+          image_url?: string | null
           permanent_failure_count?: number
           pruned_token_count?: number
+          scheduled_by?: string | null
+          scheduled_for?: string | null
           sent_by?: string | null
           signed_in_recipients?: number
           status?: string
@@ -712,7 +727,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "shopper" | "client"
+      app_role: "admin" | "shopper" | "client" | "broadcaster"
       edit_status: "draft" | "sent" | "viewed"
     }
     CompositeTypes: {
@@ -841,7 +856,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "shopper", "client"],
+      app_role: ["admin", "shopper", "client", "broadcaster"],
       edit_status: ["draft", "sent", "viewed"],
     },
   },
