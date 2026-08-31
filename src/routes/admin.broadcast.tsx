@@ -4,7 +4,15 @@ import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tansta
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
-import { listBroadcasts, sendBroadcast, cleanupDeadTokens } from "@/lib/push.functions";
+import {
+  listBroadcasts,
+  sendBroadcast,
+  cleanupDeadTokens,
+  canBroadcast as canBroadcastFn,
+  scheduleBroadcast,
+  listScheduledBroadcasts,
+  cancelScheduledBroadcast,
+} from "@/lib/push.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -43,19 +51,19 @@ function BroadcastPage() {
   const navigate = useNavigate();
   const fetchBroadcasts = useServerFn(listBroadcasts);
   const send = useServerFn(sendBroadcast);
+  const schedule = useServerFn(scheduleBroadcast);
+  const fetchScheduled = useServerFn(listScheduledBroadcasts);
+  const cancelScheduled = useServerFn(cancelScheduledBroadcast);
   const cleanup = useServerFn(cleanupDeadTokens);
   const qc = useQueryClient();
 
+  const checkCanBroadcast = useServerFn(canBroadcastFn);
   const adminQuery = useQuery({
-    queryKey: ["isAdmin", user?.id],
+    queryKey: ["canBroadcast", user?.id],
     enabled: !loading && !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("has_role", {
-        _user_id: user!.id,
-        _role: "admin",
-      });
-      if (error) throw error;
-      return data === true;
+      const res = await checkCanBroadcast();
+      return res.canBroadcast === true;
     },
   });
 
@@ -198,7 +206,7 @@ function BroadcastPage() {
       <div className="mx-auto max-w-md p-8 text-center">
         <h1 className="font-serif text-2xl">Sign in required</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Sign in with your admin account to send broadcasts.
+          Sign in with an account that has broadcast access.
         </p>
         <Button
           className="mt-6"
@@ -215,7 +223,7 @@ function BroadcastPage() {
       <div className="mx-auto max-w-md p-8 text-center">
         <h1 className="font-serif text-2xl">Restricted</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          You need an admin account to send broadcasts.
+          You need broadcast access to send push notifications.
         </p>
         <Link
           to="/"
