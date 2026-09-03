@@ -266,6 +266,36 @@ export type Database = {
         }
         Relationships: []
       }
+      drop_countdown_config: {
+        Row: {
+          enabled: boolean
+          headline: string
+          hide_at: string
+          id: number
+          live_message: string
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          headline?: string
+          hide_at?: string
+          id?: number
+          live_message?: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          headline?: string
+          hide_at?: string
+          id?: number
+          live_message?: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       edit_items: {
         Row: {
           created_at: string
