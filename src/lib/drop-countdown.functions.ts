@@ -23,7 +23,7 @@ export const getDropCountdown = createServerFn({ method: "GET" }).handler(async 
 
   const { data, error } = await supabasePublic
     .from("drop_countdown_config")
-    .select("enabled, headline, starts_at, hide_at, live_message")
+    .select("enabled, headline, show_from, starts_at, hide_at, live_message")
     .eq("id", 1)
     .maybeSingle();
 
@@ -33,6 +33,7 @@ export const getDropCountdown = createServerFn({ method: "GET" }).handler(async 
   const result: DropCountdown = {
     enabled: true,
     headline: data.headline,
+    showFrom: toIso(data.show_from, "show_from"),
     startsAt: toIso(data.starts_at, "starts_at"),
     hideAt: toIso(data.hide_at, "hide_at"),
     liveMessage: data.live_message,

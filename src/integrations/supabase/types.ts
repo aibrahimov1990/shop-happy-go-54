@@ -273,6 +273,7 @@ export type Database = {
           hide_at: string
           id: number
           live_message: string
+          show_from: string
           starts_at: string
           updated_at: string
         }
@@ -282,6 +283,7 @@ export type Database = {
           hide_at?: string
           id?: number
           live_message?: string
+          show_from?: string
           starts_at?: string
           updated_at?: string
         }
@@ -291,6 +293,7 @@ export type Database = {
           hide_at?: string
           id?: number
           live_message?: string
+          show_from?: string
           starts_at?: string
           updated_at?: string
         }

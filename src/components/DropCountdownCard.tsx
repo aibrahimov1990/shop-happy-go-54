@@ -85,9 +85,11 @@ export function DropCountdownCard() {
   // Decorative only — never blank the page or show an error box.
   if (isLoading || error || !data || !data.enabled) return null;
 
+  const showFromMs = new Date(data.showFrom).getTime();
   const startsMs = new Date(data.startsAt).getTime();
   const hideMs = new Date(data.hideAt).getTime();
 
+  if (now < showFromMs) return null;
   if (now >= hideMs) return null;
 
   return (
