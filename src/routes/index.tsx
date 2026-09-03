@@ -4,6 +4,8 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ProductCard } from "@/components/ProductCard";
+import { DropCountdownCard } from "@/components/DropCountdownCard";
+
 
 
 
@@ -105,9 +107,7 @@ function Home() {
         <h2 className="font-serif text-2xl">Buy now or cry later</h2>
       </div>
 
-      
-
-
+      <DropCountdownCard />
 
 
       {/* Featured grid */}
