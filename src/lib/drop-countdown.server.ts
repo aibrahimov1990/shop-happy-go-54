@@ -7,6 +7,7 @@
 export type DropCountdown = {
   enabled: boolean;
   headline: string;
+  showFrom: string;
   startsAt: string;
   hideAt: string;
   liveMessage: string;
