@@ -17,6 +17,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { ImageZoomViewer } from "@/components/ImageZoomViewer";
 import { InlineZoomImage } from "@/components/InlineZoomImage";
 import { toast } from "sonner";
+import { ShareButton } from "@/components/ShareButton";
 
 export const Route = createFileRoute("/product/$handle")({
   component: ProductPage,
@@ -194,7 +195,14 @@ function ProductPage() {
             {data.vendor}
           </p>
         )}
-        <h1 className="font-serif text-2xl leading-tight">{data.title}</h1>
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="font-serif text-2xl leading-tight">{data.title}</h1>
+          <ShareButton
+            url={`https://www.sellierknightsbridge.com/products/${handle}`}
+            title={data.title}
+            className="mt-1.5"
+          />
+        </div>
         <p className="font-serif text-xl mt-2">
           {formatPrice(
             selectedVariant?.price.amount ?? data.priceRange.minVariantPrice.amount,
