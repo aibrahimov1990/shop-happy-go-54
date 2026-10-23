@@ -18,7 +18,7 @@ export const Route = createFileRoute("/orders")({
   component: MyOrdersPage,
   errorComponent: ({ error }) => (
     <MobileLayout>
-      <div className="px-6 py-16 text-center text-sm text-muted-foreground">{error.message}</div>
+      <div className="px-6 py-16 text-center text-sm text-muted-foreground">{(error as Error).message}</div>
     </MobileLayout>
   ),
   notFoundComponent: () => <MobileLayout><div className="p-8">Not found</div></MobileLayout>,
