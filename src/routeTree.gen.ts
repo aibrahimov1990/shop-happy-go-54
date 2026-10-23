@@ -9,112 +9,52 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WishlistRouteImport } from './routes/wishlist'
-import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
-import { Route as TermsRouteImport } from './routes/terms'
-import { Route as ShopperRouteImport } from './routes/shopper'
-import { Route as ShopRouteImport } from './routes/shop'
-import { Route as SellWithUsRouteImport } from './routes/sell-with-us'
-import { Route as SearchRouteImport } from './routes/search'
-import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
-import { Route as OrdersRouteImport } from './routes/orders'
-import { Route as NewArrivalsRouteImport } from './routes/new-arrivals'
-import { Route as EditsRouteImport } from './routes/edits'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AlertsRouteImport } from './routes/alerts'
-import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ShopperIndexRouteImport } from './routes/shopper.index'
-import { Route as MessagesIndexRouteImport } from './routes/messages.index'
-import { Route as EditsIndexRouteImport } from './routes/edits.index'
-import { Route as ShopperNewRouteImport } from './routes/shopper.new'
-import { Route as ProductHandleRouteImport } from './routes/product.$handle'
-import { Route as MessagesUserIdRouteImport } from './routes/messages.$userId'
-import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
-import { Route as EditsIdRouteImport } from './routes/edits.$id'
-import { Route as CollectionsHandleRouteImport } from './routes/collections.$handle'
-import { Route as AdminUsersRouteImport } from './routes/admin.users'
-import { Route as AdminStatsRouteImport } from './routes/admin.stats'
-import { Route as AdminLaunchCreditRouteImport } from './routes/admin.launch-credit'
-import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
+import { Route as AccountRouteImport } from './routes/account'
+import { Route as AlertsRouteImport } from './routes/alerts'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as EditsRouteImport } from './routes/edits'
+import { Route as NewArrivalsRouteImport } from './routes/new-arrivals'
+import { Route as OrdersRouteImport } from './routes/orders'
+import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as SellWithUsRouteImport } from './routes/sell-with-us'
+import { Route as ShopRouteImport } from './routes/shop'
+import { Route as ShopperRouteImport } from './routes/shopper'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
+import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
-import { Route as ShopperClientsIndexRouteImport } from './routes/shopper.clients.index'
-import { Route as ShopperEditsIdRouteImport } from './routes/shopper.edits.$id'
-import { Route as ShopperClientsIdRouteImport } from './routes/shopper.clients.$id'
-import { Route as OpenEditsIdRouteImport } from './routes/open.edits.$id'
+import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
+import { Route as AdminLaunchCreditRouteImport } from './routes/admin.launch-credit'
+import { Route as AdminStatsRouteImport } from './routes/admin.stats'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as CollectionsHandleRouteImport } from './routes/collections.$handle'
+import { Route as EditsIndexRouteImport } from './routes/edits.index'
+import { Route as EditsIdRouteImport } from './routes/edits.$id'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as MessagesIndexRouteImport } from './routes/messages.index'
+import { Route as MessagesUserIdRouteImport } from './routes/messages.$userId'
+import { Route as ProductHandleRouteImport } from './routes/product.$handle'
+import { Route as ShopperIndexRouteImport } from './routes/shopper.index'
+import { Route as ShopperNewRouteImport } from './routes/shopper.new'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
-import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
-import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
-import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
-import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
-import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
-import { Route as ApiPublicHooksWeeklyNewArrivalsRouteImport } from './routes/api/public/hooks/weekly-new-arrivals'
-import { Route as ApiPublicHooksStockAlertsRouteImport } from './routes/api/public/hooks/stock-alerts'
+import { Route as OpenEditsIdRouteImport } from './routes/open.edits.$id'
+import { Route as ShopperClientsIndexRouteImport } from './routes/shopper.clients.index'
+import { Route as ShopperClientsIdRouteImport } from './routes/shopper.clients.$id'
+import { Route as ShopperEditsIdRouteImport } from './routes/shopper.edits.$id'
 import { Route as ApiPublicHooksRunScheduledBroadcastsRouteImport } from './routes/api/public/hooks/run-scheduled-broadcasts'
+import { Route as ApiPublicHooksStockAlertsRouteImport } from './routes/api/public/hooks/stock-alerts'
+import { Route as ApiPublicHooksWeeklyNewArrivalsRouteImport } from './routes/api/public/hooks/weekly-new-arrivals'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
+import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 
-const WishlistRoute = WishlistRouteImport.update({
-  id: '/wishlist',
-  path: '/wishlist',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const UnsubscribeRoute = UnsubscribeRouteImport.update({
-  id: '/unsubscribe',
-  path: '/unsubscribe',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ShopperRoute = ShopperRouteImport.update({
-  id: '/shopper',
-  path: '/shopper',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ShopRoute = ShopRouteImport.update({
-  id: '/shop',
-  path: '/shop',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SellWithUsRoute = SellWithUsRouteImport.update({
-  id: '/sell-with-us',
-  path: '/sell-with-us',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SearchRoute = SearchRouteImport.update({
-  id: '/search',
-  path: '/search',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RefundPolicyRoute = RefundPolicyRouteImport.update({
-  id: '/refund-policy',
-  path: '/refund-policy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OrdersRoute = OrdersRouteImport.update({
-  id: '/orders',
-  path: '/orders',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NewArrivalsRoute = NewArrivalsRouteImport.update({
-  id: '/new-arrivals',
-  path: '/new-arrivals',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EditsRoute = EditsRouteImport.update({
-  id: '/edits',
-  path: '/edits',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AlertsRoute = AlertsRouteImport.update({
-  id: '/alerts',
-  path: '/alerts',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountRoute = AccountRouteImport.update({
@@ -122,74 +62,69 @@ const AccountRoute = AccountRouteImport.update({
   path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ShopperIndexRoute = ShopperIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ShopperRoute,
-} as any)
-const MessagesIndexRoute = MessagesIndexRouteImport.update({
-  id: '/messages/',
-  path: '/messages/',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EditsIndexRoute = EditsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => EditsRoute,
-} as any)
-const ShopperNewRoute = ShopperNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => ShopperRoute,
-} as any)
-const ProductHandleRoute = ProductHandleRouteImport.update({
-  id: '/product/$handle',
-  path: '/product/$handle',
+const EditsRoute = EditsRouteImport.update({
+  id: '/edits',
+  path: '/edits',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MessagesUserIdRoute = MessagesUserIdRouteImport.update({
-  id: '/messages/$userId',
-  path: '/messages/$userId',
+const NewArrivalsRoute = NewArrivalsRouteImport.update({
+  id: '/new-arrivals',
+  path: '/new-arrivals',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
-  id: '/email/unsubscribe',
-  path: '/email/unsubscribe',
+const OrdersRoute = OrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EditsIdRoute = EditsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => EditsRoute,
-} as any)
-const CollectionsHandleRoute = CollectionsHandleRouteImport.update({
-  id: '/collections/$handle',
-  path: '/collections/$handle',
+const RefundPolicyRoute = RefundPolicyRouteImport.update({
+  id: '/refund-policy',
+  path: '/refund-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/admin/users',
-  path: '/admin/users',
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminStatsRoute = AdminStatsRouteImport.update({
-  id: '/admin/stats',
-  path: '/admin/stats',
+const SellWithUsRoute = SellWithUsRouteImport.update({
+  id: '/sell-with-us',
+  path: '/sell-with-us',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminLaunchCreditRoute = AdminLaunchCreditRouteImport.update({
-  id: '/admin/launch-credit',
-  path: '/admin/launch-credit',
+const ShopRoute = ShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminEmailsRoute = AdminEmailsRouteImport.update({
-  id: '/admin/emails',
-  path: '/admin/emails',
+const ShopperRoute = ShopperRouteImport.update({
+  id: '/shopper',
+  path: '/shopper',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WishlistRoute = WishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminBroadcastRoute = AdminBroadcastRouteImport.update({
@@ -197,14 +132,84 @@ const AdminBroadcastRoute = AdminBroadcastRouteImport.update({
   path: '/admin/broadcast',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminEmailsRoute = AdminEmailsRouteImport.update({
+  id: '/admin/emails',
+  path: '/admin/emails',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLaunchCreditRoute = AdminLaunchCreditRouteImport.update({
+  id: '/admin/launch-credit',
+  path: '/admin/launch-credit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminStatsRoute = AdminStatsRouteImport.update({
+  id: '/admin/stats',
+  path: '/admin/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsHandleRoute = CollectionsHandleRouteImport.update({
+  id: '/collections/$handle',
+  path: '/collections/$handle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EditsIndexRoute = EditsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => EditsRoute,
+} as any)
+const EditsIdRoute = EditsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => EditsRoute,
+} as any)
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesIndexRoute = MessagesIndexRouteImport.update({
+  id: '/messages/',
+  path: '/messages/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesUserIdRoute = MessagesUserIdRouteImport.update({
+  id: '/messages/$userId',
+  path: '/messages/$userId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductHandleRoute = ProductHandleRouteImport.update({
+  id: '/product/$handle',
+  path: '/product/$handle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopperIndexRoute = ShopperIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ShopperRoute,
+} as any)
+const ShopperNewRoute = ShopperNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => ShopperRoute,
+} as any)
+const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
+  id: '/lovable/email/suppression',
+  path: '/lovable/email/suppression',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpenEditsIdRoute = OpenEditsIdRouteImport.update({
+  id: '/open/edits/$id',
+  path: '/open/edits/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopperClientsIndexRoute = ShopperClientsIndexRouteImport.update({
   id: '/clients/',
   path: '/clients/',
-  getParentRoute: () => ShopperRoute,
-} as any)
-const ShopperEditsIdRoute = ShopperEditsIdRouteImport.update({
-  id: '/edits/$id',
-  path: '/edits/$id',
   getParentRoute: () => ShopperRoute,
 } as any)
 const ShopperClientsIdRoute = ShopperClientsIdRouteImport.update({
@@ -212,48 +217,15 @@ const ShopperClientsIdRoute = ShopperClientsIdRouteImport.update({
   path: '/clients/$id',
   getParentRoute: () => ShopperRoute,
 } as any)
-const OpenEditsIdRoute = OpenEditsIdRouteImport.update({
-  id: '/open/edits/$id',
-  path: '/open/edits/$id',
-  getParentRoute: () => rootRouteImport,
+const ShopperEditsIdRoute = ShopperEditsIdRouteImport.update({
+  id: '/edits/$id',
+  path: '/edits/$id',
+  getParentRoute: () => ShopperRoute,
 } as any)
-const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
-  id: '/lovable/email/suppression',
-  path: '/lovable/email/suppression',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LovableEmailTransactionalSendRoute =
-  LovableEmailTransactionalSendRouteImport.update({
-    id: '/lovable/email/transactional/send',
-    path: '/lovable/email/transactional/send',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const LovableEmailTransactionalPreviewRoute =
-  LovableEmailTransactionalPreviewRouteImport.update({
-    id: '/lovable/email/transactional/preview',
-    path: '/lovable/email/transactional/preview',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const LovableEmailQueueProcessRoute =
-  LovableEmailQueueProcessRouteImport.update({
-    id: '/lovable/email/queue/process',
-    path: '/lovable/email/queue/process',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
-  id: '/lovable/email/auth/webhook',
-  path: '/lovable/email/auth/webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
-  id: '/lovable/email/auth/preview',
-  path: '/lovable/email/auth/preview',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicHooksWeeklyNewArrivalsRoute =
-  ApiPublicHooksWeeklyNewArrivalsRouteImport.update({
-    id: '/api/public/hooks/weekly-new-arrivals',
-    path: '/api/public/hooks/weekly-new-arrivals',
+const ApiPublicHooksRunScheduledBroadcastsRoute =
+  ApiPublicHooksRunScheduledBroadcastsRouteImport.update({
+    id: '/api/public/hooks/run-scheduled-broadcasts',
+    path: '/api/public/hooks/run-scheduled-broadcasts',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksStockAlertsRoute =
@@ -262,10 +234,38 @@ const ApiPublicHooksStockAlertsRoute =
     path: '/api/public/hooks/stock-alerts',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksRunScheduledBroadcastsRoute =
-  ApiPublicHooksRunScheduledBroadcastsRouteImport.update({
-    id: '/api/public/hooks/run-scheduled-broadcasts',
-    path: '/api/public/hooks/run-scheduled-broadcasts',
+const ApiPublicHooksWeeklyNewArrivalsRoute =
+  ApiPublicHooksWeeklyNewArrivalsRouteImport.update({
+    id: '/api/public/hooks/weekly-new-arrivals',
+    path: '/api/public/hooks/weekly-new-arrivals',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalSendRoute =
+  LovableEmailTransactionalSendRouteImport.update({
+    id: '/lovable/email/transactional/send',
+    path: '/lovable/email/transactional/send',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -573,95 +573,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/wishlist': {
-      id: '/wishlist'
-      path: '/wishlist'
-      fullPath: '/wishlist'
-      preLoaderRoute: typeof WishlistRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/unsubscribe': {
-      id: '/unsubscribe'
-      path: '/unsubscribe'
-      fullPath: '/unsubscribe'
-      preLoaderRoute: typeof UnsubscribeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/shopper': {
-      id: '/shopper'
-      path: '/shopper'
-      fullPath: '/shopper'
-      preLoaderRoute: typeof ShopperRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/shop': {
-      id: '/shop'
-      path: '/shop'
-      fullPath: '/shop'
-      preLoaderRoute: typeof ShopRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sell-with-us': {
-      id: '/sell-with-us'
-      path: '/sell-with-us'
-      fullPath: '/sell-with-us'
-      preLoaderRoute: typeof SellWithUsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/search': {
-      id: '/search'
-      path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof SearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/refund-policy': {
-      id: '/refund-policy'
-      path: '/refund-policy'
-      fullPath: '/refund-policy'
-      preLoaderRoute: typeof RefundPolicyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/orders': {
-      id: '/orders'
-      path: '/orders'
-      fullPath: '/orders'
-      preLoaderRoute: typeof OrdersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/new-arrivals': {
-      id: '/new-arrivals'
-      path: '/new-arrivals'
-      fullPath: '/new-arrivals'
-      preLoaderRoute: typeof NewArrivalsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/edits': {
-      id: '/edits'
-      path: '/edits'
-      fullPath: '/edits'
-      preLoaderRoute: typeof EditsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/alerts': {
-      id: '/alerts'
-      path: '/alerts'
-      fullPath: '/alerts'
-      preLoaderRoute: typeof AlertsRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account': {
@@ -671,102 +587,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/shopper/': {
-      id: '/shopper/'
-      path: '/'
-      fullPath: '/shopper/'
-      preLoaderRoute: typeof ShopperIndexRouteImport
-      parentRoute: typeof ShopperRoute
-    }
-    '/messages/': {
-      id: '/messages/'
-      path: '/messages'
-      fullPath: '/messages/'
-      preLoaderRoute: typeof MessagesIndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/edits/': {
-      id: '/edits/'
-      path: '/'
-      fullPath: '/edits/'
-      preLoaderRoute: typeof EditsIndexRouteImport
-      parentRoute: typeof EditsRoute
-    }
-    '/shopper/new': {
-      id: '/shopper/new'
-      path: '/new'
-      fullPath: '/shopper/new'
-      preLoaderRoute: typeof ShopperNewRouteImport
-      parentRoute: typeof ShopperRoute
-    }
-    '/product/$handle': {
-      id: '/product/$handle'
-      path: '/product/$handle'
-      fullPath: '/product/$handle'
-      preLoaderRoute: typeof ProductHandleRouteImport
+    '/edits': {
+      id: '/edits'
+      path: '/edits'
+      fullPath: '/edits'
+      preLoaderRoute: typeof EditsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/messages/$userId': {
-      id: '/messages/$userId'
-      path: '/messages/$userId'
-      fullPath: '/messages/$userId'
-      preLoaderRoute: typeof MessagesUserIdRouteImport
+    '/new-arrivals': {
+      id: '/new-arrivals'
+      path: '/new-arrivals'
+      fullPath: '/new-arrivals'
+      preLoaderRoute: typeof NewArrivalsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/email/unsubscribe': {
-      id: '/email/unsubscribe'
-      path: '/email/unsubscribe'
-      fullPath: '/email/unsubscribe'
-      preLoaderRoute: typeof EmailUnsubscribeRouteImport
+    '/orders': {
+      id: '/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof OrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/edits/$id': {
-      id: '/edits/$id'
-      path: '/$id'
-      fullPath: '/edits/$id'
-      preLoaderRoute: typeof EditsIdRouteImport
-      parentRoute: typeof EditsRoute
-    }
-    '/collections/$handle': {
-      id: '/collections/$handle'
-      path: '/collections/$handle'
-      fullPath: '/collections/$handle'
-      preLoaderRoute: typeof CollectionsHandleRouteImport
+    '/refund-policy': {
+      id: '/refund-policy'
+      path: '/refund-policy'
+      fullPath: '/refund-policy'
+      preLoaderRoute: typeof RefundPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/users': {
-      id: '/admin/users'
-      path: '/admin/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/stats': {
-      id: '/admin/stats'
-      path: '/admin/stats'
-      fullPath: '/admin/stats'
-      preLoaderRoute: typeof AdminStatsRouteImport
+    '/sell-with-us': {
+      id: '/sell-with-us'
+      path: '/sell-with-us'
+      fullPath: '/sell-with-us'
+      preLoaderRoute: typeof SellWithUsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/launch-credit': {
-      id: '/admin/launch-credit'
-      path: '/admin/launch-credit'
-      fullPath: '/admin/launch-credit'
-      preLoaderRoute: typeof AdminLaunchCreditRouteImport
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/emails': {
-      id: '/admin/emails'
-      path: '/admin/emails'
-      fullPath: '/admin/emails'
-      preLoaderRoute: typeof AdminEmailsRouteImport
+    '/shopper': {
+      id: '/shopper'
+      path: '/shopper'
+      fullPath: '/shopper'
+      preLoaderRoute: typeof ShopperRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wishlist': {
+      id: '/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof WishlistRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/broadcast': {
@@ -776,18 +685,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBroadcastRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/emails': {
+      id: '/admin/emails'
+      path: '/admin/emails'
+      fullPath: '/admin/emails'
+      preLoaderRoute: typeof AdminEmailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/launch-credit': {
+      id: '/admin/launch-credit'
+      path: '/admin/launch-credit'
+      fullPath: '/admin/launch-credit'
+      preLoaderRoute: typeof AdminLaunchCreditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/stats': {
+      id: '/admin/stats'
+      path: '/admin/stats'
+      fullPath: '/admin/stats'
+      preLoaderRoute: typeof AdminStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections/$handle': {
+      id: '/collections/$handle'
+      path: '/collections/$handle'
+      fullPath: '/collections/$handle'
+      preLoaderRoute: typeof CollectionsHandleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/edits/': {
+      id: '/edits/'
+      path: '/'
+      fullPath: '/edits/'
+      preLoaderRoute: typeof EditsIndexRouteImport
+      parentRoute: typeof EditsRoute
+    }
+    '/edits/$id': {
+      id: '/edits/$id'
+      path: '/$id'
+      fullPath: '/edits/$id'
+      preLoaderRoute: typeof EditsIdRouteImport
+      parentRoute: typeof EditsRoute
+    }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages/': {
+      id: '/messages/'
+      path: '/messages'
+      fullPath: '/messages/'
+      preLoaderRoute: typeof MessagesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages/$userId': {
+      id: '/messages/$userId'
+      path: '/messages/$userId'
+      fullPath: '/messages/$userId'
+      preLoaderRoute: typeof MessagesUserIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/product/$handle': {
+      id: '/product/$handle'
+      path: '/product/$handle'
+      fullPath: '/product/$handle'
+      preLoaderRoute: typeof ProductHandleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shopper/': {
+      id: '/shopper/'
+      path: '/'
+      fullPath: '/shopper/'
+      preLoaderRoute: typeof ShopperIndexRouteImport
+      parentRoute: typeof ShopperRoute
+    }
+    '/shopper/new': {
+      id: '/shopper/new'
+      path: '/new'
+      fullPath: '/shopper/new'
+      preLoaderRoute: typeof ShopperNewRouteImport
+      parentRoute: typeof ShopperRoute
+    }
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/open/edits/$id': {
+      id: '/open/edits/$id'
+      path: '/open/edits/$id'
+      fullPath: '/open/edits/$id'
+      preLoaderRoute: typeof OpenEditsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shopper/clients/': {
       id: '/shopper/clients/'
       path: '/clients'
       fullPath: '/shopper/clients/'
       preLoaderRoute: typeof ShopperClientsIndexRouteImport
-      parentRoute: typeof ShopperRoute
-    }
-    '/shopper/edits/$id': {
-      id: '/shopper/edits/$id'
-      path: '/edits/$id'
-      fullPath: '/shopper/edits/$id'
-      preLoaderRoute: typeof ShopperEditsIdRouteImport
       parentRoute: typeof ShopperRoute
     }
     '/shopper/clients/$id': {
@@ -797,60 +804,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopperClientsIdRouteImport
       parentRoute: typeof ShopperRoute
     }
-    '/open/edits/$id': {
-      id: '/open/edits/$id'
-      path: '/open/edits/$id'
-      fullPath: '/open/edits/$id'
-      preLoaderRoute: typeof OpenEditsIdRouteImport
-      parentRoute: typeof rootRouteImport
+    '/shopper/edits/$id': {
+      id: '/shopper/edits/$id'
+      path: '/edits/$id'
+      fullPath: '/shopper/edits/$id'
+      preLoaderRoute: typeof ShopperEditsIdRouteImport
+      parentRoute: typeof ShopperRoute
     }
-    '/lovable/email/suppression': {
-      id: '/lovable/email/suppression'
-      path: '/lovable/email/suppression'
-      fullPath: '/lovable/email/suppression'
-      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/transactional/send': {
-      id: '/lovable/email/transactional/send'
-      path: '/lovable/email/transactional/send'
-      fullPath: '/lovable/email/transactional/send'
-      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/transactional/preview': {
-      id: '/lovable/email/transactional/preview'
-      path: '/lovable/email/transactional/preview'
-      fullPath: '/lovable/email/transactional/preview'
-      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/queue/process': {
-      id: '/lovable/email/queue/process'
-      path: '/lovable/email/queue/process'
-      fullPath: '/lovable/email/queue/process'
-      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/auth/webhook': {
-      id: '/lovable/email/auth/webhook'
-      path: '/lovable/email/auth/webhook'
-      fullPath: '/lovable/email/auth/webhook'
-      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/auth/preview': {
-      id: '/lovable/email/auth/preview'
-      path: '/lovable/email/auth/preview'
-      fullPath: '/lovable/email/auth/preview'
-      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/weekly-new-arrivals': {
-      id: '/api/public/hooks/weekly-new-arrivals'
-      path: '/api/public/hooks/weekly-new-arrivals'
-      fullPath: '/api/public/hooks/weekly-new-arrivals'
-      preLoaderRoute: typeof ApiPublicHooksWeeklyNewArrivalsRouteImport
+    '/api/public/hooks/run-scheduled-broadcasts': {
+      id: '/api/public/hooks/run-scheduled-broadcasts'
+      path: '/api/public/hooks/run-scheduled-broadcasts'
+      fullPath: '/api/public/hooks/run-scheduled-broadcasts'
+      preLoaderRoute: typeof ApiPublicHooksRunScheduledBroadcastsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/stock-alerts': {
@@ -860,11 +825,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksStockAlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/run-scheduled-broadcasts': {
-      id: '/api/public/hooks/run-scheduled-broadcasts'
-      path: '/api/public/hooks/run-scheduled-broadcasts'
-      fullPath: '/api/public/hooks/run-scheduled-broadcasts'
-      preLoaderRoute: typeof ApiPublicHooksRunScheduledBroadcastsRouteImport
+    '/api/public/hooks/weekly-new-arrivals': {
+      id: '/api/public/hooks/weekly-new-arrivals'
+      path: '/api/public/hooks/weekly-new-arrivals'
+      fullPath: '/api/public/hooks/weekly-new-arrivals'
+      preLoaderRoute: typeof ApiPublicHooksWeeklyNewArrivalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
       parentRoute: typeof rootRouteImport
     }
   }

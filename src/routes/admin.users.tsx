@@ -22,7 +22,7 @@ export const Route = createFileRoute("/admin/users")({
     return (
       <div className="mx-auto max-w-md p-8 text-center">
         <h1 className="font-serif text-xl">Something went wrong</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{(error as Error).message}</p>
         <Button className="mt-4" onClick={() => { router.invalidate(); reset(); }}>
           Try again
         </Button>
