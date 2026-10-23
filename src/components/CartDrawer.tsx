@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Sheet,
   SheetContent,
@@ -10,8 +11,18 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ShoppingBag, Minus, Plus, Trash2, Loader2 } from "lucide-react";
-import { useCartStore } from "@/stores/cartStore";
+import { useCartStore, type CartItem } from "@/stores/cartStore";
 import { formatPrice } from "@/lib/shopify";
+
+const DUBAI_NOTICE_STYLE: React.CSSProperties = {
+  backgroundColor: "#faf3e3",
+  border: "1px solid #c9a24a",
+  color: "#4a3420",
+};
+
+function isDubaiItem(item: CartItem) {
+  return (item.product.node.vendor ?? "").trim().toLowerCase() === "sellier dubai";
+}
 
 export function CartDrawer({
   open,
@@ -24,6 +35,8 @@ export function CartDrawer({
 }) {
   const { items, isLoading, isSyncing, updateQuantity, removeItem, getCheckoutUrl, syncCart } =
     useCartStore();
+  const [agreed, setAgreed] = useState(false);
+  const hasDubaiItem = items.some(isDubaiItem);
   const totalItems = items.reduce((s, i) => s + i.quantity, 0);
   const currency = items[0]?.price.currencyCode ?? "GBP";
   const totalPrice = items.reduce(
@@ -32,7 +45,10 @@ export function CartDrawer({
   );
 
   useEffect(() => {
-    if (open) syncCart();
+    if (open) {
+      setAgreed(false);
+      syncCart();
+    }
   }, [open, syncCart]);
 
   const handleCheckout = () => {
@@ -107,6 +123,15 @@ export function CartDrawer({
                             <p className="text-sm mt-1">
                               {formatPrice(item.price.amount, item.price.currencyCode)}
                             </p>
+                            {isDubaiItem(item) && (
+                              <div
+                                className="mt-2 px-2 py-1.5 text-[11px] leading-snug"
+                                style={DUBAI_NOTICE_STYLE}
+                              >
+                                <strong>Ships from Dubai.</strong> Additional taxes and duties
+                                will apply and are the buyer's responsibility.
+                              </div>
+                            )}
                           </div>
                           <div className="flex items-center justify-between mt-2">
                             <div className="flex items-center border">
@@ -140,6 +165,12 @@ export function CartDrawer({
               </div>
 
               <div className="flex-shrink-0 pt-4 border-t space-y-3">
+                {hasDubaiItem && (
+                  <div className="px-3 py-2 text-xs leading-relaxed" style={DUBAI_NOTICE_STYLE}>
+                    Your bag contains an item shipping from Dubai. Import taxes and duties are not
+                    included and are payable by you on delivery.
+                  </div>
+                )}
                 <div className="flex justify-between items-baseline">
                   <span className="text-xs uppercase tracking-widest text-muted-foreground">
                     Subtotal
@@ -148,10 +179,21 @@ export function CartDrawer({
                     {formatPrice(totalPrice, currency)}
                   </span>
                 </div>
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <Checkbox
+                    checked={agreed}
+                    onCheckedChange={(v) => setAgreed(v === true)}
+                    className="mt-0.5"
+                  />
+                  <span className="text-xs text-foreground/80 leading-relaxed">
+                    I agree to the terms and conditions (all sales final) and any additional
+                    duties on my shipment.
+                  </span>
+                </label>
                 <Button
                   onClick={handleCheckout}
                   className="w-full rounded-none h-12 text-xs tracking-[0.2em] uppercase"
-                  disabled={items.length === 0 || isLoading || isSyncing}
+                  disabled={items.length === 0 || isLoading || isSyncing || !agreed}
                 >
                   {isLoading || isSyncing ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
